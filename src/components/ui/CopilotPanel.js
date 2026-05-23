@@ -103,7 +103,7 @@ export function CopilotPanel() {
             setSize({ width: parseInt(ref.style.width, 10), height: parseInt(ref.style.height, 10) });
             setPosition(pos);
           }}
-          className="z-[9999]"
+          className="z-9999"
         >
           <div 
             className="w-full h-full bg-white border-4 border-brutal-black shadow-[8px_8px_0_rgba(0,0,0,1)] flex flex-col animate-in fade-in relative"
@@ -192,13 +192,13 @@ export function CopilotPanel() {
                             clearHistory();
                           }
                         }} 
-                        className="text-xs font-bold px-3 py-1.5 bg-red-500 text-white border-2 border-brutal-black shadow-[2px_2px_0_#000] hover:translate-y-[1px] hover:shadow-[1px_1px_0_#000]"
+                        className="text-xs font-bold px-3 py-1.5 bg-red-500 text-white border-2 border-brutal-black shadow-[2px_2px_0_#000] hover:translate-y-px hover:shadow-[1px_1px_0_#000]"
                       >
                         Delete All
                       </button>
                       <button 
                         onClick={createNewConversation} 
-                        className="text-xs font-bold px-3 py-1.5 bg-brutal-yellow border-2 border-brutal-black shadow-[2px_2px_0_#000] hover:translate-y-[1px] hover:shadow-[1px_1px_0_#000]"
+                        className="text-xs font-bold px-3 py-1.5 bg-brutal-yellow border-2 border-brutal-black shadow-[2px_2px_0_#000] hover:translate-y-px hover:shadow-[1px_1px_0_#000]"
                       >
                         + New Chat
                       </button>

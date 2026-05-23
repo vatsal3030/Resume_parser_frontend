@@ -521,8 +521,8 @@ export default function PortfolioGenerator() {
       )}
       {/* Full Screen Overlay using Portal */}
       {isFullScreen && displayResult && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[9999] bg-white overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
-          <div className="sticky top-6 right-6 flex justify-end z-[10000] px-6 pointer-events-none">
+        <div className="fixed inset-0 z-9999 bg-white overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+          <div className="sticky top-6 right-6 flex justify-end z-10000 px-6 pointer-events-none">
             <Button variant="brutal" className="bg-brutal-yellow pointer-events-auto shadow-[4px_4px_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_rgba(0,0,0,1)] transition-all" onClick={() => setIsFullScreen(false)}>
               <X className="w-5 h-5 mr-2" /> Exit Full Screen (Esc)
             </Button>
@@ -536,7 +536,7 @@ export default function PortfolioGenerator() {
 
       {/* DEPLOYMENT MODAL */}
       {showDeployModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[99999] p-4 animate-in fade-in">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-99999 p-4 animate-in fade-in">
           <div className="bg-white border-4 border-brutal-black shadow-[8px_8px_0_rgba(0,0,0,1)] max-w-lg w-full p-8 relative animate-in zoom-in-95 duration-200">
             <button className="absolute top-4 right-4 text-black hover:text-red-600 transition-colors" onClick={() => setShowDeployModal(false)}>
               <X className="w-6 h-6" />
@@ -752,7 +752,7 @@ export default function PortfolioGenerator() {
                       href={`https://${githubUser}.github.io/${repoName}`} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="block font-black text-lg text-blue-600 underline break-all flex items-center gap-1 hover:text-blue-800"
+                      className="flex font-black text-lg text-blue-600 underline break-all items-center gap-1 hover:text-blue-800"
                     >
                       {githubUser}.github.io/{repoName} <ExternalLink className="w-4 h-4 shrink-0" />
                     </a>

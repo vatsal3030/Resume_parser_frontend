@@ -21,18 +21,32 @@ const TOAST_STYLES = {
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const toastIdRef = useRef(0);
+  const recentToastsRef = useRef(new Map()); // dedup: key -> timestamp
 
-  const addToast = useCallback(({ type = 'info', title, message, duration = 4000 }) => {
+  const addToast = useCallback(({ type = 'info', title, message, duration = 4000, action }) => {
+    // Deduplication: skip if same title+message was added within last 2 seconds
+    const dedupeKey = `${type}:${title}:${message}`;
+    const now = Date.now();
+    const lastTime = recentToastsRef.current.get(dedupeKey);
+    if (lastTime && now - lastTime < 2000) {
+      return -1; // Skip duplicate
+    }
+    recentToastsRef.current.set(dedupeKey, now);
+    // Cleanup old entries every 50 toasts
+    if (recentToastsRef.current.size > 50) {
+      for (const [key, time] of recentToastsRef.current) {
+        if (now - time > 5000) recentToastsRef.current.delete(key);
+      }
+    }
+
     const id = ++toastIdRef.current;
     
-    setToasts(prev => [...prev, { id, type, title, message, exiting: false }]);
+    setToasts(prev => [...prev, { id, type, title, message, action, exiting: false }]);
 
     // Auto-dismiss
-    if (duration > 0) {
+    if (duration > 0 && !action) {
       setTimeout(() => {
-        // Start exit animation
         setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
-        // Remove after animation
         setTimeout(() => {
           setToasts(prev => prev.filter(t => t.id !== id));
         }, 300);
@@ -51,10 +65,10 @@ export function ToastProvider({ children }) {
 
   // Convenience methods
   const toast = {
-    success: (title, message) => addToast({ type: 'success', title, message }),
-    error: (title, message) => addToast({ type: 'error', title, message, duration: 6000 }),
-    warning: (title, message) => addToast({ type: 'warning', title, message, duration: 5000 }),
-    info: (title, message) => addToast({ type: 'info', title, message }),
+    success: (title, message, action) => addToast({ type: 'success', title, message, action }),
+    error: (title, message, action) => addToast({ type: 'error', title, message, duration: 6000, action }),
+    warning: (title, message, action) => addToast({ type: 'warning', title, message, duration: 5000, action }),
+    info: (title, message, action) => addToast({ type: 'info', title, message, action }),
   };
 
   return (
@@ -87,6 +101,17 @@ export function ToastProvider({ children }) {
                 )}
                 {t.message && (
                   <p className="font-bold text-sm mt-0.5 opacity-90 leading-snug">{t.message}</p>
+                )}
+                {t.action && (
+                  <button 
+                    onClick={() => {
+                      t.action.onClick();
+                      removeToast(t.id);
+                    }}
+                    className="mt-2 text-xs font-black uppercase tracking-wider underline underline-offset-2 hover:opacity-70 transition-opacity"
+                  >
+                    {t.action.label}
+                  </button>
                 )}
               </div>
               <button

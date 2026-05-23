@@ -1,232 +1,378 @@
 "use client";
-import { useState } from 'react';
-import { Sparkles, Plus, Trash2, Save, Download } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import api from '@/lib/api';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Save, Download, FileText, Code, LayoutTemplate, Plus, ArrowLeft, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import api from "@/lib/api";
+import { formatDate } from "@/lib/formatDate";
+import { useToast } from "@/components/ui/toast";
+import { TemplateSelector } from "@/components/studio/TemplateSelector";
+import { PersonalEditor, SummaryEditor, ExperienceEditor, EducationEditor, SkillsEditor, ProjectsEditor, CertificationsEditor, SectionWrapper } from "@/components/studio/SectionEditor";
+import { ResumePreview } from "@/components/studio/ResumePreview";
+import { ATSScoreIndicator } from "@/components/studio/ATSScoreIndicator";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableSectionWrapper } from "@/components/studio/SortableSectionWrapper";
 
-const INITIAL_STATE = {
-  personal: { name: 'John Doe', email: 'john@example.com', phone: '123-456-7890', linkedin: 'linkedin.com/in/johndoe' },
-  summary: 'Passionate Software Engineer with 5 years of experience building scalable web applications.',
-  experience: [
-    { id: 1, company: 'Tech Corp', role: 'Senior Developer', duration: '2020 - Present', bullets: ['Led migration to microservices', 'Improved performance by 40%'] }
-  ],
-  education: [
-    { id: 1, school: 'University of Technology', degree: 'B.S. Computer Science', duration: '2016 - 2020' }
-  ],
-  skills: ['JavaScript', 'React', 'Node.js', 'PostgreSQL']
+const API = process.env.NEXT_PUBLIC_API_URL;
+
+const DEFAULT_DATA = {
+  personal: { name: "", email: "", phone: "", linkedin: "", location: "", website: "" },
+  summary: "", experience: [], education: [], skills: [], projects: [], certifications: [],
 };
+const DEFAULT_ORDER = ["personal", "summary", "experience", "education", "skills", "projects", "certifications"];
 
 export default function ResumeStudio() {
-  const [data, setData] = useState(INITIAL_STATE);
-  const [loadingAI, setLoadingAI] = useState(null); // stores ID of bullet being processed
+  // Resume list vs editor mode
+  const [mode, setMode] = useState("list"); // "list" | "editor"
+  const [resumes, setResumes] = useState([]);
+  const [listLoading, setListLoading] = useState(true);
 
-  // Handlers for Data changes
-  const updatePersonal = (field, value) => setData(p => ({ ...p, personal: { ...p.personal, [field]: value } }));
-  const updateSummary = (value) => setData(p => ({ ...p, summary: value }));
+  // Editor state
+  const [resumeId, setResumeId] = useState(null);
+  const [title, setTitle] = useState("Untitled Resume");
+  const [data, setData] = useState(DEFAULT_DATA);
+  const [sectionOrder, setSectionOrder] = useState(DEFAULT_ORDER);
+  const [styleConfig, setStyleConfig] = useState({});
+  const [templateId, setTemplateId] = useState(null);
+  const [version, setVersion] = useState(1);
+  const [saving, setSaving] = useState(false);
+  const [templateOpen, setTemplateOpen] = useState(false);
+  const [revertDialogOpen, setRevertDialogOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
+  const versionRef = useRef(1);
+  const exportMenuRef = useRef(null);
+  const [zoom, setZoom] = useState(0.85); // Default zoom level
+  const [loadingAI, setLoadingAI] = useState(null);
 
-  const updateExperience = (id, field, value) => {
-    setData(p => ({
-      ...p,
-      experience: p.experience.map(exp => exp.id === id ? { ...exp, [field]: value } : exp)
-    }));
-  };
-
-  const updateBullet = (expId, bulletIndex, value) => {
-    setData(p => ({
-      ...p,
-      experience: p.experience.map(exp => {
-        if (exp.id === expId) {
-          const newBullets = [...exp.bullets];
-          newBullets[bulletIndex] = value;
-          return { ...exp, bullets: newBullets };
-        }
-        return exp;
-      })
-    }));
-  };
-
-  const addExperience = () => {
-    setData(p => ({
-      ...p,
-      experience: [...p.experience, { id: Date.now(), company: '', role: '', duration: '', bullets: [''] }]
-    }));
-  };
-
-  const addBullet = (expId) => {
-    setData(p => ({
-      ...p,
-      experience: p.experience.map(exp => exp.id === expId ? { ...exp, bullets: [...exp.bullets, ''] } : exp)
-    }));
-  };
-
-  const removeBullet = (expId, bulletIndex) => {
-    setData(p => ({
-      ...p,
-      experience: p.experience.map(exp => {
-        if (exp.id === expId) {
-          const newBullets = exp.bullets.filter((_, i) => i !== bulletIndex);
-          return { ...exp, bullets: newBullets };
-        }
-        return exp;
-      })
-    }));
-  };
-
-  const handleAIRewrite = async (expId, bulletIndex, text, action) => {
-    if (!text.trim()) return;
-    setLoadingAI(`${expId}-${bulletIndex}`);
-    try {
-      const res = await api.post('/career/rewrite-bullet', { text, action });
-      if (res.data && res.data.result) {
-        updateBullet(expId, bulletIndex, res.data.result);
+  // Handle click outside for export menu
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+        setExportOpen(false);
       }
-    } catch (err) {
-      console.error("AI Rewrite failed", err);
-      alert("AI Rewrite failed. Please try again.");
-    } finally {
-      setLoadingAI(null);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toast = useToast();
+  const autosaveTimer = useRef(null);
+  const dirty = useRef(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      setSectionOrder((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+      markDirty();
     }
   };
 
-  return (
-    <div className="min-h-screen bg-brutal-bg flex flex-col md:flex-row">
-      {/* LEFT PANE: Editor Form */}
-      <div className="w-full md:w-1/2 p-6 overflow-y-auto border-r-4 border-brutal-black h-screen pb-24">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-4xl font-black uppercase tracking-tighter">AI Studio</h1>
-          <Button variant="brutal" className="gap-2">
-            <Save className="w-4 h-4" /> Save
+  // Fetch resume list
+  const fetchList = useCallback(async () => {
+    setListLoading(true);
+    try {
+      const res = await api.get(`/studio/resumes`);
+      if (Array.isArray(res.data)) {
+        setResumes(res.data);
+      } else {
+        setResumes([]);
+      }
+    } catch (e) { 
+      if (e.response?.status === 401) {
+        toast.error("Session Expired", "Please log in again.");
+        window.location.href = "/login";
+      }
+      console.error(e); 
+      setResumes([]);
+    }
+    finally { setListLoading(false); }
+  }, [toast]);
+
+  useEffect(() => { fetchList(); }, [fetchList]);
+
+  // Prevent accidental reload if unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (dirty.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  // Open editor
+  const openResume = async (id) => {
+    try {
+      const res = await api.get(`/studio/resumes/${id}`);
+      const r = res.data;
+      setResumeId(r.id); setTitle(r.title); setData(r.resumeData || DEFAULT_DATA);
+      setSectionOrder(r.sectionOrder || DEFAULT_ORDER); setStyleConfig(r.styleConfig || {});
+      setTemplateId(r.templateId); setVersion(r.version); versionRef.current = r.version; setMode("editor");
+    } catch (e) { toast.error("Error", "Failed to load resume"); }
+  };
+
+  // Create new
+  const createNew = async (template) => {
+    try {
+      const res = await api.post(`/studio/resumes`, { title: "Untitled Resume", templateId: template?.id });
+      const r = res.data;
+      await openResume(r.id);
+      toast.success("Created", "New resume created!");
+    } catch (e) { toast.error("Error", "Failed to create resume"); }
+  };
+
+  // Save
+  const save = useCallback(async () => {
+    if (!resumeId || saving) return;
+    setSaving(true);
+    try {
+      const res = await api.put(`/studio/resumes/${resumeId}`, { title, resumeData: data, sectionOrder, styleConfig, version: versionRef.current });
+      const updated = res.data;
+      setVersion(updated.version);
+      versionRef.current = updated.version;
+      dirty.current = false;
+    } catch (e) { 
+      if (e.response?.status === 409) { 
+        toast.warning("Conflict Resolved", "Updated version synced with server."); 
+        versionRef.current = e.response.data.serverVersion;
+        // Re-save with correct version
+        setTimeout(() => markDirty(), 1000);
+        return; 
+      }
+      toast.error("Error", "Failed to save"); 
+    }
+    finally { setSaving(false); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeId, title, data, sectionOrder, styleConfig, saving, toast]);
+
+  // Autosave (3s debounce)
+  const markDirty = useCallback(() => {
+    dirty.current = true;
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = setTimeout(() => { if (dirty.current) save(); }, 3000);
+  }, [save]);
+
+  // Revert changes
+  const revertChanges = () => {
+    openResume(resumeId);
+    dirty.current = false;
+    toast.info("Reverted", "Restored to last saved version.");
+  };
+
+  // Update data helper
+  const updateSection = (key, value) => {
+    setData(prev => ({ ...prev, [key]: value }));
+    markDirty();
+  };
+
+  // AI bullet rewrite
+  const handleAIRewrite = async (expIdx, bulletIdx, text, action) => {
+    if (!text.trim()) return;
+    setLoadingAI(`${expIdx}-${bulletIdx}`);
+    try {
+      const res = await api.post("/career/rewrite-bullet", { text, action });
+      if (res.data?.result) {
+        const next = [...data.experience];
+        const bullets = [...next[expIdx].bullets]; bullets[bulletIdx] = res.data.result;
+        next[expIdx] = { ...next[expIdx], bullets };
+        updateSection("experience", next);
+      }
+    } catch (e) { toast.error("AI Error", "Rewrite failed"); }
+    finally { setLoadingAI(null); }
+  };
+
+  // Export Formats
+  const exportPDF = async () => {
+    const html2pdf = (await import("html2pdf.js")).default;
+    html2pdf().from(document.getElementById("resume-preview")).set({
+      margin: 0, filename: `${title}.pdf`, html2canvas: { scale: 2 },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    }).save();
+    setExportOpen(false);
+  };
+
+  const exportJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `${title}.json`);
+    dlAnchorElem.click();
+    setExportOpen(false);
+  };
+
+  const exportTXT = () => {
+    let text = `${data.personal?.name || ''}\n${data.personal?.email || ''} | ${data.personal?.phone || ''}\n\n`;
+    text += `SUMMARY\n${data.summary || ''}\n\n`;
+    text += `EXPERIENCE\n`;
+    data.experience?.forEach(exp => {
+      text += `${exp.role} at ${exp.company} (${exp.duration})\n`;
+      exp.bullets?.forEach(b => text += `- ${b}\n`);
+      text += '\n';
+    });
+    const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `${title}.txt`);
+    dlAnchorElem.click();
+    setExportOpen(false);
+  };
+
+  // Template select
+  const handleTemplateSelect = (t) => {
+    setTemplateId(t.id);
+    if (t.templateData?.style) setStyleConfig(t.templateData.style);
+    if (t.templateData?.defaultSectionOrder) setSectionOrder(t.templateData.defaultSectionOrder);
+    markDirty();
+    toast.success("Template Applied", t.name);
+  };
+
+  // Render section editor by key
+  const renderEditor = (key) => {
+    switch (key) {
+      case "personal": return <PersonalEditor data={data.personal} onChange={v => updateSection("personal", v)} />;
+      case "summary": return <SummaryEditor data={data.summary} onChange={v => updateSection("summary", v)} />;
+      case "experience": return <ExperienceEditor data={data.experience} onChange={v => updateSection("experience", v)} onAIRewrite={handleAIRewrite} loadingAI={loadingAI} />;
+      case "education": return <EducationEditor data={data.education} onChange={v => updateSection("education", v)} />;
+      case "skills": return <SkillsEditor data={data.skills} onChange={v => updateSection("skills", v)} />;
+      case "projects": return <ProjectsEditor data={data.projects} onChange={v => updateSection("projects", v)} />;
+      case "certifications": return <CertificationsEditor data={data.certifications} onChange={v => updateSection("certifications", v)} />;
+      default: return <p className="text-xs text-gray-400 italic">Editor for &quot;{key}&quot; coming soon</p>;
+    }
+  };
+
+  // ==================== LIST MODE ====================
+  if (mode === "list") {
+    return (
+      <div className="min-h-screen p-8 max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-8 border-b-4 border-brutal-black pb-4">
+          <div>
+            <h1 className="text-4xl font-black uppercase tracking-tighter">Resume Studio</h1>
+            <p className="text-lg font-bold bg-brutal-yellow inline-block px-2 border-2 border-brutal-black mt-2">Build ATS-safe, beautiful resumes</p>
+          </div>
+          <Button onClick={() => setTemplateOpen(true)} variant="brutal" className="gap-2 bg-brutal-mint">
+            <Plus className="w-4 h-4" /> New Resume
           </Button>
         </div>
 
-        {/* Personal Details */}
-        <section className="mb-8 border-4 border-brutal-black bg-white p-4 shadow-[4px_4px_0_rgba(0,0,0,1)]">
-          <h2 className="text-2xl font-black bg-brutal-yellow inline-block px-2 mb-4 border-2 border-brutal-black">Personal</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <input className="border-2 border-brutal-black p-2 font-bold focus:bg-brutal-yellow/20 outline-none" value={data.personal.name} onChange={e => updatePersonal('name', e.target.value)} placeholder="Full Name" />
-            <input className="border-2 border-brutal-black p-2 font-bold focus:bg-brutal-yellow/20 outline-none" value={data.personal.email} onChange={e => updatePersonal('email', e.target.value)} placeholder="Email" />
-            <input className="border-2 border-brutal-black p-2 font-bold focus:bg-brutal-yellow/20 outline-none" value={data.personal.phone} onChange={e => updatePersonal('phone', e.target.value)} placeholder="Phone" />
-            <input className="border-2 border-brutal-black p-2 font-bold focus:bg-brutal-yellow/20 outline-none" value={data.personal.linkedin} onChange={e => updatePersonal('linkedin', e.target.value)} placeholder="LinkedIn URL" />
+        {listLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => <div key={i} className="h-40 bg-gray-100 border-4 border-brutal-black skeleton-shimmer" />)}
           </div>
-        </section>
-
-        {/* Summary */}
-        <section className="mb-8 border-4 border-brutal-black bg-white p-4 shadow-[4px_4px_0_rgba(0,0,0,1)]">
-          <div className="flex justify-between items-center mb-4">
-             <h2 className="text-2xl font-black bg-brutal-pink inline-block px-2 border-2 border-brutal-black">Summary</h2>
-             <Button variant="ghost" className="border-2 border-brutal-black bg-brutal-yellow hover:bg-yellow-300 font-bold gap-2 text-xs h-8 px-2">
-                <Sparkles className="w-3 h-3" /> AI Generate
-             </Button>
+        ) : resumes.length === 0 ? (
+          <div className="text-center py-20 border-4 border-dashed border-brutal-black">
+            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-black uppercase mb-2">No Resumes Yet</h2>
+            <p className="font-bold text-gray-500 mb-4">Pick a template to get started</p>
+            <Button onClick={() => setTemplateOpen(true)} variant="brutal" className="bg-brutal-yellow gap-2">
+              <Plus className="w-4 h-4" /> Create First Resume
+            </Button>
           </div>
-          <textarea 
-            className="w-full border-2 border-brutal-black p-2 font-bold focus:bg-brutal-pink/10 outline-none h-24 resize-none" 
-            value={data.summary} 
-            onChange={e => updateSummary(e.target.value)} 
-          />
-        </section>
-
-        {/* Experience */}
-        <section className="mb-8 border-4 border-brutal-black bg-white p-4 shadow-[4px_4px_0_rgba(0,0,0,1)]">
-          <div className="flex justify-between items-center mb-4">
-             <h2 className="text-2xl font-black bg-brutal-blue inline-block px-2 text-white border-2 border-brutal-black">Experience</h2>
-             <Button onClick={addExperience} variant="ghost" className="border-2 border-brutal-black font-bold h-8 px-2 text-xs hover:bg-slate-200">
-                <Plus className="w-3 h-3 mr-1" /> Add Role
-             </Button>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {resumes.map(r => (
+              <button key={r.id} onClick={() => openResume(r.id)}
+                className="text-left p-5 bg-white border-4 border-brutal-black shadow-brutal hover:shadow-brutal-sm transition-all group">
+                <h3 className="font-black text-lg truncate group-hover:text-brutal-blue">{r.title}</h3>
+                <p className="text-xs text-gray-500 mt-1">{r.template?.name || "No template"} · {r.template?.category || ""}</p>
+                <p className="text-[10px] text-gray-400 mt-2">Updated {formatDate(r.updatedAt)}</p>
+              </button>
+            ))}
           </div>
+        )}
 
-          {data.experience.map((exp, i) => (
-            <div key={exp.id} className={`p-4 border-2 border-brutal-black ${i > 0 ? 'mt-4' : ''} bg-slate-50 relative group`}>
-               <div className="grid grid-cols-2 gap-2 mb-4">
-                 <input className="border-2 border-brutal-black p-1 font-bold text-sm" value={exp.role} onChange={e => updateExperience(exp.id, 'role', e.target.value)} placeholder="Role (e.g. Software Engineer)" />
-                 <input className="border-2 border-brutal-black p-1 font-bold text-sm" value={exp.company} onChange={e => updateExperience(exp.id, 'company', e.target.value)} placeholder="Company" />
-                 <input className="border-2 border-brutal-black p-1 font-bold text-sm col-span-2" value={exp.duration} onChange={e => updateExperience(exp.id, 'duration', e.target.value)} placeholder="Duration (e.g. Jan 2020 - Present)" />
-               </div>
-               
-               <p className="font-black text-sm uppercase mb-2">Bullets</p>
-               {exp.bullets.map((bullet, bIndex) => (
-                 <div key={bIndex} className="mb-3">
-                   <div className="flex gap-2 mb-1">
-                     <textarea 
-                       className="flex-1 border-2 border-brutal-black p-2 font-medium text-sm min-h-[60px]" 
-                       value={bullet} 
-                       onChange={e => updateBullet(exp.id, bIndex, e.target.value)} 
-                     />
-                     <Button variant="ghost" onClick={() => removeBullet(exp.id, bIndex)} className="px-2 border-2 border-brutal-black hover:bg-red-500 hover:text-white shrink-0">
-                       <Trash2 className="w-4 h-4" />
-                     </Button>
-                   </div>
-                   <div className="flex gap-2">
-                     <Button 
-                       variant="ghost" 
-                       disabled={loadingAI === `${exp.id}-${bIndex}`}
-                       onClick={() => handleAIRewrite(exp.id, bIndex, bullet, 'enhance')} 
-                       className="h-6 px-2 text-[10px] font-bold border-2 border-brutal-black bg-brutal-yellow hover:bg-yellow-300"
-                     >
-                        <Sparkles className="w-3 h-3 mr-1" /> Enhance
-                     </Button>
-                     <Button 
-                       variant="ghost" 
-                       disabled={loadingAI === `${exp.id}-${bIndex}`}
-                       onClick={() => handleAIRewrite(exp.id, bIndex, bullet, 'quantify')} 
-                       className="h-6 px-2 text-[10px] font-bold border-2 border-brutal-black bg-brutal-mint hover:bg-green-300"
-                     >
-                        <Sparkles className="w-3 h-3 mr-1" /> Quantify Impact
-                     </Button>
-                   </div>
-                 </div>
-               ))}
-               <Button onClick={() => addBullet(exp.id)} variant="ghost" className="w-full mt-2 border-dashed border-2 border-brutal-black h-8 text-xs font-bold hover:bg-slate-200">
-                 + Add Bullet
-               </Button>
+        <TemplateSelector isOpen={templateOpen} onClose={() => setTemplateOpen(false)} onSelect={createNew} />
+      </div>
+    );
+  }
+
+  // ==================== EDITOR MODE ====================
+  return (
+    <div className="min-h-[calc(100vh-80px)] bg-brutal-bg flex flex-col xl:flex-row">
+      {/* LEFT: Editor */}
+      <div className="w-full xl:w-1/2 p-4 md:p-6 overflow-y-auto border-r-0 xl:border-r-4 border-brutal-black xl:h-[calc(100vh-80px)] pb-12">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-3 mb-6 border-b-4 border-brutal-black pb-4">
+          <div className="flex items-center gap-3">
+            <button onClick={() => { if (dirty.current) save(); setMode("list"); fetchList(); }} className="p-1.5 border-2 border-brutal-black hover:bg-gray-100">
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <input className="text-2xl font-black uppercase tracking-tighter bg-transparent outline-none border-b-2 border-transparent focus:border-brutal-black"
+              value={title} onChange={e => { setTitle(e.target.value); markDirty(); }} />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="ghost" onClick={() => setRevertDialogOpen(true)} className="gap-1 border-2 border-brutal-black font-bold text-xs h-8 px-2" title="Revert to last saved">
+              <RotateCcw className="w-3 h-3" /> Revert
+            </Button>
+            <Button variant="ghost" onClick={() => setTemplateOpen(true)} className="gap-1 border-2 border-brutal-black font-bold text-xs h-8 px-2">
+              <LayoutTemplate className="w-3 h-3" /> Template
+            </Button>
+            
+            <div className="relative" ref={exportMenuRef}>
+              <Button variant="ghost" onClick={() => setExportOpen(!exportOpen)} className="gap-1 border-2 border-brutal-black font-bold text-xs h-8 px-2">
+                <Download className="w-3 h-3" /> Export
+              </Button>
+              {exportOpen && (
+                <div className="absolute right-0 mt-1 w-32 bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] z-50">
+                  <button onClick={exportPDF} className="w-full text-left px-3 py-2 text-xs font-bold hover:bg-brutal-yellow border-b-2 border-brutal-black">Export PDF</button>
+                  <button onClick={exportJSON} className="w-full text-left px-3 py-2 text-xs font-bold hover:bg-brutal-pink border-b-2 border-brutal-black">Export JSON</button>
+                  <button onClick={exportTXT} className="w-full text-left px-3 py-2 text-xs font-bold hover:bg-brutal-mint">Export TXT</button>
+                </div>
+              )}
             </div>
-          ))}
-        </section>
 
+            <Button variant="brutal" onClick={save} disabled={saving} className="gap-1 text-xs h-8 px-3">
+              <Save className="w-3 h-3" /> {saving ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </div>
+
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={sectionOrder} strategy={verticalListSortingStrategy}>
+            {sectionOrder.map(key => (
+              <SortableSectionWrapper key={key} id={key} sectionKey={key}>
+                {renderEditor(key)}
+              </SortableSectionWrapper>
+            ))}
+          </SortableContext>
+        </DndContext>
       </div>
 
-      {/* RIGHT PANE: Live Preview */}
-      <div className="w-full md:w-1/2 bg-slate-200 p-8 flex justify-center overflow-y-auto h-screen pb-24">
-         <div className="w-full max-w-[210mm] bg-white shadow-2xl p-[20mm] transform scale-[0.8] md:scale-100 origin-top font-serif text-gray-800 border border-gray-300 min-h-[297mm]">
-            {/* Live Preview Render */}
-            <div className="text-center mb-6 border-b-2 border-gray-800 pb-4">
-              <h1 className="text-3xl font-bold text-gray-900 uppercase tracking-widest">{data.personal.name || 'Your Name'}</h1>
-              <div className="text-sm mt-2 flex justify-center gap-4 text-gray-600">
-                <span>{data.personal.email}</span>
-                <span>•</span>
-                <span>{data.personal.phone}</span>
-                <span>•</span>
-                <span>{data.personal.linkedin}</span>
-              </div>
-            </div>
+      {/* RIGHT: Preview */}
+      <div className="w-full xl:w-1/2 bg-slate-200 p-8 flex flex-col items-center overflow-y-auto xl:h-[calc(100vh-80px)] pb-12 relative">
+        <ATSScoreIndicator data={data} className="w-full max-w-[210mm] mb-4" />
+        
+        {/* Zoom Controls */}
+        <div className="sticky top-4 z-10 flex gap-2 mb-4 bg-white border-2 border-brutal-black p-1 shadow-brutal-sm rounded-none">
+          <button onClick={() => setZoom(z => Math.max(0.5, z - 0.1))} className="w-8 h-8 flex items-center justify-center font-bold border-2 border-transparent hover:border-brutal-black">-</button>
+          <span className="w-12 flex items-center justify-center font-bold text-sm">{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom(z => Math.min(1.5, z + 0.1))} className="w-8 h-8 flex items-center justify-center font-bold border-2 border-transparent hover:border-brutal-black">+</button>
+        </div>
 
-            <div className="mb-6">
-               <h2 className="text-lg font-bold uppercase border-b border-gray-400 mb-2">Professional Summary</h2>
-               <p className="text-sm leading-relaxed">{data.summary}</p>
-            </div>
-
-            <div className="mb-6">
-               <h2 className="text-lg font-bold uppercase border-b border-gray-400 mb-3">Experience</h2>
-               {data.experience.map((exp, i) => (
-                 <div key={i} className="mb-4">
-                   <div className="flex justify-between items-baseline mb-1">
-                     <h3 className="font-bold text-md text-gray-900">{exp.role} <span className="font-normal italic">at {exp.company}</span></h3>
-                     <span className="text-sm text-gray-600 font-medium">{exp.duration}</span>
-                   </div>
-                   <ul className="list-disc pl-5 text-sm space-y-1">
-                     {exp.bullets.filter(b => b.trim() !== '').map((bullet, bi) => (
-                       <li key={bi}>{bullet}</li>
-                     ))}
-                   </ul>
-                 </div>
-               ))}
-            </div>
-
-            <div className="mb-6">
-               <h2 className="text-lg font-bold uppercase border-b border-gray-400 mb-3">Skills</h2>
-               <p className="text-sm leading-relaxed">{data.skills.join(' • ')}</p>
-            </div>
-         </div>
+        <div className="origin-top transition-transform" style={{ transform: `scale(${zoom})` }}>
+          <ResumePreview data={data} sectionOrder={sectionOrder} styleConfig={styleConfig} />
+        </div>
       </div>
+
+      <TemplateSelector isOpen={templateOpen} onClose={() => setTemplateOpen(false)} onSelect={handleTemplateSelect} currentTemplateId={templateId} />
+      
+      <ConfirmDialog 
+        isOpen={revertDialogOpen}
+        onClose={() => setRevertDialogOpen(false)}
+        onConfirm={revertChanges}
+        title="Revert Changes"
+        description="Are you sure you want to revert to the last saved version? All unsaved changes will be lost."
+      />
     </div>
   );
 }

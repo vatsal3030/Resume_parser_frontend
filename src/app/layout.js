@@ -1,31 +1,45 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
+import { CopilotProvider } from "@/context/CopilotContext";
+import { CopilotPanel } from "@/components/ui/CopilotPanel";
+import { QueryProvider } from "@/providers/QueryProvider";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+import { Inter, Space_Grotesk } from "next/font/google";
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space",
   subsets: ["latin"],
 });
 
 export const metadata = {
-  title: "AI Resume Evaluator",
-  description: "Next-gen Resume Parser and AI Matcher",
+  title: "Elevara — AI Career Operating System",
+  description: "Your AI-powered career platform: resume analysis, tailoring, cover letters, interview prep, and more.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${spaceGrotesk.variable} antialiased font-sans`}
+        suppressHydrationWarning
       >
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <CopilotProvider>
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
+              <CopilotPanel />
+            </CopilotProvider>
+          </ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );

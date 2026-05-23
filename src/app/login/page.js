@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, PasswordInput } from '@/components/ui/input';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -20,7 +20,7 @@ function LoginForm() {
   // Check for redirect messages (e.g. from register page)
   useEffect(() => {
     const msg = searchParams.get('message');
-    if (msg) setSuccess(decodeURIComponent(msg));
+    if (msg) setTimeout(() => setSuccess(decodeURIComponent(msg)), 0);
   }, [searchParams]);
 
   // Redirect if already logged in
@@ -112,7 +112,7 @@ function LoginForm() {
           </div>
           <div className="space-y-1">
             <label className="block text-sm font-black">Password</label>
-            <Input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
+            <PasswordInput required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" />
           </div>
           <Button type="submit" variant="default" className="w-full text-lg mt-4" disabled={loading}>
             {loading ? 'Signing in...' : 'Login with Email'}
@@ -120,7 +120,7 @@ function LoginForm() {
         </form>
 
         <p className="text-center font-bold pb-2 pt-4">
-          Don't have an account? <Link href="/register" className="bg-brutal-mint px-2 py-1 border-2 border-brutal-black hover:bg-brutal-yellow transition-colors shadow-[2px_2px_0px_#000]">Register</Link>
+          Don&apos;t have an account? <Link href="/register" className="bg-brutal-mint px-2 py-1 border-2 border-brutal-black hover:bg-brutal-yellow transition-colors shadow-[2px_2px_0px_#000]">Register</Link>
         </p>
       </CardContent>
     </Card>
@@ -129,7 +129,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-[calc(100vh-80px)] items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Suspense fallback={
           <div className="w-16 h-16 bg-brutal-pink border-4 border-brutal-black shadow-brutal animate-bounce mx-auto mt-40"></div>

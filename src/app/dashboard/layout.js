@@ -1,12 +1,9 @@
-import CopilotSidebar from '@/components/CopilotSidebar';
+import { ClientLayout } from "@/components/layout/ClientLayout";
 
 export default function DashboardLayout({ children }) {
   return (
-    <>
-      <div className="min-h-screen">
-        {children}
-      </div>
-      <CopilotSidebar />
-    </>
+    <ClientLayout>
+      {children}
+    </ClientLayout>
   );
 }

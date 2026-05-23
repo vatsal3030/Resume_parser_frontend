@@ -2,48 +2,154 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), sans-serif;
+  --font-mono: var(--font-space), monospace;
   
-  --color-brutal-bg: #EAE6DF;
-  --color-brutal-yellow: #FFB800;
-  --color-brutal-pink: #FF90E8;
-  --color-brutal-mint: #90FFD9;
-  --color-brutal-blue: #90E0FF;
-  --color-brutal-green: #4ADE80;
-  --color-brutal-black: #1A1A1A;
-  --color-brutal-white: #FFFFFF;
-  --color-brutal-border: #1A1A1A;
+  --color-brutal-bg: var(--bg-color);
+  --color-brutal-yellow: var(--yellow-color);
+  --color-brutal-pink: var(--pink-color);
+  --color-brutal-mint: var(--mint-color);
+  --color-brutal-blue: var(--blue-color);
+  --color-brutal-green: var(--green-color);
+  --color-brutal-black: var(--black-color);
+  --color-brutal-white: var(--white-color);
+  --color-brutal-border: var(--border-color);
   
   --animate-toast-enter: toast-enter 0.3s ease-out forwards;
   --animate-toast-exit: toast-exit 0.3s ease-in forwards;
+  --animate-fade-in: fadeIn 0.3s ease forwards;
+  --animate-slide-up: slideUp 0.3s ease forwards;
+  --animate-scale-in: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  --animate-shimmer: shimmer 1.5s infinite;
 }
 
+/* ============================================================
+   DESIGN SYSTEM TOKENS
+   ============================================================ */
+
+:root {
+  /* Colors */
+  --bg-color: #EAE6DF;
+  --yellow-color: #FFB800;
+  --pink-color: #FF90E8;
+  --mint-color: #90FFD9;
+  --blue-color: #90E0FF;
+  --green-color: #4ADE80;
+  --black-color: #1A1A1A;
+  --white-color: #FFFFFF;
+  --border-color: #1A1A1A;
+  
+  --background: var(--bg-color);
+  --foreground: var(--black-color);
+
+  /* Spacing Scale (8px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Page Layout Constants */
+  --page-padding-x: var(--space-8);
+  --page-padding-x-mobile: var(--space-4);
+  --page-max-width: 1280px;
+  --section-gap: var(--space-12);
+  --card-gap: var(--space-6);
+
+  /* Typography Scale */
+  --text-display: 3rem;
+  --text-h1: 2rem;
+  --text-h2: 1.5rem;
+  --text-h3: 1.25rem;
+  --text-body: 1rem;
+  --text-sm: 0.875rem;
+  --text-xs: 0.75rem;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================
+   SHADOW UTILITIES
+   ============================================================ */
+
 @utility shadow-brutal {
-  box-shadow: 4px 4px 0px 0px var(--color-brutal-black);
+  box-shadow: 4px 4px 0px 0px var(--color-brutal-border);
 }
 
 @utility shadow-brutal-sm {
-  box-shadow: 2px 2px 0px 0px var(--color-brutal-black);
+  box-shadow: 2px 2px 0px 0px var(--color-brutal-border);
 }
 
 @utility shadow-brutal-lg {
-  box-shadow: 8px 8px 0px 0px var(--color-brutal-black);
+  box-shadow: 8px 8px 0px 0px var(--color-brutal-border);
 }
 
-:root {
-  --background: var(--color-brutal-bg);
-  --foreground: var(--color-brutal-black);
+/* ============================================================
+   ANIMATION KEYFRAMES
+   ============================================================ */
+
+@keyframes toast-enter {
+  0% { transform: translateX(100%) scale(0.95); opacity: 0; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
 }
+
+@keyframes toast-exit {
+  0% { transform: translateX(0) scale(1); opacity: 1; }
+  100% { transform: translateX(110%) scale(0.95); opacity: 0; }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: var(--black-color); }
+  50% { border-color: var(--yellow-color); }
+}
+
+/* ============================================================
+   BODY & GLOBAL STYLES
+   ============================================================ */
 
 body {
   color: var(--foreground);
   background: var(--background);
-  background-image: radial-gradient(var(--color-brutal-black) 1px, transparent 0);
+  background-image: radial-gradient(var(--border-color) 1px, transparent 0);
   background-size: 24px 24px;
   background-position: -19px -19px;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   letter-spacing: -0.02em;
+}
+
+/* Apply brutalist font to headers and loud elements */
+h1, h2, h3, h4, h5, h6, .font-black, .uppercase {
+  font-family: var(--font-mono);
 }
 
 /* Ensure smooth text rendering */
@@ -52,25 +158,134 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Toast animations */
-@keyframes toast-enter {
-  0% {
-    transform: translateX(100%) scale(0.95);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-@keyframes toast-exit {
-  0% {
-    transform: translateX(0) scale(1);
-    opacity: 1;
+/* ============================================================
+   FOCUS STYLES (Accessibility)
+   ============================================================ */
+
+/* Only apply bold outline to buttons, links, and nav elements */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--yellow-color);
+  outline-offset: 2px;
+}
+
+/* Text inputs get a subtle, on-brand focus ring */
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--black-color);
+  outline-offset: 0px;
+}
+
+/* ============================================================
+   SCROLLBAR (Brutalist)
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+  border-left: 4px solid var(--black-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--yellow-color);
+  border: 4px solid var(--black-color);
+  border-right: none;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--pink-color);
+}
+
+/* ============================================================
+   SKELETON SHIMMER OVERRIDE
+   ============================================================ */
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #e0e0e0 25%,
+    #f0f0f0 50%,
+    #e0e0e0 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* ============================================================
+   PRINT STYLES (Neo-Brutalist Preservation)
+   ============================================================ */
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    background-image: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  100% {
-    transform: translateX(110%) scale(0.95);
-    opacity: 0;
+
+  /* Force brutalist borders and elements to show in print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Preserve shadow effects by converting them to double borders or using real shadows if supported */
+  .shadow-brutal, [class*="shadow-[4px_4px_0"] {
+    box-shadow: 4px 4px 0px 0px #000000 !important;
+    border: 4px solid #000000 !important;
+  }
+
+  .shadow-brutal-sm, [class*="shadow-[2px_2px_0"] {
+    box-shadow: 2px 2px 0px 0px #000000 !important;
+    border: 2px solid #000000 !important;
+  }
+
+  .shadow-brutal-lg, [class*="shadow-[8px_8px_0"] {
+    box-shadow: 8px 8px 0px 0px #000000 !important;
+    border: 4px solid #000000 !important;
+  }
+
+  /* Force backgrounds for specific brutal color badges/cards */
+  .bg-brutal-yellow { background-color: #FFB800 !important; }
+  .bg-brutal-pink { background-color: #FF90E8 !important; }
+  .bg-brutal-mint { background-color: #90FFD9 !important; }
+  .bg-brutal-blue { background-color: #90E0FF !important; }
+  .bg-brutal-green { background-color: #4ADE80 !important; }
+  .bg-brutal-bg { background-color: #EAE6DF !important; }
+  
+  /* Avoid page breaks inside cards or elements */
+  .card, .border-4, [id="recommended-doc-preview"] {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Ensure text remains highly legible */
+  h1, h2, h3, h4, h5, h6, p, li, span, a {
+    color: #000000 !important;
+  }
+
+  /* Hide print-unfriendly items like buttons, dropdowns, navigation etc. */
+  .no-print, button, .btn, nav, header:not(.print-header), footer:not(.print-footer) {
+    display: none !important;
   }
 }

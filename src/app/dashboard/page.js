@@ -1,16 +1,26 @@
 "use client";
 import { useEffect, useState } from 'react';
 import api from '@/lib/api';
+import { formatDate } from "@/lib/formatDate";
 import Link from 'next/link';
-import { FileText, ArrowRight, LogOut, CheckSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
+import { FileText, ArrowRight, Activity, TrendingUp, Coins, FileCheck, ClipboardCheck, MessageSquare, Map, LayoutTemplate, Code, Users, Briefcase, FileEdit } from 'lucide-react';
+
+// New Shared Components
+import { PageHeader, SectionHeader } from '@/components/ui/Headers';
+import { DashboardCard, ToolCard } from '@/components/ui/BrutalCards';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { SkeletonCard } from '@/components/ui/SkeletonState';
+import { RecentActivityFeed, ContinueWorkflowCard } from '@/components/ui/RecentActivityFeed';
+import { CreditUsageChart, ToolUsageChart } from '@/components/ui/DashboardCharts';
 
 export default function Dashboard() {
   const [resumes, setResumes] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const toast = useToast();
@@ -18,8 +28,12 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchResumes = async () => {
       try {
-        const { data } = await api.get('/resumes');
-        setResumes(data);
+        const [resumesRes, profileRes] = await Promise.all([
+          api.get('/resumes'),
+          api.get('/users/me').catch(() => ({ data: null }))
+        ]);
+        setResumes(resumesRes.data);
+        if (profileRes.data?.profile) setProfile(profileRes.data.profile);
       } catch (error) {
         console.error("Error fetching resumes:", error.response?.data || error.message);
         if (error.response?.status === 401) {
@@ -32,186 +46,160 @@ export default function Dashboard() {
       }
     };
     fetchResumes();
-  }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success('Logged Out', 'You have been logged out successfully.');
-    router.push('/login');
-  };
+  }, [router, toast]);
 
   return (
-    <div className="min-h-screen p-8 max-w-6xl mx-auto">
-      <div className="flex justify-between items-center mb-10 border-b-4 border-brutal-black pb-6">
-        <div>
-          <h1 className="text-4xl font-black rounded-none">Your Dashboard</h1>
-          <p className="text-xl font-bold mt-2 bg-brutal-yellow inline-block px-2 border-2 border-brutal-black">Manage AI analyzed resumes.</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Link href="/dashboard/studio">
-             <Button variant="brutal" className="text-lg bg-brutal-blue text-white">+ Resume Studio</Button>
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-12">
+      
+      {/* 1. Header Area */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+        <PageHeader 
+          title="Overview" 
+          subtitle="Welcome back. Here is your career progress." 
+          className="mb-0 border-b-0" 
+        />
+        <div className="flex gap-4 w-full md:w-auto border-b-4 border-brutal-black pb-2 md:border-b-0 md:pb-0">
+          <Link href="/dashboard/studio" className="w-full sm:w-auto">
+             <Button variant="brutal" className="w-full text-lg bg-brutal-blue text-black shadow-brutal-sm">+ Resume Studio</Button>
           </Link>
-          <Link href="/">
-             <Button variant="mint" className="text-lg">+ New Analysis</Button>
+          <Link href="/dashboard/analyze" className="w-full sm:w-auto">
+             <Button variant="mint" className="w-full text-lg shadow-brutal-sm">+ New Analysis</Button>
           </Link>
-          <Button variant="white" onClick={handleLogout} className="px-4">
-            <LogOut className="w-5 h-5 font-black" />
-          </Button>
         </div>
       </div>
 
-      {/* CAREER TOOLS SECTION */}
-      <div className="mb-12">
-        <h2 className="text-3xl font-black mb-6 uppercase">Career Tools</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column: Metrics & Resumes */}
+        <div className="lg:col-span-2 space-y-12">
+          {/* 2. Alive Dashboard Metrics */}
+          <section>
+            <SectionHeader title="Activity" icon={Activity} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <DashboardCard 
+                title="Analyzed" 
+                value={loading ? '--' : resumes.length} 
+                subtext="Total resumes" 
+                icon={FileCheck} 
+                bgColor="bg-brutal-mint" 
+              />
+              <DashboardCard 
+                title="Avg ATS" 
+                value={loading ? '--' : (resumes.length > 0 ? Math.round(resumes.reduce((acc, r) => acc + (r.atsScore || 0), 0) / (resumes.filter(r => r.atsScore).length || 1)) : 0)} 
+                subtext="Across all uploads" 
+                icon={TrendingUp} 
+                bgColor="bg-brutal-yellow" 
+              />
+              <DashboardCard 
+                title="Applications" 
+                value="0" 
+                subtext="Pending integration" 
+                icon={Briefcase} 
+                bgColor="bg-brutal-pink" 
+              />
+              <DashboardCard 
+                title="Credits" 
+                value={loading ? '--' : (profile?.creditBalance || 0)} 
+                subtext={profile?.tier === 'PRO' ? "Pro Plan Active" : "Free Plan"} 
+                icon={Coins} 
+                bgColor="bg-brutal-blue" 
+                textColor="text-white" 
+              />
+            </div>
+          </section>
+
+          {/* Analytics Visualization */}
+          <section>
+            <SectionHeader title="Analytics" icon={TrendingUp} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <CreditUsageChart />
+              <ToolUsageChart />
+            </div>
+          </section>
+
+          {/* 3. Analyzed Resumes Feed */}
+          <section>
+            <SectionHeader title="Recent Resumes" icon={FileText} />
+            
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <SkeletonCard />
+                 <SkeletonCard />
+              </div>
+            ) : resumes.length === 0 ? (
+              <EmptyState 
+                title="No resumes analyzed yet"
+                description="Upload your first resume to get detailed AI feedback."
+                actionLabel="Upload Resume"
+                actionHref="/"
+              />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {resumes.slice(0, 4).map(r => (
+                  <Card key={r.id} className="group bg-white hover:bg-slate-50 transition-colors border-4 border-brutal-black shadow-[4px_4px_0_#000]">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="flex items-center space-x-3">
+                          <div className="p-3 bg-brutal-blue border-3 border-brutal-black shadow-brutal-sm group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
+                            <FileText className="w-8 h-8 text-brutal-black" />
+                          </div>
+                          <div className="pl-2">
+                             <h3 className="font-black text-xl truncate w-32 md:w-40" title={r.title}>{r.title || 'Untitled Resume'}</h3>
+                             <p className="text-sm font-bold opacity-80">{formatDate(r.createdAt)}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 mb-6">
+                        <div className="bg-brutal-bg border-3 border-brutal-black p-4 text-center">
+                          <p className="text-xs font-black uppercase tracking-wider mb-1">ATS Score</p>
+                          <span className="text-4xl font-black">{r.atsScore}</span>
+                        </div>
+                        <div className="bg-brutal-yellow border-3 border-brutal-black p-4 text-center">
+                          <p className="text-xs font-black uppercase tracking-wider mb-1">Job Fit</p>
+                          <span className="text-4xl font-black">{r.jobFitScore}</span>
+                        </div>
+                      </div>
+
+                      <Link href={`/dashboard/analyze?outputId=${r.id}`} className="block w-full">
+                        <Button variant="white" className="w-full text-lg justify-between border-3 bg-slate-100">
+                          View Details
+                          <ArrowRight className="w-5 h-5 transition group-hover:translate-x-2" />
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Right Column: Live Feed & Context */}
+        <div className="space-y-8">
+          <ContinueWorkflowCard />
+          <RecentActivityFeed />
+        </div>
+
+      </div>
+
+      {/* 4. Tools Grid */}
+      <section>
+        <SectionHeader title="Core Tools" icon={LayoutTemplate} />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <Link href="/dashboard/studio" className="block">
-             <Card className="bg-brutal-blue text-white border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">Resume Studio</h3>
-                  <p className="font-bold text-sm opacity-90">Build & edit with live AI assistance.</p>
-               </CardContent>
-             </Card>
-          </Link>
-          <Link href="/dashboard/tools/tailor" className="block">
-             <Card className="bg-brutal-yellow text-black border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">AI Tailor</h3>
-                  <p className="font-bold text-sm opacity-90">Match your resume to a Job Description.</p>
-               </CardContent>
-             </Card>
-          </Link>
-          <Link href="/dashboard/tools/cover-letter" className="block">
-             <Card className="bg-brutal-pink text-black border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">Cover Letter</h3>
-                  <p className="font-bold text-sm opacity-90">Auto-generate a highly targeted letter.</p>
-               </CardContent>
-             </Card>
-          </Link>
-          <Link href="/dashboard/tools/mock-interview" className="block">
-             <Card className="bg-brutal-green text-black border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">Mock Interview</h3>
-                  <p className="font-bold text-sm opacity-90">Practice hard questions based on your CV.</p>
-               </CardContent>
-             </Card>
-          </Link>
-          
-          <Link href="/dashboard/tools/roadmap" className="block">
-             <Card className="bg-white text-black border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">Skill Roadmap</h3>
-                  <p className="font-bold text-sm opacity-90">AI generated path to your next role.</p>
-               </CardContent>
-             </Card>
-          </Link>
-
-          <Link href="/dashboard/tools/portfolio" className="block">
-             <Card className="bg-white text-black border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">Portfolio Gen</h3>
-                  <p className="font-bold text-sm opacity-90">Wireframe a site from your resume.</p>
-               </CardContent>
-             </Card>
-          </Link>
-
-          <Link href="/dashboard/tools/github" className="block">
-             <Card className="bg-black text-white border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">GitHub Analyst</h3>
-                  <p className="font-bold text-sm opacity-90">Extract your developer archetype.</p>
-               </CardContent>
-             </Card>
-          </Link>
-
-          <Link href="/dashboard/tracker" className="block">
-             <Card className="bg-brutal-bg text-black border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">Job Tracker</h3>
-                  <p className="font-bold text-sm opacity-90">Kanban board for applications.</p>
-               </CardContent>
-             </Card>
-          </Link>
-
-          <Link href="/dashboard/community" className="block">
-             <Card className="bg-brutal-yellow text-black border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">Community</h3>
-                  <p className="font-bold text-sm opacity-90">Peer review and resume roasting.</p>
-               </CardContent>
-             </Card>
-          </Link>
-
-          <Link href="/recruiter/dashboard" className="block">
-             <Card className="bg-brutal-blue text-white border-4 border-brutal-black hover:-translate-y-2 hover:shadow-[8px_8px_0_rgba(0,0,0,1)] transition-all cursor-pointer h-full">
-               <CardContent className="p-6">
-                  <h3 className="text-2xl font-black mb-2">Recruiters</h3>
-                  <p className="font-bold text-sm opacity-90">Post jobs & find AI-ranked talent.</p>
-               </CardContent>
-             </Card>
-          </Link>
+          <ToolCard title="Resume Studio" description="Build & edit with live AI assistance." href="/dashboard/studio" bgColor="bg-brutal-blue" textColor="text-white" icon={FileEdit} />
+          <ToolCard title="DSA Tracker" description="Track coding stats across platforms." href="/dashboard/tools/dsa-tracker" bgColor="bg-brutal-mint" icon={TrendingUp} />
+          <ToolCard title="GitHub Analyst" description="Extract your developer archetype." href="/dashboard/tools/github" bgColor="bg-black" textColor="text-white" icon={Code} />
+          <ToolCard title="Portfolio Gen" description="Wireframe a site from your resume." href="/dashboard/tools/portfolio" bgColor="bg-brutal-bg" icon={LayoutTemplate} />
+          <ToolCard title="AI Tailor" description="Match your resume to a Job Description." href="/dashboard/tools/tailor" bgColor="bg-brutal-yellow" icon={ClipboardCheck} />
+          <ToolCard title="Job Tracker" description="Kanban board for applications." href="/dashboard/tracker" bgColor="bg-brutal-blue" icon={Briefcase} />
+          <ToolCard title="Cover Letter" description="Auto-generate a highly targeted letter." href="/dashboard/tools/cover-letter" bgColor="bg-brutal-pink" icon={FileText} />
+          <ToolCard title="Mock Interview" description="Practice hard questions based on your CV." href="/dashboard/tools/mock-interview" bgColor="bg-brutal-green" icon={MessageSquare} />
+          <ToolCard title="Skill Roadmap" description="AI generated path to your next role." href="/dashboard/tools/roadmap" icon={Map} />
+          <ToolCard title="Community" description="Peer review and resume roasting." href="/dashboard/community" bgColor="bg-brutal-yellow" icon={Users} />
         </div>
-      </div>
+      </section>
 
-      <h2 className="text-3xl font-black mb-6 uppercase border-t-4 border-brutal-black pt-8">Analyzed Resumes</h2>
-
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-           {/* Brutalist Loader */}
-           <div className="w-16 h-16 bg-brutal-blue border-4 border-brutal-black shadow-brutal animate-bounce"></div>
-        </div>
-      ) : resumes.length === 0 ? (
-        <Card className="max-w-2xl mx-auto text-center py-20 bg-brutal-white">
-          <CardContent>
-             <FileText className="w-24 h-24 text-brutal-black mx-auto mb-6 drop-shadow-[4px_4px_0_rgba(0,0,0,1)]" />
-             <h2 className="text-3xl font-black mb-4">No resumes analyzed yet</h2>
-             <p className="text-lg font-bold max-w-md mx-auto bg-brutal-pink px-2 py-1 border-2 border-brutal-black shadow-brutal-sm">Upload your first resume to get detailed AI feedback.</p>
-             <Link href="/" className="mt-8 inline-block">
-                <Button variant="default" className="text-xl px-10 py-6">Upload Resume</Button>
-             </Link>
-          </CardContent>
-        </Card>
-
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {resumes.map(r => (
-            <Card key={r.id} className="group bg-white hover:bg-slate-50 transition-colors">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-3 bg-brutal-blue border-3 border-brutal-black shadow-brutal-sm group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
-                      <FileText className="w-8 h-8 text-brutal-black" />
-                    </div>
-                    <div className="pl-2">
-                       {/* BUG FIX: Backend returns `title`, not `candidateName` or `originalName` */}
-                       <h3 className="font-black text-xl truncate w-40" title={r.title}>{r.title || 'Untitled Resume'}</h3>
-                       <p className="text-sm font-bold opacity-80">{new Date(r.createdAt).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-brutal-bg border-3 border-brutal-black p-4 text-center">
-                    <p className="text-xs font-black uppercase tracking-wider mb-1">ATS Score</p>
-                    <span className="text-4xl font-black">{r.atsScore}</span>
-                  </div>
-                  <div className="bg-brutal-yellow border-3 border-brutal-black p-4 text-center">
-                    <p className="text-xs font-black uppercase tracking-wider mb-1">Job Fit</p>
-                    <span className="text-4xl font-black">{r.jobFitScore}</span>
-                  </div>
-                </div>
-
-                <Link href={`/results/${r.id}`} className="block w-full">
-                  <Button variant="white" className="w-full text-lg justify-between border-3 bg-slate-100">
-                    View Details
-                    <ArrowRight className="w-5 h-5 transition group-hover:translate-x-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

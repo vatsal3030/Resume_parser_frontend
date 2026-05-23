@@ -150,7 +150,7 @@ export default function RecruiterDashboard() {
                       onChange={e => setJobDesc(e.target.value)}
                       className="w-full p-2 border-2 border-brutal-black text-sm" 
                     />
-                    <Button type="submit" variant="brutal" size="sm" className="w-full bg-brutal-blue text-white">Post Job</Button>
+                    <Button type="submit" variant="brutal" size="sm" className="w-full bg-brutal-blue text-black">Post Job</Button>
                   </form>
                 ) : (
                   <Button 

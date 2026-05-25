@@ -74,6 +74,7 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
 
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
+  const [loadingId, setLoadingId] = useState(null);
 
   const handlePin = async (e, id, currentPinned) => {
     e.stopPropagation();
@@ -125,38 +126,33 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
   };
 
   const handleSelect = async (item) => {
-    if (editingId === item.id) return;
+    if (editingId === item.id || loadingId) return;
+    setLoadingId(item.id);
     try {
       const res = await api.get(`/history/${item.id}`);
       onSelect?.(res.data);
     } catch (err) {
       console.error("History detail fetch error:", err);
+    } finally {
+      setLoadingId(null);
     }
   };
 
   const formatDate = (dateStr) => globalFormatDate(dateStr, { showTime: true });
 
   if (!isOpen) {
-    return (
-      <button
-        onClick={onToggle}
-        className="fixed left-0 top-1/2 -translate-y-1/2 z-30 bg-brutal-yellow border-4 border-l-0 border-brutal-black p-2 hover:bg-yellow-400 transition-colors"
-        aria-label="Open history panel"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
-    );
+    return null;
   }
 
   return (
     <aside
-      className={`w-72 border-r-4 border-brutal-black bg-white flex flex-col h-full ${className}`}
+      className={`w-full md:w-64 border-r-4 border-brutal-black bg-brutal-bg flex flex-col h-full ${className}`}
       role="complementary"
       aria-label="History panel"
     >
       {/* Header */}
-      <div className="bg-brutal-yellow px-4 py-3 border-b-4 border-brutal-black flex items-center justify-between">
-        <h2 className="font-black text-sm uppercase tracking-tight flex items-center gap-2">
+      <div className="bg-brutal-yellow px-4 py-4 border-b-4 border-brutal-black flex items-center justify-between">
+        <h2 className="font-black text-lg uppercase tracking-tight flex items-center gap-2">
           <Clock className="w-4 h-4" />
           History
         </h2>
@@ -168,21 +164,21 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
       </div>
 
       {/* Search & Clear All */}
-      <div className="p-3 border-b-2 border-brutal-black flex flex-col gap-2 bg-slate-50">
-        <div className="flex items-center gap-2 border-3 border-brutal-black px-2 bg-white">
-          <Search className="w-4 h-4 text-gray-400" />
+      <div className="p-4 border-b-4 border-brutal-black flex flex-col gap-3 bg-brutal-yellow/20">
+        <div className="flex items-center gap-2 border-2 border-brutal-black px-2 bg-white shadow-[2px_2px_0_#000] focus-within:shadow-[4px_4px_0_#000] focus-within:-translate-y-0.5 transition-all">
+          <Search className="w-4 h-4 text-brutal-black" />
           <input
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search history..."
-            className="w-full py-2 text-xs font-bold focus:outline-none bg-transparent"
+            className="w-full py-2 text-sm font-bold text-brutal-black focus:outline-none bg-transparent placeholder:text-gray-400"
           />
         </div>
         {items.length > 0 && (
           <button
             onClick={handleClearAll}
-            className="w-full py-1.5 border-2 border-brutal-black bg-red-100 hover:bg-red-200 text-[10px] font-black uppercase tracking-wider transition-all shadow-[2px_2px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+            className="w-full py-2 border-2 border-brutal-black bg-brutal-pink hover:bg-pink-400 text-xs font-black uppercase tracking-wider transition-all shadow-[2px_2px_0_#000] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
             🗑️ Delete All
           </button>
@@ -203,15 +199,15 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
             <p className="text-xs text-gray-400 mt-1">Run an AI tool to see results here</p>
           </div>
         ) : (
-          <ul className="divide-y-2 divide-brutal-black">
+          <ul className="divide-y-2 divide-brutal-black flex flex-col p-2 gap-2">
             {items.map((item) => (
-              <li key={item.id} className={item.id === activeId ? "bg-brutal-yellow/30 border-l-[8px] border-brutal-black font-extrabold shadow-[inset_4px_4px_0_rgba(0,0,0,0.05)]" : ""}>
+              <li key={item.id} className={`border-2 border-brutal-black bg-white transition-all shadow-[2px_2px_0_#000] hover:shadow-[4px_4px_0_#000] hover:-translate-y-0.5 ${item.id === activeId ? "bg-brutal-yellow shadow-[4px_4px_0_#000] -translate-y-0.5" : ""}`}>
                 <div
                   onClick={() => handleSelect(item)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSelect(item); }}
                   role="button"
                   tabIndex={0}
-                  className="w-full text-left p-3 hover:bg-gray-50/50 transition-colors group cursor-pointer"
+                  className="w-full text-left p-3 group cursor-pointer"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
@@ -234,30 +230,35 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
                         <p className="text-xs font-bold truncate">{item.title}</p>
                       )}
                       <p className="text-[10px] text-gray-500 mt-0.5">{formatDate(item.createdAt)}</p>
-                    </div>
-                    {/* Action icons (visible on hover) */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => handleRenameStart(e, item)}
-                        className="p-1 hover:bg-brutal-blue transition-colors text-brutal-black"
-                        aria-label="Rename"
-                      >
-                        <span className="text-[10px] font-bold">✎</span>
-                      </button>
-                      <button
-                        onClick={(e) => handlePin(e, item.id, item.isPinned)}
-                        className="p-1 hover:bg-brutal-yellow transition-colors"
-                        aria-label={item.isPinned ? "Unpin" : "Pin"}
-                      >
-                        {item.isPinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />}
-                      </button>
-                      <button
-                        onClick={(e) => handleDelete(e, item.id)}
-                        className="p-1 hover:bg-red-200 transition-colors"
-                        aria-label="Delete"
-                      >
-                        <Trash2 className="w-3 h-3 text-red-500" />
-                      </button>
+                      {loadingId === item.id ? (
+                        <div className="flex items-center gap-1 opacity-100 pr-2">
+                           <span className="w-4 h-4 rounded-full border-2 border-brutal-black border-t-brutal-yellow animate-spin inline-block"></span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => handleRenameStart(e, item)}
+                            className="p-1 border-2 border-transparent hover:border-brutal-black hover:bg-brutal-blue transition-colors text-brutal-black"
+                            aria-label="Rename"
+                          >
+                            <span className="text-[10px] font-bold">✎</span>
+                          </button>
+                          <button
+                            onClick={(e) => handlePin(e, item.id, item.isPinned)}
+                            className="p-1 border-2 border-transparent hover:border-brutal-black hover:bg-brutal-yellow transition-colors"
+                            aria-label={item.isPinned ? "Unpin" : "Pin"}
+                          >
+                            {item.isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={(e) => handleDelete(e, item.id)}
+                            className="p-1 border-2 border-transparent hover:border-brutal-black hover:bg-brutal-pink transition-colors"
+                            aria-label="Delete"
+                          >
+                            <Trash2 className="w-4 h-4 text-brutal-black" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -269,7 +270,7 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-3 py-2 border-t-2 border-brutal-black bg-gray-50">
+        <div className="flex items-center justify-between px-4 py-3 border-t-4 border-brutal-black bg-brutal-yellow">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}

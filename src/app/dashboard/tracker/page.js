@@ -377,7 +377,7 @@ export default function ApplicationTracker() {
         <div>
           <h1 className="text-4xl font-black uppercase tracking-tighter">Job Application Tracker</h1>
           <p className="text-xl font-bold mt-2 bg-brutal-yellow inline-block px-3 py-1 border-2 border-brutal-black shadow-[2px_2px_0_#000]">
-            Interactive Kanban Planner & Application Timeline Logs.
+            Interactive Drag-and-Drop Board & Application Timeline Logs.
           </p>
         </div>
         <Button variant="brutal" onClick={() => setShowCreateModal(true)} className="bg-brutal-blue text-black text-lg shadow-[4px_4px_0_#000] hover:shadow-[2px_2px_0_#000] border-2">

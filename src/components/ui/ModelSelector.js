@@ -11,14 +11,14 @@ const MODELS = [
     ]
   },
   {
-    id: 'google/gemini-2.5-flash',
+    id: 'gemini-2.5-flash',
     name: 'Gemini 2.5 Flash',
     tags: [
       { text: 'Fast', color: 'bg-blue-300' }
     ]
   },
   {
-    id: 'google/gemini-2.5-pro',
+    id: 'gemini-2.5-pro',
     name: 'Gemini 2.5 Pro',
     tags: [
       { text: 'Powerful', color: 'bg-purple-300' },
@@ -26,56 +26,39 @@ const MODELS = [
     ]
   },
   {
-    id: 'deepseek/deepseek-v4-flash:free',
-    name: 'DeepSeek Flash (V4)',
+    id: 'deepseek/deepseek-chat:free',
+    name: 'DeepSeek V3 (Free)',
     tags: [
-      { text: 'Free', color: 'bg-yellow-300' },
       { text: 'Strong Reasoning', color: 'bg-pink-200' }
     ]
   },
   {
-    id: 'meta-llama/llama-3.3-70b-instruct:free',
-    name: 'Llama 3.3 (70B)',
+    id: 'deepseek/deepseek-r1:free',
+    name: 'DeepSeek R1 (Free)',
     tags: [
-      { text: 'Free', color: 'bg-yellow-300' }
+      { text: 'Advanced Reasoning', color: 'bg-red-300' }
     ]
   },
   {
-    id: 'openai/gpt-4o',
-    name: 'GPT-4o',
+    id: 'meta-llama/llama-3.3-70b-instruct:free',
+    name: 'Llama 3.3 (70B) Free',
+    tags: [
+      { text: 'Open Source', color: 'bg-yellow-300' }
+    ]
+  },
+  {
+    id: 'google/gemini-2.0-flash-lite-preview-02-05:free',
+    name: 'Gemini 2.0 Flash (Free)',
     tags: [
       { text: 'Premium', color: 'bg-purple-300' },
       { text: 'Versatile', color: 'bg-blue-200' }
     ]
   },
   {
-    id: 'anthropic/claude-sonnet-latest',
-    name: 'Claude Sonnet (Latest)',
+    id: 'google/gemini-2.0-pro-exp-02-05:free',
+    name: 'Gemini 2.0 Pro (Free)',
     tags: [
-      { text: 'Premium', color: 'bg-purple-300' },
-      { text: 'Best for Coding/Text', color: 'bg-green-200' }
-    ]
-  },
-  {
-    id: 'x-ai/grok-2-1212',
-    name: 'Grok 2',
-    tags: [
-      { text: 'Premium', color: 'bg-purple-300' },
-      { text: 'Fast', color: 'bg-orange-200' }
-    ]
-  },
-  {
-    id: 'openai/gpt-3.5-turbo',
-    name: 'GPT 3.5 Turbo',
-    tags: [
-      { text: 'Reliable', color: 'bg-blue-300' }
-    ]
-  },
-  {
-    id: 'google/gemini-2.0-flash-exp:free',
-    name: 'Gemini 2.0 Flash (Free)',
-    tags: [
-      { text: 'Free', color: 'bg-yellow-300' }
+      { text: 'Fast & Cheap', color: 'bg-green-200' }
     ]
   }
 ];

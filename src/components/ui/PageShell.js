@@ -21,6 +21,7 @@ export function PageShell({
   children,
   noPadding = false,
   maxWidth = "max-w-7xl",
+  fullWidth = false,
   className = "",
 }) {
   return (
@@ -29,7 +30,7 @@ export function PageShell({
         noPadding ? "" : "p-4 sm:p-6 lg:p-8"
       } ${className}`}
     >
-      <div className={`${noPadding ? "" : `${maxWidth} mx-auto`} w-full`}>
+      <div className={`${noPadding ? "" : (fullWidth ? "w-full" : `${maxWidth} mx-auto`)} w-full`}>
         {/* Page Header */}
         {(title || actions) && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b-4 border-brutal-black pb-4">

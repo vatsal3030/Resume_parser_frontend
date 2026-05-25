@@ -49,9 +49,7 @@ export default function GitHubAnalyzer() {
     monitorJob,
     cancelJob,
     resetJob
-  } = useAsyncJob({
-    onComplete: () => toast.success('Analysis Complete!', 'Your GitHub profile has been analyzed.')
-  });
+  } = useAsyncJob();
 
   const handleGenerate = () => {
     if (!githubUsername) {
@@ -64,7 +62,6 @@ export default function GitHubAnalyzer() {
 
   const handleHistorySelect = (item) => {
     setHistoryResult(item);
-    toast.info('Loaded', `Loaded: ${item.title}`);
   };
 
   const isGenerating = [JOB_STATUS.QUEUED, JOB_STATUS.PROCESSING, JOB_STATUS.GENERATING, JOB_STATUS.FINALIZING].includes(status);
@@ -88,91 +85,85 @@ export default function GitHubAnalyzer() {
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
     >
-      {(status !== JOB_STATUS.COMPLETED && !historyResult) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div className="space-y-6">
-            <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-              <CardContent className="p-6">
-                <label className="block font-black text-lg mb-2">Target GitHub Username</label>
-                <div className="flex items-center border-2 border-brutal-black bg-white mb-6 focus-within:bg-brutal-yellow/20">
-                  <span className="pl-4 font-bold text-gray-500">github.com/</span>
-                  <input 
-                    className="w-full p-3 font-bold outline-none bg-transparent disabled:opacity-60"
-                    placeholder="torvalds"
-                    value={githubUsername}
-                    onChange={e => setGithubUsername(e.target.value)}
-                    disabled={isGenerating}
-                  />
-                </div>
-
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            {/* AI ENGINE & ACTION */}
-            <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-              <CardContent className="p-6">
-                <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} />
-                <Button 
-                  variant="brutal" 
-                  className="w-full text-xl py-6 bg-brutal-blue text-black hover:bg-blue-600 mt-4"
-                  onClick={handleGenerate}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+        {/* LEFT COLUMN: Inputs & Generation */}
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
+            <CardContent className="p-6">
+              <label className="block font-black text-lg mb-2">Target GitHub Username</label>
+              <div className="flex items-center border-2 border-brutal-black bg-white mb-6 focus-within:bg-brutal-yellow/20">
+                <span className="pl-4 font-bold text-gray-500">github.com/</span>
+                <input 
+                  className="w-full p-3 font-bold outline-none bg-transparent disabled:opacity-60"
+                  placeholder="torvalds"
+                  value={githubUsername}
+                  onChange={e => setGithubUsername(e.target.value)}
                   disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                     <span className="flex items-center gap-2 animate-pulse">
-                       <Activity className="w-5 h-5" /> Scanning Repositories...
-                     </span>
-                  ) : (
-                     <span className="flex items-center gap-2">
-                       <GitBranch className="w-5 h-5" /> Analyze Profile
-                     </span>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {status === JOB_STATUS.IDLE && (
-              <div className="h-full border-4 border-brutal-black flex flex-col items-center justify-center p-8 text-center bg-white shadow-[4px_4px_0_rgba(0,0,0,1)] min-h-[200px]">
-                 <Activity className="w-12 h-12 mb-4 text-gray-300" />
-                 <p className="font-bold text-xl text-gray-500">Enter a username to audit their code portfolio.</p>
+                />
               </div>
-            )}
-            
-            <ProcessingPipeline 
-              status={status}
-              progress={progress}
-              stage={stage}
-              message={message}
-              error={error}
-              onRetry={handleGenerate}
-              onCancel={cancelJob}
-            />
-          </div>
-        </div>
-      )}
 
-      {isGenerating && (
-        <div className="mt-8">
-          <SkeletonPage type="github" />
+              <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} />
+              <Button 
+                variant="brutal" 
+                className="w-full text-xl py-6 bg-brutal-blue text-black hover:bg-blue-600 mt-4 shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                onClick={handleGenerate}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                   <span className="flex items-center gap-2 animate-pulse">
+                     <Activity className="w-5 h-5" /> Scanning Repositories...
+                   </span>
+                ) : (
+                   <span className="flex items-center gap-2">
+                     <GitBranch className="w-5 h-5" /> Analyze Profile
+                   </span>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
-      )}
 
-      {(status === JOB_STATUS.COMPLETED || historyResult) && displayResult && !isGenerating && (
-        <div className="animate-in fade-in slide-in-from-bottom-8">
-          <BranchingNavigation 
-            activeResult={activeResult} 
-            toolType="GITHUB_ANALYSIS" 
-            onSelect={(selected) => setHistoryResult(selected)} 
+        {/* RIGHT COLUMN: Results & Pipeline */}
+        <div className="lg:col-span-8 space-y-6">
+          {status === JOB_STATUS.IDLE && !historyResult && (
+            <div className="h-full border-4 border-dashed border-brutal-black flex flex-col items-center justify-center p-8 text-center opacity-50 min-h-[400px]">
+               <Activity className="w-12 h-12 mb-4 text-brutal-black" />
+               <p className="font-bold text-xl">Enter a username to audit their code portfolio.</p>
+            </div>
+          )}
+
+          <ProcessingPipeline 
+            status={status}
+            progress={progress}
+            stage={stage}
+            message={message}
+            error={error}
+            onRetry={handleGenerate}
+            onCancel={cancelJob}
           />
-          <ResultActions 
-            resultId={activeResult?.id}
-            isPinned={activeResult?.isPinned}
-            onDelete={() => { setHistoryResult(null); resetJob(); }}
-            resultText={displayResult ? JSON.stringify(displayResult, null, 2) : ''}
-            className="mb-4"
-          />
+
+          {isGenerating && (
+            <div className="mt-8">
+              <SkeletonPage type="github" />
+            </div>
+          )}
+
+          {(status === JOB_STATUS.COMPLETED || historyResult) && displayResult && !isGenerating && (
+            <div className="animate-in fade-in slide-in-from-bottom-8 space-y-6">
+              <BranchingNavigation 
+                activeResult={activeResult} 
+                toolType="GITHUB_ANALYSIS" 
+                onSelect={(selected) => setHistoryResult(selected)} 
+              />
+              <div className="flex justify-end">
+                <ResultActions 
+                  resultId={activeResult?.id}
+                  isPinned={activeResult?.isPinned}
+                  onDelete={() => { setHistoryResult(null); resetJob(); }}
+                  resultText={displayResult ? JSON.stringify(displayResult, null, 2) : ''}
+                  className="mb-4"
+                />
+              </div>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b-4 border-brutal-black pb-4 gap-4">
              <div>
                <h2 className="text-4xl font-black flex items-center gap-3">
@@ -510,6 +501,8 @@ export default function GitHubAnalyzer() {
           />
         </div>
       )}
+      </div>
+    </div>
     </ToolPageLayout>
   );
 }

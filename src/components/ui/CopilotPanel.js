@@ -210,7 +210,7 @@ export function CopilotPanel() {
                         <div 
                           key={conv.id} 
                           onClick={() => switchConversation(conv.id)}
-                          className={`p-3 border-2 border-brutal-black cursor-pointer shadow-[2px_2px_0_#000] hover:bg-brutal-blue hover:text-white transition-colors flex justify-between items-center group ${activeConversationId === conv.id ? 'bg-brutal-pink' : 'bg-white'}`}
+                          className={`p-3 border-2 border-brutal-black cursor-pointer shadow-[2px_2px_0_#000] hover:bg-brutal-blue hover:text-black transition-colors flex justify-between items-center group ${activeConversationId === conv.id ? 'bg-brutal-pink' : 'bg-white'}`}
                         >
                           {editingConvId === conv.id ? (
                             <input 

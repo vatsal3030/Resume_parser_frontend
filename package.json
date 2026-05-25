@@ -37,6 +37,7 @@
     "react-rnd": "^10.5.3",
     "react-tooltip": "^6.0.3",
     "recharts": "^2.15.3",
+    "swr": "^2.4.1",
     "tailwind-merge": "^3.5.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.13"

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Layout, Code, Copy, Check, Maximize2, X, Globe, QrCode, Laptop, Terminal, ExternalLink, CheckCircle, Download, ChevronLeft, ChevronRight, ArrowRight, BookOpen } from 'lucide-react';
+import { Download, Monitor, Smartphone, Tablet, Github, Code, CheckCircle2, ChevronDown, ChevronUp, Copy, Eye, Layout, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/toast';
 import { ModelSelector } from '@/components/ui/ModelSelector';
@@ -18,6 +18,7 @@ import { SkeletonPage } from '@/components/ui/Skeleton';
 import { RegenerateBlock } from '@/components/ui/RegenerateBlock';
 import { BranchingNavigation } from '@/components/ui/BranchingNavigation';
 import { ResultActions } from '@/components/ui/ResultActions';
+import { useResumes } from '@/hooks/useResumes';
 
 // Helper to generate index.html code for the selected template
 const generateTemplateHTML = (data, templateId) => {
@@ -152,12 +153,8 @@ const generateTemplateHTML = (data, templateId) => {
 };
 
 export default function PortfolioGenerator() {
-  const [resumes, setResumes] = useState([]);
-  const [selectedResume, setSelectedResume] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('BRUTALIST');
   const [copied, setCopied] = useState(false);
-  const [modelId, setModelId] = useState('default');
-  const [historyResult, setHistoryResult] = useState(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   
   // Tab Switcher and Deploy simulation state
@@ -168,7 +165,11 @@ export default function PortfolioGenerator() {
   const [githubUser, setGithubUser] = useState('');
   const [repoName, setRepoName] = useState('portfolio-site');
   const [htmlCopied, setHtmlCopied] = useState(false);
-  
+  const { resumes, isLoading: resumesLoading } = useResumes();
+  const [selectedResume, setSelectedResume] = useState('');
+  const [modelId, setModelId] = useState('default');
+  const [historyResult, setHistoryResult] = useState(null);
+  const [previewMode, setPreviewMode] = useState('desktop'); // desktop, tablet, mobile
   const toast = useToast();
 
   const {
@@ -182,13 +183,7 @@ export default function PortfolioGenerator() {
     monitorJob,
     cancelJob,
     resetJob
-  } = useAsyncJob({
-    onComplete: () => toast.success('Portfolio Ready!', 'Your portfolio config has been generated.')
-  });
-
-  useEffect(() => {
-    api.get('/resumes').then(res => setResumes(res.data)).catch(console.error);
-  }, []);
+  } = useAsyncJob();
 
   // Handle Full Screen Esc Key and Body Scroll Lock
   useEffect(() => {
@@ -220,7 +215,6 @@ export default function PortfolioGenerator() {
 
   const handleHistorySelect = (item) => {
     setHistoryResult(item);
-    toast.info('Loaded', `Loaded: ${item.title}`);
   };
 
   const isGenerating = [JOB_STATUS.QUEUED, JOB_STATUS.PROCESSING, JOB_STATUS.GENERATING, JOB_STATUS.FINALIZING].includes(status);
@@ -326,199 +320,198 @@ export default function PortfolioGenerator() {
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
     >
-      {(status !== JOB_STATUS.COMPLETED && !historyResult) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div className="space-y-6">
-            <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-              <CardContent className="p-6">
-                <label className="block font-black text-lg mb-2">1. Select Resume Context</label>
-                <div className="mb-6">
-                  <Select 
-                    value={selectedResume}
-                    onChange={setSelectedResume}
-                    disabled={isGenerating}
-                    placeholder="-- Select Resume --"
-                    options={resumes.map(r => ({
-                      value: r.id,
-                      label: r.title || r.originalName || 'Untitled Resume'
-                    }))}
-                  />
-                </div>
-
-                <label className="block font-black text-lg mb-2">2. Preferred Theme</label>
-                <Select
-                  value={selectedTemplate}
-                  onChange={setSelectedTemplate}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+        {/* LEFT COLUMN: Inputs & Generation */}
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
+            <CardContent className="p-6">
+              <label className="block font-black text-lg mb-2">1. Select Resume Context</label>
+              <div className="mb-6">
+                <Select 
+                  value={selectedResume}
+                  onChange={setSelectedResume}
                   disabled={isGenerating}
-                  options={Object.values(PORTFOLIO_TEMPLATES).map(t => ({ value: t.id, label: t.name }))}
+                  placeholder="-- Select Resume --"
+                  options={resumes.map(r => ({
+                    value: r.id,
+                    label: r.title || r.originalName || 'Untitled Resume'
+                  }))}
                 />
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            {/* AI ENGINE & ACTION */}
-            <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-              <CardContent className="p-6">
-                <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} />
-                <Button 
-                  variant="brutal" 
-                  className="w-full text-xl py-6 bg-brutal-pink text-black hover:bg-pink-400 mt-4"
-                  onClick={handleGenerate}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                     <span className="flex items-center gap-2 animate-pulse">
-                       <Layout className="w-5 h-5" /> Designing Layout...
-                     </span>
-                  ) : (
-                     <span className="flex items-center gap-2">
-                       <Sparkles className="w-5 h-5" /> Generate Portfolio
-                     </span>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {status === JOB_STATUS.IDLE && (
-              <div className="h-full border-4 border-dashed border-brutal-black flex items-center justify-center p-8 text-center opacity-50 min-h-[200px]">
-                 <p className="font-bold text-xl">Generate a full portfolio data structure ready for React/Next.js.</p>
               </div>
-            )}
-            
-            <ProcessingPipeline 
-              status={status}
-              progress={progress}
-              stage={stage}
-              message={message}
-              error={error}
-              onRetry={handleGenerate}
-              onCancel={cancelJob}
-            />
-          </div>
+
+              <label className="block font-black text-lg mb-2">2. Preferred Theme</label>
+              <Select
+                value={selectedTemplate}
+                onChange={setSelectedTemplate}
+                disabled={isGenerating}
+                options={Object.values(PORTFOLIO_TEMPLATES).map(t => ({ value: t.id, label: t.name }))}
+              />
+            </CardContent>
+          </Card>
+
+          {/* AI ENGINE & ACTION */}
+          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
+            <CardContent className="p-6">
+              <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} />
+              <Button 
+                variant="brutal" 
+                className="w-full text-xl py-6 bg-brutal-pink text-black hover:bg-pink-400 mt-4 shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                onClick={handleGenerate}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                   <span className="flex items-center gap-2 animate-pulse">
+                     <Layout className="w-5 h-5" /> Designing Layout...
+                   </span>
+                ) : (
+                   <span className="flex items-center gap-2">
+                     <Sparkles className="w-5 h-5" /> Generate Portfolio
+                   </span>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
-      )}
 
-      {(status === JOB_STATUS.COMPLETED || historyResult) && (
-        <div className="max-w-7xl mx-auto mb-6">
-          <BranchingNavigation 
-            activeResult={activeResult} 
-            toolType="PORTFOLIO" 
-            onSelect={(selected) => setHistoryResult(selected)} 
-          />
-          <ResultActions 
-            resultId={activeResult?.id}
-            isPinned={activeResult?.isPinned}
-            onDelete={() => { setHistoryResult(null); resetJob(); }}
-            resultText={displayResult ? JSON.stringify(displayResult, null, 2) : ''}
-            className="mb-2"
-          />
-        </div>
-      )}
-
-      {(isGenerating || status === JOB_STATUS.COMPLETED || historyResult) && (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b-4 border-brutal-black pb-4 gap-4">
-             <div>
-               <h2 className="text-3xl font-black">Design & Deployment Suite</h2>
-               <p className="font-bold text-gray-600">
-                 {isGenerating ? "Generating Wireframe..." : "A complete wireframe, template code, and one-click deployment."}
-               </p>
-             </div>
-             
-             <div className="flex flex-wrap items-center gap-4 z-50">
-               {/* Preview/HTML Tabs */}
-               <div className="flex border-2 border-brutal-black font-black text-sm bg-white shadow-[2px_2px_0_#000]">
-                 <button 
-                   onClick={() => setActiveTab('preview')}
-                   className={`px-4 py-2 border-r-2 border-brutal-black uppercase transition-colors ${activeTab === 'preview' ? 'bg-brutal-yellow' : 'hover:bg-gray-100'}`}
-                 >
-                   <span className="flex items-center gap-1"><Laptop className="w-4 h-4" /> Live Preview</span>
-                 </button>
-                 <button 
-                   onClick={() => setActiveTab('html')}
-                   className={`px-4 py-2 uppercase transition-colors ${activeTab === 'html' ? 'bg-brutal-pink' : 'hover:bg-gray-100'}`}
-                 >
-                   <span className="flex items-center gap-1"><Terminal className="w-4 h-4" /> Export HTML</span>
-                 </button>
-               </div>
-
-               {/* Deploy to Pages Button */}
-               {displayResult && !isGenerating && (
-                 <Button 
-                   variant="brutal" 
-                   onClick={() => { setShowDeployModal(true); setDeployStep(0); setWizardStep(0); }}
-                   className="bg-brutal-blue text-black font-black uppercase text-sm h-10"
-                 >
-                   <Globe className="w-4 h-4 mr-2" /> Deploy
-                 </Button>
-               )}
-
-               {/* Template Selector */}
-               <div className="w-48 relative z-50">
-                 <Select
-                   value={selectedTemplate}
-                   onChange={setSelectedTemplate}
-                   disabled={isGenerating}
-                   options={Object.values(PORTFOLIO_TEMPLATES).map(t => ({ value: t.id, label: t.name }))}
-                 />
-               </div>
-               
-               {/* Export Dropdown */}
-               <div className="relative z-50">
-                 {displayResult && !isGenerating && (
-                   <ExportDropdown data={displayResult} templateId={selectedTemplate} />
-                 )}
-               </div>
-               
-               {/* Full Screen Toggle */}
-               {displayResult && !isGenerating && (
-                 <Button variant="outline" className="border-brutal-black border-2 border-b-4 border-r-4 hover:bg-gray-100 rounded-none h-10 px-3" onClick={() => setIsFullScreen(true)}>
-                   <Maximize2 className="w-5 h-5" />
-                 </Button>
-               )}
-             </div>
-          </div>
-
-          {/* DYNAMIC PORTFOLIO PREVIEW / HTML VIEWER */}
-          <div className="mt-8">
-            {isGenerating ? (
-              <SkeletonPage type="portfolio" />
-            ) : activeTab === 'html' ? (
-              <div className="border-4 border-brutal-black shadow-[4px_4px_0_#000] bg-[#1e1e1e] text-[#d4d4d4] p-6 rounded-none relative font-mono text-sm max-h-[600px] overflow-y-auto">
-                <div className="absolute top-4 right-4 flex gap-2">
-                  <Button variant="outline" className="bg-white border-2 border-brutal-black text-black font-bold h-8 text-xs hover:bg-gray-100 rounded-none" onClick={copyHtmlToClipboard}>
-                    {htmlCopied ? <Check className="w-4 h-4 mr-1 text-green-600" /> : <Copy className="w-4 h-4 mr-1" />}
-                    {htmlCopied ? "Copied!" : "Copy Code"}
-                  </Button>
-                  <Button variant="outline" className="bg-white border-2 border-brutal-black text-black font-bold h-8 text-xs hover:bg-gray-100 rounded-none" onClick={downloadHtmlFile}>
-                    <Download className="w-4 h-4 mr-1" /> Download index.html
-                  </Button>
-                </div>
-                <h4 className="text-sm font-black uppercase text-brutal-pink tracking-wider mb-4 border-b border-gray-700 pb-2">&lt;index.html&gt; for {PORTFOLIO_TEMPLATES[selectedTemplate]?.name}</h4>
-                <pre className="whitespace-pre-wrap select-all">
-                  {generateTemplateHTML(displayResult, selectedTemplate)}
-                </pre>
-              </div>
-            ) : displayResult ? (
-              React.createElement(PORTFOLIO_TEMPLATES[selectedTemplate]?.component || PORTFOLIO_TEMPLATES.BRUTALIST.component, { data: displayResult })
-            ) : null}
-          </div>
-          
-          {!isGenerating && displayResult && (
-            <RegenerateBlock 
-              isGenerating={isGenerating} 
-              currentModelId={modelId} 
-              onRegenerate={(newModelId) => {
-                setModelId(newModelId);
-                setHistoryResult(null);
-                const targetResumeId = historyResult?.inputSummary?.resumeId || selectedResume;
-                startJob('/career/portfolio', { resumeId: targetResumeId, modelId: newModelId });
-              }} 
-            />
+        {/* RIGHT COLUMN: Results & Pipeline */}
+        <div className="lg:col-span-8 space-y-6">
+          {status === JOB_STATUS.IDLE && !historyResult && (
+            <div className="h-full border-4 border-dashed border-brutal-black flex items-center justify-center p-8 text-center opacity-50 min-h-[400px]">
+               <p className="font-bold text-xl">Generate a full portfolio data structure ready for React/Next.js.</p>
+            </div>
           )}
-          </div>
-      )}
+          
+          <ProcessingPipeline 
+            status={status}
+            progress={progress}
+            stage={stage}
+            message={message}
+            error={error}
+            onRetry={handleGenerate}
+            onCancel={cancelJob}
+          />
+
+          {(status === JOB_STATUS.COMPLETED || historyResult) && displayResult && (
+            <div className="animate-in fade-in slide-in-from-bottom-8 space-y-6">
+              <BranchingNavigation 
+                activeResult={activeResult} 
+                toolType="PORTFOLIO" 
+                onSelect={(selected) => setHistoryResult(selected)} 
+              />
+              <div className="flex justify-end">
+                <ResultActions 
+                  resultId={activeResult?.id}
+                  isPinned={activeResult?.isPinned}
+                  onDelete={() => { setHistoryResult(null); resetJob(); }}
+                  resultText={displayResult ? JSON.stringify(displayResult, null, 2) : ''}
+                  className="mb-4"
+                />
+              </div>
+
+              {/* Result Suite */}
+              <div className="space-y-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b-4 border-brutal-black pb-4 gap-4">
+                   <div>
+                     <h2 className="text-3xl font-black">Design Suite</h2>
+                     <p className="font-bold text-gray-600">A complete wireframe and deployment.</p>
+                   </div>
+                   
+                   <div className="flex flex-wrap items-center gap-4 z-50">
+                     {/* Preview/HTML Tabs */}
+                     <div className="flex border-2 border-brutal-black font-black text-sm bg-white shadow-[2px_2px_0_#000]">
+                       <button 
+                         onClick={() => setActiveTab('preview')}
+                         className={`px-4 py-2 border-r-2 border-brutal-black uppercase transition-colors ${activeTab === 'preview' ? 'bg-brutal-yellow' : 'hover:bg-gray-100'}`}
+                       >
+                         <span className="flex items-center gap-1"><Laptop className="w-4 h-4" /> Live Preview</span>
+                       </button>
+                       <button 
+                         onClick={() => setActiveTab('html')}
+                         className={`px-4 py-2 uppercase transition-colors ${activeTab === 'html' ? 'bg-brutal-pink' : 'hover:bg-gray-100'}`}
+                       >
+                         <span className="flex items-center gap-1"><Terminal className="w-4 h-4" /> Export HTML</span>
+                       </button>
+                     </div>
+
+                     {/* Deploy to Pages Button */}
+                     {displayResult && !isGenerating && (
+                       <Button 
+                         variant="brutal" 
+                         onClick={() => { setShowDeployModal(true); setDeployStep(0); setWizardStep(0); }}
+                         className="bg-brutal-blue text-black font-black uppercase text-sm h-10"
+                       >
+                         <Globe className="w-4 h-4 mr-2" /> Deploy
+                       </Button>
+                     )}
+
+                     {/* Template Selector */}
+                     <div className="w-48 relative z-50">
+                       <Select
+                         value={selectedTemplate}
+                         onChange={setSelectedTemplate}
+                         disabled={isGenerating}
+                         options={Object.values(PORTFOLIO_TEMPLATES).map(t => ({ value: t.id, label: t.name }))}
+                       />
+                     </div>
+                     
+                     {/* Export Dropdown */}
+                     <div className="relative z-50">
+                       {displayResult && !isGenerating && (
+                         <ExportDropdown data={displayResult} templateId={selectedTemplate} />
+                       )}
+                     </div>
+                     
+                     {/* Full Screen Toggle */}
+                     {displayResult && !isGenerating && (
+                       <Button variant="outline" className="border-brutal-black border-2 border-b-4 border-r-4 hover:bg-gray-100 rounded-none h-10 px-3" onClick={() => setIsFullScreen(true)}>
+                         <Maximize2 className="w-5 h-5" />
+                       </Button>
+                     )}
+                   </div>
+                </div>
+
+                {/* DYNAMIC PORTFOLIO PREVIEW / HTML VIEWER */}
+                <div className="mt-8">
+                  {isGenerating ? (
+                    <SkeletonPage type="portfolio" />
+                  ) : activeTab === 'html' ? (
+                    <div className="border-4 border-brutal-black shadow-[4px_4px_0_#000] bg-[#1e1e1e] text-[#d4d4d4] p-6 rounded-none relative font-mono text-sm max-h-[600px] overflow-y-auto">
+                      <div className="absolute top-4 right-4 flex gap-2">
+                        <Button variant="outline" className="bg-white border-2 border-brutal-black text-black font-bold h-8 text-xs hover:bg-gray-100 rounded-none" onClick={copyHtmlToClipboard}>
+                          {htmlCopied ? <Check className="w-4 h-4 mr-1 text-green-600" /> : <Copy className="w-4 h-4 mr-1" />}
+                          {htmlCopied ? "Copied!" : "Copy Code"}
+                        </Button>
+                        <Button variant="outline" className="bg-white border-2 border-brutal-black text-black font-bold h-8 text-xs hover:bg-gray-100 rounded-none" onClick={downloadHtmlFile}>
+                          <Download className="w-4 h-4 mr-1" /> Download index.html
+                        </Button>
+                      </div>
+                      <h4 className="text-sm font-black uppercase text-brutal-pink tracking-wider mb-4 border-b border-gray-700 pb-2">&lt;index.html&gt; for {PORTFOLIO_TEMPLATES[selectedTemplate]?.name}</h4>
+                      <pre className="whitespace-pre-wrap select-all">
+                        {generateTemplateHTML(displayResult, selectedTemplate)}
+                      </pre>
+                    </div>
+                  ) : displayResult ? (
+                    React.createElement(PORTFOLIO_TEMPLATES[selectedTemplate]?.component || PORTFOLIO_TEMPLATES.BRUTALIST.component, { data: displayResult })
+                  ) : null}
+                </div>
+                
+                {!isGenerating && displayResult && (
+                  <RegenerateBlock 
+                    isGenerating={isGenerating} 
+                    currentModelId={modelId} 
+                    onRegenerate={(newModelId) => {
+                      setModelId(newModelId);
+                      setHistoryResult(null);
+                      const targetResumeId = historyResult?.inputSummary?.resumeId || selectedResume;
+                      startJob('/career/portfolio', { resumeId: targetResumeId, modelId: newModelId });
+                    }} 
+                  />
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       {/* Full Screen Overlay using Portal */}
       {isFullScreen && displayResult && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-9999 bg-white overflow-y-auto animate-in fade-in zoom-in-95 duration-200">

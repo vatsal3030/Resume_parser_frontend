@@ -169,7 +169,7 @@ export default function HelpPage() {
                 </AccordionItem>
                 <AccordionItem value="t8"><AccordionTrigger className="text-base font-bold hover:no-underline"><span className="flex items-center gap-2"><Briefcase className="w-5 h-5 text-orange-500" /> Job Tracker</span></AccordionTrigger>
                   <AccordionContent className="text-sm text-gray-700 font-medium space-y-2">
-                    <p><strong>What it does:</strong> A Kanban-style board to track your job applications through stages: Bookmarked, Applied, Interview, Offer, Rejected.</p>
+                    <p><strong>What it does:</strong> A drag-and-drop board to track your job applications through stages: Bookmarked, Applied, Interview, Offer, Rejected.</p>
                     <p><strong>How to use:</strong> Add applications manually or use the browser extension to auto-capture job listings. Drag cards between columns to update status.</p>
                     <p><strong>Cost:</strong> Free (no credits required).</p>
                   </AccordionContent>

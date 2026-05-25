@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Copy, Check, Clock } from 'lucide-react';
@@ -14,8 +16,10 @@ import { RegenerateBlock } from '@/components/ui/RegenerateBlock';
 import { BranchingNavigation } from '@/components/ui/BranchingNavigation';
 import { ResultActions } from '@/components/ui/ResultActions';
 
+import { useResumes } from '@/hooks/useResumes';
+
 export default function CoverLetterGenerator() {
-  const [resumes, setResumes] = useState([]);
+  const { resumes, isLoading: resumesLoading } = useResumes();
   const [selectedResume, setSelectedResume] = useState('');
   const [jobDescription, setJobDescription] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -35,13 +39,7 @@ export default function CoverLetterGenerator() {
     monitorJob,
     cancelJob,
     resetJob
-  } = useAsyncJob({
-    onComplete: () => toast.success('Cover Letter Ready!', 'Your personalized cover letter has been generated.')
-  });
-
-  useEffect(() => {
-    api.get('/resumes').then(res => setResumes(res.data)).catch(console.error);
-  }, []);
+  } = useAsyncJob();
 
   const handleGenerate = () => {
     if (!selectedResume || !jobDescription) {
@@ -71,10 +69,21 @@ export default function CoverLetterGenerator() {
 
   const handleHistorySelect = (item) => {
     setHistoryResult(item);
-    toast.info('Loaded', `Loaded: ${item.title}`);
   };
 
   const isGenerating = [JOB_STATUS.QUEUED, JOB_STATUS.PROCESSING, JOB_STATUS.GENERATING, JOB_STATUS.FINALIZING].includes(status);
+
+  // Helper utility for file downloads
+  const downloadBlob = (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <ToolPageLayout
@@ -82,15 +91,16 @@ export default function CoverLetterGenerator() {
       subtitle="Generate a highly personalized cover letter in seconds."
       subtitleColor="bg-brutal-mint"
       toolType="COVER_LETTER"
+      fullWidth={true}
       onHistorySelect={handleHistorySelect}
       historyResult={historyResult}
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
     >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* INPUT PANE */}
-            <div className="space-y-6">
-              <Card className="bg-white border-4 border-brutal-black shadow-brutal">
+            <div className="lg:col-span-4 space-y-6">
+              <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
                 <CardContent className="p-6">
                   <label className="block font-black text-lg mb-2">1. Select Baseline Resume</label>
                   <div className="mb-6">
@@ -124,19 +134,10 @@ export default function CoverLetterGenerator() {
                     disabled={isGenerating}
                   />
 
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* RESULTS PANE */}
-            <div className="space-y-6">
-              {/* AI ENGINE & ACTION */}
-              <Card className="bg-white border-4 border-brutal-black shadow-brutal">
-                <CardContent className="p-6">
                   <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} />
                   <Button 
                     variant="brutal" 
-                    className="w-full text-xl py-6 bg-brutal-pink text-black hover:bg-pink-400 mt-4"
+                    className="w-full text-xl py-6 bg-brutal-pink text-black hover:bg-pink-400 mt-4 shadow-[4px_4px_0_rgba(0,0,0,1)]"
                     onClick={handleGenerate}
                     disabled={isGenerating}
                   >
@@ -146,17 +147,18 @@ export default function CoverLetterGenerator() {
                        </span>
                     ) : (
                        <span className="flex items-center gap-2">
-                         <Sparkles className="w-5 h-5" /> Generate Cover Letter
+                         <Sparkles className="w-5 h-5" /> Generate Letter
                        </span>
                     )}
                   </Button>
                 </CardContent>
               </Card>
+            </div>
 
-              {/* History loaded indicator is handled by ToolPageLayout */}
-
+            {/* RESULTS PANE */}
+            <div className="lg:col-span-8 space-y-6">
               {status === JOB_STATUS.IDLE && !historyResult && (
-                <div className="h-full border-4 border-dashed border-brutal-black flex items-center justify-center p-8 text-center opacity-50 min-h-[200px]">
+                <div className="h-full border-4 border-dashed border-brutal-black flex items-center justify-center p-8 text-center opacity-50 min-h-[400px]">
                    <p className="font-bold text-xl">Submit to see your cover letter here.</p>
                 </div>
               )}
@@ -172,39 +174,79 @@ export default function CoverLetterGenerator() {
               />
 
               {(status === JOB_STATUS.COMPLETED || historyResult) && resultText && (
-                <>
+                <div className="animate-fade-in space-y-6">
                   <BranchingNavigation 
                     activeResult={activeResult} 
                     toolType="COVER_LETTER" 
                     onSelect={(selected) => setHistoryResult(selected)} 
                   />
-                  <ResultActions 
-                    resultId={activeResult?.id}
-                    isPinned={activeResult?.isPinned}
-                    onDelete={() => { setHistoryResult(null); resetJob(); }}
-                    resultText={resultText}
-                    className="mb-4"
-                  />
-                  <Card className="bg-white border-4 border-brutal-black shadow-brutal flex flex-col h-full animate-fade-in">
-                  <CardContent className="p-6 grow flex flex-col">
-                    <div className="flex items-center justify-between border-b-4 border-brutal-black pb-4 mb-4">
-                       <h2 className="text-2xl font-black">Your Cover Letter</h2>
-                       <Button variant="outline" onClick={copyToClipboard} className="border-2 border-brutal-black font-bold gap-2 shadow-brutal-sm">
-                         {copied ? <Check className="w-4 h-4 text-green-600"/> : <Copy className="w-4 h-4"/>}
-                         {copied ? 'Copied!' : 'Copy text'}
-                       </Button>
-                    </div>
+                  <div className="flex justify-end">
+                    <ResultActions 
+                      resultId={activeResult?.id}
+                      isPinned={activeResult?.isPinned}
+                      onDelete={() => { setHistoryResult(null); resetJob(); }}
+                      resultText={resultText}
+                      className="mb-4"
+                    />
+                  </div>
+                  
+                  {/* Output Card with Exports */}
+                  <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] flex flex-col relative overflow-hidden">
+                    <CardContent className="p-0 flex flex-col">
+                      <div className="bg-brutal-blue border-b-4 border-black p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                         <h2 className="text-2xl font-black">Your Cover Letter</h2>
+                         <div className="flex flex-wrap gap-2">
+                           <Button 
+                             variant="white" 
+                             className="font-black text-xs px-3 border-2 border-black shadow-brutal-xs hover:bg-brutal-mint"
+                             onClick={async () => {
+                               const html2pdf = (await import('html2pdf.js')).default;
+                               const element = document.getElementById('cover-letter-preview');
+                               html2pdf().from(element).set({
+                                 margin: 15,
+                                 filename: `${companyName || 'Company'}_Cover_Letter.pdf`,
+                                 html2canvas: { scale: 2, useCORS: true },
+                                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                               }).save();
+                             }}
+                           >
+                             PDF
+                           </Button>
+                           <Button 
+                             variant="white" 
+                             className="font-black text-xs px-3 border-2 border-black shadow-brutal-xs hover:bg-brutal-blue hover:text-white"
+                             onClick={() => {
+                               const element = document.getElementById('cover-letter-preview');
+                               const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Cover Letter</title></head><body>${element.innerHTML}</body></html>`;
+                               const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+                               downloadBlob(blob, `${companyName || 'Company'}_Cover_Letter.doc`);
+                             }}
+                           >
+                             Word
+                           </Button>
+                           <Button variant="white" onClick={copyToClipboard} className="border-2 border-black font-black text-xs px-3 shadow-brutal-xs">
+                             {copied ? <Check className="w-4 h-4 mr-1 text-green-600"/> : <Copy className="w-4 h-4 mr-1"/>}
+                             {copied ? 'Copied' : 'Copy'}
+                           </Button>
+                         </div>
+                      </div>
 
-                    <div className="grow">
-                       <textarea 
-                         readOnly 
-                         className="w-full h-full min-h-[400px] font-serif text-sm p-4 border-none outline-none resize-none bg-slate-50 border-l-4 border-brutal-pink"
-                         value={resultText}
-                       />
-                    </div>
-                  </CardContent>
-                </Card>
-               </>
+                      {/* A4 Document Preview wrapper */}
+                      <div className="bg-slate-100 p-8 flex justify-center overflow-auto min-h-[600px]">
+                        <div 
+                          id="cover-letter-preview" 
+                          className="bg-white p-10 md:p-14 shadow-lg w-full max-w-[210mm] prose prose-sm sm:prose-base text-gray-800"
+                          style={{
+                            fontFamily: 'serif',
+                            lineHeight: '1.6'
+                          }}
+                        >
+                          <ReactMarkdown>{resultText || ''}</ReactMarkdown>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
 
               {(status === JOB_STATUS.COMPLETED || historyResult) && resultText && (

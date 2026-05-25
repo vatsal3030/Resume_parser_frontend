@@ -192,7 +192,7 @@ export default function Dashboard() {
           <ToolCard title="GitHub Analyst" description="Extract your developer archetype." href="/dashboard/tools/github" bgColor="bg-black" textColor="text-white" icon={Code} />
           <ToolCard title="Portfolio Gen" description="Wireframe a site from your resume." href="/dashboard/tools/portfolio" bgColor="bg-brutal-bg" icon={LayoutTemplate} />
           <ToolCard title="AI Tailor" description="Match your resume to a Job Description." href="/dashboard/tools/tailor" bgColor="bg-brutal-yellow" icon={ClipboardCheck} />
-          <ToolCard title="Job Tracker" description="Kanban board for applications." href="/dashboard/tracker" bgColor="bg-brutal-blue" icon={Briefcase} />
+          <ToolCard title="Job Tracker" description="Drag-and-drop board for applications." href="/dashboard/tracker" bgColor="bg-brutal-blue" icon={Briefcase} />
           <ToolCard title="Cover Letter" description="Auto-generate a highly targeted letter." href="/dashboard/tools/cover-letter" bgColor="bg-brutal-pink" icon={FileText} />
           <ToolCard title="Mock Interview" description="Practice hard questions based on your CV." href="/dashboard/tools/mock-interview" bgColor="bg-brutal-green" icon={MessageSquare} />
           <ToolCard title="Skill Roadmap" description="AI generated path to your next role." href="/dashboard/tools/roadmap" icon={Map} />

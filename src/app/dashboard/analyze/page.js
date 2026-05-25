@@ -8,7 +8,8 @@ import {
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import ReactMarkdown from 'react-markdown';
+import dynamic from 'next/dynamic';
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

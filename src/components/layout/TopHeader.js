@@ -36,9 +36,10 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
 
   const fetchProfile = async (userId) => {
     try {
-      const { data } = await supabase.from('profiles').select('avatarUrl').eq('id', userId).single();
-      setProfile(data);
-      if (data && !data.avatarUrl) {
+      const { data } = await api.get('/users/me');
+      const avatarUrl = data?.profile?.avatarUrl || null;
+      setProfile({ avatarUrl });
+      if (!avatarUrl) {
         setAvatarOptions(
           Array.from({ length: 6 }).map(() => `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${Math.random().toString(36).substring(7)}`)
         );

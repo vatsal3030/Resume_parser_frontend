@@ -63,7 +63,7 @@ const MODELS = [
   }
 ];
 
-export function ModelSelector({ value, onChange, disabled, hideLabel }) {
+export function ModelSelector({ value, onChange, disabled, hideLabel, compact }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -87,6 +87,46 @@ export function ModelSelector({ value, onChange, disabled, hideLabel }) {
   }, [isOpen]);
 
   const selectedModel = MODELS.find(m => m.id === value) || MODELS[0];
+
+  if (compact) {
+    return (
+      <div className={`relative ${disabled ? 'opacity-60 pointer-events-none' : ''}`} ref={dropdownRef}>
+        <div 
+          className="flex items-center justify-between border-2 border-brutal-black bg-white p-2 cursor-pointer hover:bg-gray-50 gap-2"
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+        >
+          <span className="font-bold text-sm truncate">{selectedModel.name}</span>
+          <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </div>
+
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-1 border-2 border-brutal-black bg-white shadow-[4px_4px_0_rgba(0,0,0,1)] max-h-[250px] overflow-y-auto min-w-[240px]">
+            {MODELS.map((model) => (
+              <div 
+                key={model.id}
+                className={`flex items-center justify-between p-2 border-b border-gray-200 hover:bg-brutal-yellow/20 cursor-pointer ${value === model.id ? 'bg-brutal-yellow/30' : ''} last:border-b-0`}
+                onClick={() => {
+                  if (!disabled) {
+                    onChange(model.id);
+                    setIsOpen(false);
+                  }
+                }}
+              >
+                <span className="font-bold text-sm">{model.name}</span>
+                <div className="flex gap-1 flex-wrap">
+                  {model.tags.map((tag, idx) => (
+                    <span key={idx} className={`text-[10px] font-bold px-1.5 py-0.5 border border-brutal-black ${tag.color}`}>
+                      {tag.text}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`mb-6 relative ${disabled ? 'opacity-60 pointer-events-none' : ''}`} ref={dropdownRef}>

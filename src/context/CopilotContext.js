@@ -354,11 +354,23 @@ export const CopilotProvider = ({ children }) => {
     } catch (error) {
       if (error.name === 'AbortError') return;
       console.error("Copilot SSE error:", error);
-      setMessages(prev => prev.map(msg =>
-        msg.id === assistantPlaceholderId
-          ? { role: 'assistant', content: "I'm sorry, I encountered an error processing your request. Please try again.", isError: true }
-          : msg
-      ));
+      // Only set error message if the streaming didn't already deliver error text
+      setMessages(prev => {
+        const existing = prev.find(msg => msg.id === assistantPlaceholderId);
+        // If streaming already provided content (like an AI error message), don't overwrite
+        if (existing?.content && existing.content.length > 0) {
+          return prev.map(msg =>
+            msg.id === assistantPlaceholderId
+              ? { role: 'assistant', content: existing.content, isError: true }
+              : msg
+          );
+        }
+        return prev.map(msg =>
+          msg.id === assistantPlaceholderId
+            ? { role: 'assistant', content: "I'm sorry, I encountered an error processing your request. Please try again.", isError: true }
+            : msg
+        );
+      });
     } finally {
       setIsLoading(false);
     }

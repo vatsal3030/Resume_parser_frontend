@@ -386,8 +386,27 @@ export default function ApplicationTracker() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center p-20">
-          <div className="w-16 h-16 bg-brutal-blue border-4 border-brutal-black animate-spin"></div>
+        <div className="flex overflow-x-auto gap-6 pb-8 snap-x">
+          {COLUMNS.map(col => (
+            <div key={col} className={`min-w-[320px] max-w-[320px] border-4 border-brutal-black flex-1 flex flex-col snap-center ${COL_COLORS[col]} shadow-[4px_4px_0_rgba(0,0,0,1)]`}>
+              <div className="p-4 border-b-4 border-brutal-black bg-white flex justify-between items-center">
+                <h2 className="text-xl font-black uppercase tracking-tight">{col}</h2>
+                <span className="text-sm font-black bg-black text-white px-2 py-0.5 border border-black shadow-[2px_2px_0_rgba(255,255,255,1)]">—</span>
+              </div>
+              <div className="p-4 flex-1 space-y-4 bg-white/40 min-h-[550px] animate-pulse">
+                {[1, 2, col === 'SAVED' ? 3 : null].filter(Boolean).map(i => (
+                  <div key={i} className="bg-white border-2 border-gray-200 p-4 space-y-3">
+                    <div className="h-5 bg-gray-300 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="flex justify-between items-center pt-2">
+                      <div className="h-3 bg-gray-200 rounded w-20" />
+                      <div className="h-3 bg-gray-200 rounded w-16" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="flex overflow-x-auto gap-6 pb-8 snap-x">

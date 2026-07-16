@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, GitBranch } from 'lucide-react';
 import api from '@/lib/api';
 import { ModelBadge } from './ModelBadge';
@@ -7,6 +7,7 @@ export function BranchingNavigation({ activeResult, toolType, onSelect }) {
   const [matchingItems, setMatchingItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const lastFetchedIdRef = useRef(null);
 
   // Normalize inputs to easily compare them
   const getInputs = useCallback((item) => {
@@ -17,6 +18,11 @@ export function BranchingNavigation({ activeResult, toolType, onSelect }) {
 
   const fetchVersions = useCallback(async () => {
     if (!activeResult) return;
+    const activeId = activeResult.id || activeResult.aiJobId;
+    // Skip if we already fetched for this exact result
+    if (activeId && activeId === lastFetchedIdRef.current) return;
+    lastFetchedIdRef.current = activeId;
+
     setLoading(true);
     try {
       // Get all history items for this toolType (large limit to catch all runs)
@@ -57,9 +63,6 @@ export function BranchingNavigation({ activeResult, toolType, onSelect }) {
       // Sort by createdAt ASC (oldest first) so that indices are chronological
       filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
       
-      // If our activeResult is a live result (not in history yet), or we want to make sure it is in the list
-      // Let's find by id or by aiJobId
-      const activeId = activeResult.id;
       const activeJobId = activeResult.aiJobId || activeResult._meta?.aiJobId;
       
       let index = filtered.findIndex(item => 
@@ -67,8 +70,7 @@ export function BranchingNavigation({ activeResult, toolType, onSelect }) {
         (activeJobId && item.aiJobId === activeJobId)
       );
 
-      // If activeResult is a live result that was just generated, it might not be in the fetched history list yet,
-      // but wait, we want to include it. Let's add it to the end if not found
+      // If activeResult is a live result that was just generated, add it to the end
       if (index === -1) {
         filtered.push(activeResult);
         index = filtered.length - 1;
@@ -85,11 +87,14 @@ export function BranchingNavigation({ activeResult, toolType, onSelect }) {
 
   useEffect(() => {
     fetchVersions();
-  }, [activeResult, fetchVersions]);
+    // Only re-fetch when activeResult.id changes, not on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeResult?.id]);
 
   // Listen to HISTORY_REFRESH events to refetch (e.g. after a new tailoring completes)
   useEffect(() => {
     const handleRefresh = () => {
+      lastFetchedIdRef.current = null; // Reset to allow re-fetch
       fetchVersions();
     };
     window.addEventListener("HISTORY_REFRESH", handleRefresh);

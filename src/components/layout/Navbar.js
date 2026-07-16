@@ -8,6 +8,7 @@ import { Menu, X, LogOut, UserCircle, Plus, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import Image from "next/image";
+import api from "@/lib/api";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -50,8 +51,9 @@ export function Navbar() {
     
     const fetchProfile = async (userId) => {
       try {
-        const { data } = await supabase.from('profiles').select('avatarUrl').eq('id', userId).single();
-        if (data) setProfile(data);
+        const { data } = await api.get('/users/me');
+        const avatarUrl = data?.profile?.avatarUrl || null;
+        if (avatarUrl) setProfile({ avatarUrl });
       } catch (err) {}
     };
 

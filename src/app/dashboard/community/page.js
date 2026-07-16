@@ -326,9 +326,31 @@ export default function CommunityPage() {
         {/* Feed List Pane */}
         <div className={`${selectedPost ? 'hidden lg:block lg:col-span-1' : 'col-span-3'} space-y-4`}>
           {loading ? (
-            <div className="flex flex-col items-center justify-center p-16 border-4 border-black border-dashed bg-white">
-               <Loader2 className="w-12 h-12 animate-spin text-black" />
-               <p className="font-bold text-gray-500 mt-4 uppercase">Loading Feed Discussions...</p>
+            <div className={`grid gap-6 ${selectedPost ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="bg-white border-4 border-brutal-black p-5 shadow-[4px_4px_0_#000] animate-pulse">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gray-300 rounded-full shrink-0" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-300 rounded w-24 mb-1" />
+                      <div className="h-3 bg-gray-200 rounded w-16" />
+                    </div>
+                  </div>
+                  <div className="h-5 bg-gray-300 rounded w-4/5 mb-3" />
+                  <div className="space-y-2 mb-4">
+                    <div className="h-3 bg-gray-200 rounded w-full" />
+                    <div className="h-3 bg-gray-200 rounded w-3/4" />
+                  </div>
+                  <div className="flex gap-2 mb-4">
+                    <div className="h-5 bg-gray-100 border border-gray-200 rounded w-14" />
+                    <div className="h-5 bg-gray-100 border border-gray-200 rounded w-18" />
+                  </div>
+                  <div className="flex justify-between items-center pt-3 border-t-2 border-gray-100">
+                    <div className="h-4 bg-gray-200 rounded w-12" />
+                    <div className="h-4 bg-gray-200 rounded w-16" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : posts.length === 0 ? (
             <div className="border-4 border-black p-12 text-center bg-white shadow-[4px_4px_0_#000]">

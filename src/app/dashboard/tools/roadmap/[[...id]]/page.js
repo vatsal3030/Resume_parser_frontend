@@ -69,63 +69,64 @@ export default function RoadmapGenerator() {
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
-        {/* LEFT COLUMN: Inputs & Generation */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-            <CardContent className="p-6">
-              <label className="block font-black text-lg mb-2">1. Current Resume</label>
-              <div className="mb-6">
-                <Select 
-                  value={selectedResume}
-                  onChange={setSelectedResume}
-                  disabled={isGenerating}
-                  placeholder="-- Select Resume --"
-                  options={resumes.map(r => ({
-                    value: r.id,
-                    label: r.title || r.originalName || 'Untitled Resume'
-                  }))}
-                />
-              </div>
+      {/* INPUTS — Full-width compact bar */}
+      <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] mb-6">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="block font-black text-sm mb-1.5 uppercase tracking-tight">1. Current Resume</label>
+              <Select 
+                value={selectedResume}
+                onChange={setSelectedResume}
+                disabled={isGenerating}
+                placeholder="-- Select Resume --"
+                options={resumes.map(r => ({
+                  value: r.id,
+                  label: r.title || r.originalName || 'Untitled Resume'
+                }))}
+              />
+            </div>
 
-              <label className="block font-black text-lg mb-2">2. Target Dream Role</label>
+            <div>
+              <label className="block font-black text-sm mb-1.5 uppercase tracking-tight">2. Target Dream Role</label>
               <input 
-                className="w-full border-2 border-brutal-black p-3 font-medium mb-6 focus:bg-brutal-yellow/20 outline-none"
+                className="w-full border-2 border-brutal-black p-2.5 font-medium text-sm focus:bg-brutal-yellow/20 outline-none"
                 placeholder="e.g. Machine Learning Engineer"
                 value={targetRole}
                 onChange={e => setTargetRole(e.target.value)}
               />
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* AI ENGINE & ACTION */}
-          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-            <CardContent className="p-6">
-              <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} />
+            <div>
+              <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} compact />
+            </div>
+
+            <div>
               <Button 
                 variant="brutal" 
-                className="w-full text-xl py-6 bg-brutal-yellow text-black mt-4 shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                className="w-full text-base py-3 bg-brutal-yellow text-black shadow-[4px_4px_0_rgba(0,0,0,1)]"
                 onClick={handleGenerate}
                 disabled={isGenerating}
               >
                 {isGenerating ? (
                    <span className="flex items-center gap-2 animate-pulse">
-                     <Map className="w-5 h-5" /> Analyzing Career Path...
+                     <Map className="w-4 h-4" /> Analyzing...
                    </span>
                 ) : (
                    <span className="flex items-center gap-2">
-                     <Map className="w-5 h-5" /> Generate Roadmap
+                     <Map className="w-4 h-4" /> Generate Roadmap
                    </span>
                 )}
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* RIGHT COLUMN: Results & Pipeline */}
-        <div className="lg:col-span-8 space-y-6">
+      {/* RESULTS — Full-width below */}
+      <div className="space-y-6 mb-8">
           {status === JOB_STATUS.IDLE && !historyResult && (
-            <div className="h-full border-4 border-dashed border-brutal-black flex items-center justify-center p-8 text-center opacity-50 min-h-[400px]">
+            <div className="border-4 border-dashed border-brutal-black flex items-center justify-center p-12 text-center opacity-50">
                <p className="font-bold text-xl">Submit to see your personalized learning path.</p>
             </div>
           )}
@@ -238,7 +239,6 @@ export default function RoadmapGenerator() {
           />
         </div>
       )}
-      </div>
       </div>
     </ToolPageLayout>
   );

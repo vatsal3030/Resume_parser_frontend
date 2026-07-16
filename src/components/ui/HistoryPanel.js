@@ -188,9 +188,15 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
       {/* List */}
       <div className="flex-1 overflow-y-auto">
         {loading ? (
-          <div className="p-4 space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 border-2 border-gray-200 skeleton-shimmer" />
+          <div className="p-2 space-y-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="border-2 border-gray-200 bg-white p-3 shadow-[2px_2px_0_rgba(0,0,0,0.05)] animate-pulse">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <div className="w-4 h-4 bg-gray-200 rounded" />
+                </div>
+                <div className="h-3 bg-gray-300 rounded w-4/5 mb-1.5" />
+                <div className="h-2.5 bg-gray-200 rounded w-3/5" />
+              </div>
             ))}
           </div>
         ) : items.length === 0 ? (

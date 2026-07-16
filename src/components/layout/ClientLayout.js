@@ -75,7 +75,7 @@ export function ClientLayout({ children }) {
         />
         
         {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-gutter-stable">
           {children}
         </main>
       </div>

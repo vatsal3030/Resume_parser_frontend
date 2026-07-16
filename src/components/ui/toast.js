@@ -24,11 +24,11 @@ export function ToastProvider({ children }) {
   const recentToastsRef = useRef(new Map()); // dedup: key -> timestamp
 
   const addToast = useCallback(({ type = 'info', title, message, duration = 4000, action }) => {
-    // Deduplication: skip if same title+message was added within last 2 seconds
-    const dedupeKey = `${type}:${title}:${message}`;
+    // Deduplication: skip if same title+message was added within last 3 seconds
+    const dedupeKey = `${type}:${(title || '').toLowerCase().trim()}:${(message || '').toLowerCase().trim()}`;
     const now = Date.now();
     const lastTime = recentToastsRef.current.get(dedupeKey);
-    if (lastTime && now - lastTime < 2000) {
+    if (lastTime && now - lastTime < 3000) {
       return -1; // Skip duplicate
     }
     recentToastsRef.current.set(dedupeKey, now);
@@ -41,7 +41,17 @@ export function ToastProvider({ children }) {
 
     const id = ++toastIdRef.current;
     
-    setToasts(prev => [...prev, { id, type, title, message, action, exiting: false }]);
+    setToasts(prev => {
+      const next = [...prev, { id, type, title, message, action, exiting: false }];
+      // Max 5 concurrent toasts — remove oldest non-action toast if exceeded
+      if (next.length > 5) {
+        const oldestIdx = next.findIndex(t => !t.action && !t.exiting);
+        if (oldestIdx !== -1) {
+          next.splice(oldestIdx, 1);
+        }
+      }
+      return next;
+    });
 
     // Auto-dismiss
     if (duration > 0 && !action) {

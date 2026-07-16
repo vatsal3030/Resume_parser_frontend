@@ -103,10 +103,57 @@ export default function TrashPage() {
       {error && <ErrorBanner message={error} onRetry={fetchTrash} onDismiss={() => setError(null)} className="mb-6" />}
 
       {loading ? (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-20 bg-gray-100 border-4 border-brutal-black skeleton-shimmer" />
-          ))}
+        <div className="space-y-8 animate-pulse">
+          {/* Group 1 skeleton */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-5 h-5 bg-gray-300 rounded" />
+              <div className="h-4 bg-gray-300 rounded w-28" />
+              <div className="h-5 bg-gray-200 border border-gray-300 rounded w-6" />
+            </div>
+            <div className="space-y-2">
+              {[1, 2].map(i => (
+                <div key={i} className="flex items-center justify-between p-4 bg-white border-4 border-brutal-black shadow-brutal">
+                  <div className="flex-1 min-w-0">
+                    <div className="h-4 bg-gray-300 rounded w-3/5 mb-2" />
+                    <div className="flex items-center gap-3">
+                      <div className="h-3 bg-gray-200 rounded w-24" />
+                      <div className="h-3 bg-gray-200 rounded w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <div className="h-8 bg-gray-200 border-2 border-gray-300 rounded w-20" />
+                    <div className="h-8 bg-gray-100 border-2 border-gray-300 rounded w-8" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Group 2 skeleton */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-5 h-5 bg-gray-300 rounded" />
+              <div className="h-4 bg-gray-300 rounded w-24" />
+              <div className="h-5 bg-gray-200 border border-gray-300 rounded w-6" />
+            </div>
+            <div className="space-y-2">
+              {[1].map(i => (
+                <div key={i} className="flex items-center justify-between p-4 bg-white border-4 border-brutal-black shadow-brutal">
+                  <div className="flex-1 min-w-0">
+                    <div className="h-4 bg-gray-300 rounded w-2/5 mb-2" />
+                    <div className="flex items-center gap-3">
+                      <div className="h-3 bg-gray-200 rounded w-24" />
+                      <div className="h-3 bg-gray-200 rounded w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <div className="h-8 bg-gray-200 border-2 border-gray-300 rounded w-20" />
+                    <div className="h-8 bg-gray-100 border-2 border-gray-300 rounded w-8" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-20">

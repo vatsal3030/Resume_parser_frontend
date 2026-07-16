@@ -7,22 +7,33 @@ import { HistoryPanel } from "@/components/ui/HistoryPanel";
 import { PageShell } from "@/components/ui/PageShell";
 import api from "@/lib/api";
 
+// UUID v4 pattern for validating outputIds before API calls
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function SearchParamLoader({ onHistorySelect, onJobIdFound, activeOutputId }) {
   const searchParams = useSearchParams();
   const params = useParams();
-  const outputId = params?.id || searchParams.get('outputId');
+  // For catch-all routes like [[...id]], params.id is an array
+  const rawId = params?.id;
+  const outputId = Array.isArray(rawId) ? rawId[0] : (rawId || searchParams.get('outputId'));
   const jobId = searchParams.get('jobId');
   const processedOutputRef = useRef(null);
   const processedJobRef = useRef(null);
 
   useEffect(() => {
-    if (outputId && onHistorySelect && outputId !== processedOutputRef.current && outputId !== activeOutputId) {
+    // Validate UUID format before making API call to prevent 404s
+    if (outputId && onHistorySelect && outputId !== processedOutputRef.current && outputId !== activeOutputId && UUID_REGEX.test(outputId)) {
       processedOutputRef.current = outputId;
       api.get(`/history/${outputId}`)
         .then(res => {
           onHistorySelect(res.data);
         })
-        .catch(err => console.error("Failed to load output from dynamic route/query param:", err));
+        .catch(err => {
+          // Silently handle 404s — the history item may have been deleted
+          if (err.response?.status !== 404) {
+            console.error("Failed to load output from dynamic route/query param:", err);
+          }
+        });
     }
   }, [outputId, onHistorySelect, activeOutputId]);
 
@@ -68,16 +79,19 @@ export function ToolPageLayout({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const params = useParams();
+  const lastSyncedIdRef = useRef(null);
 
   // Compute basePath from current pathname (e.g. /dashboard/tools/roadmap or /dashboard/analyze)
   const segments = pathname.split('/');
   const isTool = segments[2] === 'tools';
   const basePath = isTool ? segments.slice(0, 4).join('/') : segments.slice(0, 3).join('/');
 
-  // Sync historyResult?.id to URL route path
+  // Sync historyResult?.id to URL route path — uses ref to prevent infinite loop
   useEffect(() => {
-    if (historyResult?.id && toolType) {
-      const currentId = params?.id || searchParams.get('outputId');
+    if (historyResult?.id && toolType && historyResult.id !== lastSyncedIdRef.current) {
+      lastSyncedIdRef.current = historyResult.id;
+      const rawId = params?.id;
+      const currentId = Array.isArray(rawId) ? rawId[0] : (rawId || searchParams.get('outputId'));
       if (currentId !== historyResult.id) {
         const queryParams = new URLSearchParams(searchParams.toString());
         queryParams.delete('outputId'); // Path is primary now
@@ -85,7 +99,9 @@ export function ToolPageLayout({
         router.replace(`${basePath}/${historyResult.id}${queryString}`);
       }
     }
-  }, [historyResult, toolType, basePath, pathname, router, searchParams, params?.id]);
+    // Intentionally excluding searchParams and params from deps to prevent re-render loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyResult?.id, toolType, basePath, router]);
 
   const handleClear = () => {
     const queryParams = new URLSearchParams(searchParams.toString());

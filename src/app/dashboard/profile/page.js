@@ -298,8 +298,68 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <PageShell title="Profile" subtitle="Loading...">
-        <div className="space-y-4">{[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-gray-100 border-2 border-brutal-black skeleton-shimmer" />)}</div>
+      <PageShell title="Profile" subtitle="Manage your career identity" subtitleColor="bg-brutal-blue text-white"
+        actions={
+          <div className="h-10 w-32 bg-gray-200 border-2 border-brutal-black animate-pulse" />
+        }>
+        <div className="animate-pulse">
+          {/* Tab bar skeleton — matches BrutalTabs */}
+          <div className="flex flex-wrap gap-2 border-b-4 border-brutal-black pb-3 mb-6">
+            {['Account', 'Personal', 'Career', 'Education', 'Links', 'Achievements'].map((label, i) => (
+              <div key={i} className={`px-4 py-2 border-2 border-brutal-black text-xs font-black uppercase ${i === 0 ? 'bg-brutal-yellow shadow-[2px_2px_0_#000]' : 'bg-gray-100'}`}>
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Content card — matches "bg-white border-4 border-brutal-black p-6 shadow-brutal" */}
+          <div className="bg-white border-4 border-brutal-black p-6 shadow-brutal">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left: Profile Picture skeleton */}
+              <div>
+                <div className="h-6 bg-gray-300 rounded w-36 mb-4 border-b-4 border-gray-200 pb-2" />
+                <div className="flex items-center gap-6 mt-4">
+                  <div className="w-24 h-24 bg-gray-200 border-4 border-gray-300 shrink-0" />
+                  <div className="space-y-2">
+                    <div className="h-9 bg-gray-200 border-2 border-gray-300 rounded w-32" />
+                    <div className="h-3 bg-gray-100 rounded w-28" />
+                  </div>
+                </div>
+                <div className="mt-6">
+                  <div className="h-3 bg-gray-200 rounded w-32 mb-2" />
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                      <div key={i} className="w-12 h-12 bg-gray-100 border-2 border-gray-200" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Security skeleton */}
+              <div>
+                <div className="h-6 bg-gray-300 rounded w-24 mb-4 border-b-4 border-gray-200 pb-2" />
+                <div className="space-y-4 mt-4">
+                  <div>
+                    <div className="h-3 bg-gray-200 rounded w-28 mb-2" />
+                    <div className="h-10 bg-gray-100 border-2 border-gray-200" />
+                  </div>
+                  <div>
+                    <div className="h-3 bg-gray-200 rounded w-32 mb-2" />
+                    <div className="h-10 bg-gray-100 border-2 border-gray-200" />
+                  </div>
+                  <div className="h-3 bg-gray-100 rounded w-64" />
+                </div>
+              </div>
+
+              {/* Bottom: Account Management skeleton */}
+              <div className="md:col-span-2 border-t-4 border-gray-200 pt-6 mt-2">
+                <div className="h-6 bg-gray-300 rounded w-44 mb-4" />
+                <div className="h-4 bg-gray-200 rounded w-full max-w-md mb-4" />
+                <div className="h-10 bg-gray-200 border-2 border-gray-300 rounded w-48" />
+              </div>
+            </div>
+          </div>
+        </div>
       </PageShell>
     );
   }
@@ -480,21 +540,44 @@ export default function ProfilePage() {
         {/* Links Tab */}
         {activeTab === 4 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {["linkedin", "github", "twitter", "portfolio", "leetcode", "codeforces", "geeksforgeeks"].map(key => {
-              const LINK_LABELS = {
-                linkedin: "LinkedIn",
-                github: "GitHub",
-                twitter: "Twitter",
-                portfolio: "Portfolio",
-                leetcode: "LeetCode",
-                codeforces: "Codeforces",
-                geeksforgeeks: "GeeksforGeeks"
-              };
+            {[
+              { key: "linkedin", label: "LinkedIn", icon: "🔗", color: "bg-blue-100 border-blue-400", accent: "bg-blue-500", placeholder: "https://linkedin.com/in/your-profile" },
+              { key: "github", label: "GitHub", icon: "🐙", color: "bg-gray-100 border-gray-400", accent: "bg-gray-800", placeholder: "https://github.com/username" },
+              { key: "twitter", label: "Twitter / X", icon: "🐦", color: "bg-sky-50 border-sky-400", accent: "bg-sky-500", placeholder: "https://twitter.com/handle" },
+              { key: "portfolio", label: "Portfolio", icon: "🌐", color: "bg-purple-50 border-purple-400", accent: "bg-purple-500", placeholder: "https://yoursite.com" },
+              { key: "leetcode", label: "LeetCode", icon: "⚡", color: "bg-orange-50 border-orange-400", accent: "bg-orange-500", placeholder: "https://leetcode.com/u/username" },
+              { key: "codeforces", label: "Codeforces", icon: "🏆", color: "bg-red-50 border-red-400", accent: "bg-red-500", placeholder: "https://codeforces.com/profile/handle" },
+              { key: "geeksforgeeks", label: "GeeksforGeeks", icon: "💚", color: "bg-green-50 border-green-400", accent: "bg-green-600", placeholder: "https://geeksforgeeks.org/user/username" },
+            ].map(link => {
+              const url = profile.socialLinks?.[link.key] || "";
+              const hasUrl = url.trim().length > 0;
               return (
-                <div key={key}>
-                  <label className="block text-xs font-black uppercase mb-1">{LINK_LABELS[key] || key}</label>
-                  <input className="w-full border-2 border-brutal-black p-2.5 font-bold text-sm focus:bg-brutal-yellow/20 outline-none"
-                    value={profile.socialLinks?.[key] || ""} onChange={e => updateSocial(key, e.target.value)} placeholder={`https://${key}.com/...`} />
+                <div key={link.key} className={`border-2 ${link.color} p-4 transition-all hover:shadow-[2px_2px_0_#000] relative overflow-hidden`}>
+                  {/* Accent strip */}
+                  <div className={`absolute top-0 left-0 w-1.5 h-full ${link.accent}`} />
+                  <div className="pl-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="flex items-center gap-2 text-xs font-black uppercase tracking-wider">
+                        <span className="text-base">{link.icon}</span>
+                        {link.label}
+                      </label>
+                      {hasUrl && (
+                        <a href={url} target="_blank" rel="noopener noreferrer"
+                          className={`text-[10px] font-black uppercase px-2 py-1 ${link.accent} text-white border border-black hover:opacity-80 transition-opacity flex items-center gap-1`}>
+                          Visit ↗
+                        </a>
+                      )}
+                    </div>
+                    <input
+                      className="w-full border-2 border-brutal-black p-2.5 font-bold text-sm focus:bg-brutal-yellow/20 outline-none bg-white"
+                      value={url}
+                      onChange={e => updateSocial(link.key, e.target.value)}
+                      placeholder={link.placeholder}
+                    />
+                    {hasUrl && (
+                      <p className="text-[10px] font-bold text-green-600 mt-1 flex items-center gap-1">✓ Connected</p>
+                    )}
+                  </div>
                 </div>
               );
             })}

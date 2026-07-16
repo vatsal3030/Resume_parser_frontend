@@ -268,7 +268,13 @@ export default function ResumeStudio() {
 
         {listLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-40 bg-gray-100 border-4 border-brutal-black skeleton-shimmer" />)}
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white border-4 border-brutal-black p-5 shadow-brutal animate-pulse">
+                <div className="h-6 bg-gray-300 rounded w-3/4 mb-3" />
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
+                <div className="h-3 bg-gray-100 rounded w-1/3 mt-4" />
+              </div>
+            ))}
           </div>
         ) : resumes.length === 0 ? (
           <div className="text-center py-20 border-4 border-dashed border-brutal-black">

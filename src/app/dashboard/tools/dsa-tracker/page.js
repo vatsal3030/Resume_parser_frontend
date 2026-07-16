@@ -95,8 +95,52 @@ export default function DSATrackerPage() {
   if (initialLoad) {
     return (
       <PageShell title="DSA Tracker" subtitle="Track your competitive programming progress">
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-10 h-10 animate-spin text-brutal-blue" />
+        <div className="space-y-6 animate-pulse">
+          {/* Skeleton for platform inputs */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <Card key={i} className="border-4 border-brutal-black shadow-brutal bg-gray-100">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 bg-gray-300 rounded" />
+                    <div className="h-5 bg-gray-300 rounded w-24" />
+                  </div>
+                  <div className="h-9 bg-gray-200 rounded border-2 border-gray-300" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {/* Skeleton for stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <Card key={i} className="border-4 border-brutal-black shadow-brutal bg-gray-100">
+                <CardContent className="p-4 text-center">
+                  <div className="w-8 h-8 bg-gray-300 rounded mx-auto mb-2" />
+                  <div className="h-10 bg-gray-300 rounded w-16 mx-auto mb-2" />
+                  <div className="h-3 bg-gray-200 rounded w-20 mx-auto" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          {/* Skeleton for platform detail cards */}
+          {[1, 2].map(i => (
+            <Card key={i} className="border-4 border-brutal-black shadow-brutal bg-white">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-6 border-b-4 border-gray-200 pb-4">
+                  <div className="w-10 h-10 bg-gray-300 rounded" />
+                  <div className="h-6 bg-gray-300 rounded w-32" />
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4].map(j => (
+                    <div key={j} className="p-4 border-2 border-gray-200 bg-gray-50 text-center">
+                      <div className="h-8 bg-gray-300 rounded w-12 mx-auto mb-2" />
+                      <div className="h-3 bg-gray-200 rounded w-16 mx-auto" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </PageShell>
     );
@@ -190,9 +234,28 @@ export default function DSATrackerPage() {
 
       {/* Platform Detail Cards */}
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-10 h-10 animate-spin text-brutal-blue" />
-          <span className="ml-3 font-bold text-lg">Fetching stats from platforms...</span>
+        <div className="space-y-6 animate-pulse">
+          {[1, 2, 3].map(i => (
+            <Card key={i} className="border-4 border-brutal-black shadow-brutal bg-white">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-6 border-b-4 border-gray-200 pb-4">
+                  <div className="w-10 h-10 bg-gray-300 rounded" />
+                  <div>
+                    <div className="h-6 bg-gray-300 rounded w-28 mb-1" />
+                    <div className="h-4 bg-gray-200 rounded w-20" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4].map(j => (
+                    <div key={j} className="p-4 border-2 border-gray-200 bg-gray-50 text-center">
+                      <div className="h-10 bg-gray-300 rounded w-14 mx-auto mb-2" />
+                      <div className="h-3 bg-gray-200 rounded w-16 mx-auto" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : stats ? (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8">

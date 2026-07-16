@@ -118,6 +118,14 @@ export function CopilotPanel() {
               </div>
               <div className="flex items-center gap-2 z-10">
                 <button
+                  onClick={(e) => { e.stopPropagation(); createNewConversation(); }}
+                  aria-label="New Chat"
+                  title="New Chat"
+                  className="text-xs font-bold px-2 py-1 border-2 border-brutal-yellow bg-brutal-yellow text-black hover:bg-yellow-300 transition-all"
+                >
+                  + New
+                </button>
+                <button
                   onClick={(e) => { e.stopPropagation(); setShowThreadList(!showThreadList); }}
                   aria-label="Toggle History"
                   className={`text-xs font-bold px-2 py-1 border-2 border-transparent hover:border-white transition-all ${showThreadList ? 'bg-white text-black' : 'text-white'}`}

@@ -3,37 +3,97 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/formatDate';
-import { Bell, Sparkles, AlertCircle, FileText, CheckCircle2, Loader2, CreditCard, Briefcase, Code, ChevronRight, FileEdit, Map, MessageSquare, LayoutTemplate } from 'lucide-react';
+import { Bell, Sparkles, AlertCircle, FileText, CheckCircle2, Loader2, CreditCard, Briefcase, Code, ChevronRight, FileEdit, Map, MessageSquare, LayoutTemplate, AlertTriangle, Zap, GitBranch } from 'lucide-react';
 import { Button } from './button';
 
 /**
- * Maps notification priority to visual treatment.
+ * Notification type classification — determines color, icon, and badge text.
  */
-const PRIORITY_STYLES = {
-  URGENT: 'border-l-4 border-l-red-500',
-  HIGH: 'border-l-4 border-l-orange-400',
-  NORMAL: '',
-};
-
-/**
- * Returns a contextual icon based on the notification's actionUrl or title.
- */
-function getNotifIcon(notif) {
+function classifyNotification(notif) {
   const url = (notif.actionUrl || '').toLowerCase();
   const title = (notif.title || '').toLowerCase();
+  const message = (notif.message || '').toLowerCase();
 
-  if (url.includes('credit') || title.includes('credit') || title.includes('payment')) return CreditCard;
-  if (url.includes('studio') || title.includes('resume')) return FileEdit;
-  if (url.includes('tailor')) return FileText;
-  if (url.includes('cover')) return FileText;
-  if (url.includes('interview') || title.includes('interview')) return MessageSquare;
-  if (url.includes('roadmap') || title.includes('roadmap')) return Map;
-  if (url.includes('github') || title.includes('github')) return Code;
-  if (url.includes('portfolio')) return LayoutTemplate;
-  if (url.includes('tracker') || title.includes('job')) return Briefcase;
-  if (notif.priority === 'HIGH' || notif.priority === 'URGENT') return AlertCircle;
-  return Sparkles;
+  // Failed/Error notifications
+  if (title.includes('failed') || title.includes('error') || message.includes('failed')) {
+    return { type: 'error', label: 'Failed', color: 'red', icon: AlertCircle };
+  }
+
+  // Credit/Payment notifications
+  if (url.includes('credit') || title.includes('credit') || title.includes('payment')) {
+    return { type: 'credit', label: 'Credits', color: 'yellow', icon: CreditCard };
+  }
+
+  // GitHub notifications
+  if (url.includes('github') || title.includes('github')) {
+    return { type: 'github', label: 'GitHub', color: 'green', icon: GitBranch };
+  }
+
+  // Resume Studio
+  if (url.includes('studio') || title.includes('studio')) {
+    return { type: 'studio', label: 'Studio', color: 'mint', icon: FileEdit };
+  }
+
+  // Resume analysis
+  if (title.includes('resume') || title.includes('analysis') || title.includes('analyze')) {
+    return { type: 'analysis', label: 'Analysis', color: 'blue', icon: FileText };
+  }
+
+  // Tailor
+  if (url.includes('tailor') || title.includes('tailor')) {
+    return { type: 'tailor', label: 'Tailor', color: 'pink', icon: Zap };
+  }
+
+  // Cover letter
+  if (url.includes('cover') || title.includes('cover letter')) {
+    return { type: 'cover', label: 'Cover Letter', color: 'pink', icon: FileText };
+  }
+
+  // Interview
+  if (url.includes('interview') || title.includes('interview')) {
+    return { type: 'interview', label: 'Interview', color: 'mint', icon: MessageSquare };
+  }
+
+  // Roadmap
+  if (url.includes('roadmap') || title.includes('roadmap')) {
+    return { type: 'roadmap', label: 'Roadmap', color: 'purple', icon: Map };
+  }
+
+  // Portfolio
+  if (url.includes('portfolio') || title.includes('portfolio')) {
+    return { type: 'portfolio', label: 'Portfolio', color: 'orange', icon: LayoutTemplate };
+  }
+
+  // Tracker/Job
+  if (url.includes('tracker') || title.includes('job')) {
+    return { type: 'tracker', label: 'Tracker', color: 'blue', icon: Briefcase };
+  }
+
+  // Urgent/High priority
+  if (notif.priority === 'URGENT') {
+    return { type: 'urgent', label: 'Urgent', color: 'red', icon: AlertTriangle };
+  }
+  if (notif.priority === 'HIGH') {
+    return { type: 'high', label: 'Important', color: 'orange', icon: AlertCircle };
+  }
+
+  // Default
+  return { type: 'general', label: 'Update', color: 'blue', icon: Sparkles };
 }
+
+/**
+ * Color mappings for notification types
+ */
+const TYPE_COLORS = {
+  red:    { border: 'border-l-red-500',     bg: 'bg-red-50',      badge: 'bg-red-500 text-white',     icon: 'text-red-500' },
+  yellow: { border: 'border-l-yellow-500',  bg: 'bg-yellow-50',   badge: 'bg-brutal-yellow text-black', icon: 'text-yellow-600' },
+  green:  { border: 'border-l-green-500',   bg: 'bg-green-50',    badge: 'bg-green-500 text-white',   icon: 'text-green-600' },
+  blue:   { border: 'border-l-blue-400',    bg: 'bg-blue-50',     badge: 'bg-brutal-blue text-black', icon: 'text-blue-500' },
+  pink:   { border: 'border-l-pink-400',    bg: 'bg-pink-50',     badge: 'bg-brutal-pink text-black', icon: 'text-pink-500' },
+  mint:   { border: 'border-l-emerald-400', bg: 'bg-emerald-50',  badge: 'bg-brutal-mint text-black', icon: 'text-emerald-500' },
+  purple: { border: 'border-l-purple-400',  bg: 'bg-purple-50',   badge: 'bg-purple-400 text-white',  icon: 'text-purple-500' },
+  orange: { border: 'border-l-orange-400',  bg: 'bg-orange-50',   badge: 'bg-orange-400 text-white',  icon: 'text-orange-500' },
+};
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -138,23 +198,25 @@ export function NotificationDropdown() {
       >
         <Bell className="w-6 h-6" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-brutal-pink border-2 border-brutal-black rounded-full group-hover:animate-ping"></span>
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center bg-red-500 border-2 border-brutal-black text-white text-[10px] font-black px-1 group-hover:scale-110 transition-transform">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
         )}
       </button>
 
       {isOpen && (
         <>
-          <div className="absolute right-0 mt-2 w-80 bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] z-50 animate-in slide-in-from-top-2">
-            <div className="p-4 border-b-2 border-brutal-black bg-brutal-bg flex justify-between items-center">
-              <h3 className="font-black uppercase tracking-tight">Notifications</h3>
+          <div className="absolute right-0 mt-2 w-96 bg-white border-4 border-brutal-black shadow-[6px_6px_0_rgba(0,0,0,1)] z-50 animate-in slide-in-from-top-2">
+            <div className="p-4 border-b-3 border-brutal-black bg-brutal-black flex justify-between items-center">
+              <h3 className="font-black uppercase tracking-tight text-white text-lg">Notifications</h3>
               {unreadCount > 0 && (
-                <span className="text-xs font-bold bg-black text-white px-2 py-0.5 rounded-full">
+                <span className="text-xs font-black bg-brutal-yellow text-black px-2.5 py-1 border-2 border-white">
                   {unreadCount} New
                 </span>
               )}
             </div>
             
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-[420px] overflow-y-auto">
               {loading && notifications.length === 0 ? (
                 <div className="p-8 text-center">
                   <Loader2 className="w-6 h-6 mx-auto mb-2 animate-spin opacity-50" />
@@ -162,36 +224,47 @@ export function NotificationDropdown() {
                 </div>
               ) : notifications.length > 0 ? (
                 notifications.map((notif) => {
-                  const Icon = getNotifIcon(notif);
+                  const classification = classifyNotification(notif);
+                  const Icon = classification.icon;
+                  const colors = TYPE_COLORS[classification.color] || TYPE_COLORS.blue;
                   const isClickable = !!notif.actionUrl;
 
                   return (
                     <div 
                       key={notif.id} 
                       onClick={() => handleNotifClick(notif)}
-                      className={`p-4 border-b-2 border-brutal-black transition-colors cursor-pointer group/notif
-                        ${notif.isRead ? 'opacity-60 hover:opacity-80' : 'bg-white hover:bg-brutal-yellow/10'} 
-                        ${PRIORITY_STYLES[notif.priority] || ''}`}
+                      className={`p-4 border-b-2 border-gray-200 transition-all cursor-pointer group/notif border-l-4
+                        ${colors.border}
+                        ${notif.isRead ? 'opacity-60 hover:opacity-80 bg-white' : `${colors.bg} hover:brightness-95`}`}
                     >
                       <div className="flex gap-3">
-                        <div className="mt-1 shrink-0">
-                          <Icon className={`w-5 h-5 ${notif.priority === 'URGENT' ? 'text-red-500' : notif.priority === 'HIGH' ? 'text-orange-500' : 'text-brutal-blue'}`} />
+                        <div className={`mt-0.5 shrink-0 w-9 h-9 flex items-center justify-center border-2 border-brutal-black ${notif.isRead ? 'bg-gray-100' : colors.bg}`}>
+                          <Icon className={`w-4.5 h-4.5 ${colors.icon}`} strokeWidth={2.5} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start gap-2">
-                            <h4 className={`font-bold text-sm leading-tight ${isClickable ? 'group-hover/notif:underline underline-offset-2' : ''}`}>
-                              {notif.title}
-                            </h4>
-                            <span className="text-[10px] font-bold text-gray-400 whitespace-nowrap">
+                          <div className="flex justify-between items-start gap-2 mb-1">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <h4 className={`font-bold text-sm leading-tight truncate ${isClickable ? 'group-hover/notif:underline underline-offset-2' : ''}`}>
+                                {notif.title}
+                              </h4>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 border ${colors.badge}`}>
+                                {classification.label}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-gray-600 leading-relaxed">{notif.message}</p>
+                          <div className="flex items-center justify-between mt-1.5">
+                            <span className="text-[10px] font-bold text-gray-400">
                               {timeAgo(notif.createdAt)}
                             </span>
+                            {isClickable && (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-black uppercase text-brutal-blue opacity-0 group-hover/notif:opacity-100 transition-opacity">
+                                View <ChevronRight className="w-3 h-3" />
+                              </span>
+                            )}
                           </div>
-                          <p className="text-xs text-gray-600 mt-1">{notif.message}</p>
-                          {isClickable && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] font-black uppercase text-brutal-blue mt-1.5 opacity-0 group-hover/notif:opacity-100 transition-opacity">
-                              View <ChevronRight className="w-3 h-3" />
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -206,7 +279,7 @@ export function NotificationDropdown() {
             </div>
             
             {notifications.length > 0 && (
-              <div className="p-2 border-t-2 border-brutal-black bg-slate-50 flex flex-col gap-1">
+              <div className="p-2 border-t-3 border-brutal-black bg-slate-50 flex flex-col gap-1">
                 {unreadCount > 0 && (
                   <Button 
                     variant="ghost" 

@@ -70,64 +70,65 @@ export default function ResumeTailor() {
       onJobIdFound={monitorJob}
     >
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
-        {/* LEFT COLUMN: Inputs & Generation */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-            <CardContent className="p-6">
-              <label className="block font-black text-lg mb-2">1. Select Baseline Resume</label>
-              <div className="mb-6">
-                <Select
-                  value={selectedResume}
-                  onChange={setSelectedResume}
-                  disabled={isGenerating}
-                  placeholder="-- Select Resume --"
-                  options={resumes.map(r => ({
-                    value: r.id,
-                    label: r.title || r.originalName || 'Untitled Resume'
-                  }))}
-                />
-              </div>
+      {/* INPUTS — Full-width compact bar */}
+      <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] mb-6">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="block font-black text-sm mb-1.5 uppercase tracking-tight">1. Select Resume</label>
+              <Select
+                value={selectedResume}
+                onChange={setSelectedResume}
+                disabled={isGenerating}
+                placeholder="-- Select Resume --"
+                options={resumes.map(r => ({
+                  value: r.id,
+                  label: r.title || r.originalName || 'Untitled Resume'
+                }))}
+              />
+            </div>
 
-              <label className="block font-black text-lg mb-2">2. Paste Job Description</label>
+            <div className="md:col-span-1 lg:col-span-1">
+              <label className="block font-black text-sm mb-1.5 uppercase tracking-tight">2. Job Description</label>
               <textarea 
-                className="w-full border-2 border-brutal-black p-3 font-medium min-h-[200px] mb-6"
+                className="w-full border-2 border-brutal-black p-2.5 font-medium min-h-[80px] text-sm resize-y"
                 placeholder="Paste the target job description here..."
                 value={jobDescription}
                 onChange={e => setJobDescription(e.target.value)}
                 disabled={isGenerating}
               />
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* AI ENGINE & ACTION */}
-          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-            <CardContent className="p-6">
-              <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} />
+            <div>
+              <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} compact />
+            </div>
+
+            <div>
               <Button 
                 variant="brutal" 
-                className="w-full text-xl py-6 bg-brutal-blue text-black mt-4 shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                className="w-full text-base py-3 bg-brutal-blue text-black shadow-[4px_4px_0_rgba(0,0,0,1)]"
                 onClick={handleTailor}
                 disabled={isGenerating}
               >
                 {isGenerating ? (
                    <span className="flex items-center gap-2 animate-pulse">
-                     <Sparkles className="w-5 h-5" /> AI is Analyzing...
+                     <Sparkles className="w-4 h-4" /> Analyzing...
                    </span>
                 ) : (
                    <span className="flex items-center gap-2">
-                     <Sparkles className="w-5 h-5" /> Tailor Resume
+                     <Sparkles className="w-4 h-4" /> Tailor Resume
                    </span>
                 )}
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* RIGHT COLUMN: Results & Pipeline */}
-        <div className="lg:col-span-8 space-y-6">
+      {/* RESULTS — Full-width below */}
+      <div className="space-y-6 mb-8">
           {status === JOB_STATUS.IDLE && !historyResult && (
-            <div className="h-full border-4 border-dashed border-brutal-black flex items-center justify-center p-8 text-center opacity-50 min-h-[400px]">
+            <div className="border-4 border-dashed border-brutal-black flex items-center justify-center p-12 text-center opacity-50">
                <p className="font-bold text-xl">Submit to see tailored results here.</p>
             </div>
           )}
@@ -205,7 +206,6 @@ export default function ResumeTailor() {
             </div>
            )}
         </div>
-      </div>
      </ToolPageLayout>
    );
  }

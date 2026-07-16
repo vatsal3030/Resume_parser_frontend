@@ -320,63 +320,64 @@ export default function PortfolioGenerator() {
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
-        {/* LEFT COLUMN: Inputs & Generation */}
-        <div className="lg:col-span-4 space-y-6">
-          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-            <CardContent className="p-6">
-              <label className="block font-black text-lg mb-2">1. Select Resume Context</label>
-              <div className="mb-6">
-                <Select 
-                  value={selectedResume}
-                  onChange={setSelectedResume}
-                  disabled={isGenerating}
-                  placeholder="-- Select Resume --"
-                  options={resumes.map(r => ({
-                    value: r.id,
-                    label: r.title || r.originalName || 'Untitled Resume'
-                  }))}
-                />
-              </div>
+      {/* INPUTS — Full-width compact bar */}
+      <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] mb-6">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <div>
+              <label className="block font-black text-sm mb-1.5 uppercase tracking-tight">1. Resume Context</label>
+              <Select 
+                value={selectedResume}
+                onChange={setSelectedResume}
+                disabled={isGenerating}
+                placeholder="-- Select Resume --"
+                options={resumes.map(r => ({
+                  value: r.id,
+                  label: r.title || r.originalName || 'Untitled Resume'
+                }))}
+              />
+            </div>
 
-              <label className="block font-black text-lg mb-2">2. Preferred Theme</label>
+            <div>
+              <label className="block font-black text-sm mb-1.5 uppercase tracking-tight">2. Theme</label>
               <Select
                 value={selectedTemplate}
                 onChange={setSelectedTemplate}
                 disabled={isGenerating}
                 options={Object.values(PORTFOLIO_TEMPLATES).map(t => ({ value: t.id, label: t.name }))}
               />
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* AI ENGINE & ACTION */}
-          <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-            <CardContent className="p-6">
-              <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} />
+            <div>
+              <ModelSelector value={modelId} onChange={setModelId} disabled={isGenerating} compact />
+            </div>
+
+            <div>
               <Button 
                 variant="brutal" 
-                className="w-full text-xl py-6 bg-brutal-pink text-black hover:bg-pink-400 mt-4 shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                className="w-full text-base py-3 bg-brutal-pink text-black hover:bg-pink-400 shadow-[4px_4px_0_rgba(0,0,0,1)]"
                 onClick={handleGenerate}
                 disabled={isGenerating}
               >
                 {isGenerating ? (
                    <span className="flex items-center gap-2 animate-pulse">
-                     <Layout className="w-5 h-5" /> Designing Layout...
+                     <Layout className="w-4 h-4" /> Designing...
                    </span>
                 ) : (
                    <span className="flex items-center gap-2">
-                     <Sparkles className="w-5 h-5" /> Generate Portfolio
+                     <Sparkles className="w-4 h-4" /> Generate Portfolio
                    </span>
                 )}
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* RIGHT COLUMN: Results & Pipeline */}
-        <div className="lg:col-span-8 space-y-6">
+      {/* RESULTS — Full-width below */}
+      <div className="space-y-6 mb-8">
           {status === JOB_STATUS.IDLE && !historyResult && (
-            <div className="h-full border-4 border-dashed border-brutal-black flex items-center justify-center p-8 text-center opacity-50 min-h-[400px]">
+            <div className="border-4 border-dashed border-brutal-black flex items-center justify-center p-12 text-center opacity-50">
                <p className="font-bold text-xl">Generate a full portfolio data structure ready for React/Next.js.</p>
             </div>
           )}
@@ -511,7 +512,6 @@ export default function PortfolioGenerator() {
             </div>
           )}
         </div>
-      </div>
       {/* Full Screen Overlay using Portal */}
       {isFullScreen && displayResult && typeof document !== 'undefined' && createPortal(
         <div className="fixed inset-0 z-9999 bg-white overflow-y-auto animate-in fade-in zoom-in-95 duration-200">

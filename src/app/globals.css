@@ -95,6 +95,14 @@
 }
 
 /* ============================================================
+   SCROLLBAR GUTTER — prevent layout shift when scrollbar appears/disappears
+   ============================================================ */
+
+@utility scrollbar-gutter-stable {
+  scrollbar-gutter: stable;
+}
+
+/* ============================================================
    ANIMATION KEYFRAMES
    ============================================================ */
 

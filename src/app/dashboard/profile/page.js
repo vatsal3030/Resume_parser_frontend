@@ -193,6 +193,26 @@ export default function ProfilePage() {
   const toast = useToast();
 
   const handleAddAccount = async () => {
+    try {
+      // Save current account to localStorage for account switcher
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const savedAccounts = JSON.parse(localStorage.getItem('saved_accounts') || '[]');
+        const existing = savedAccounts.find(a => a.id === session.user.id);
+        if (!existing) {
+          savedAccounts.push({
+            id: session.user.id,
+            email: session.user.email,
+            avatarUrl: profile.avatarUrl || null,
+            name: profile.fullName || profile.username || session.user.email?.split('@')[0],
+            savedAt: new Date().toISOString()
+          });
+          localStorage.setItem('saved_accounts', JSON.stringify(savedAccounts));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to save account info:', e);
+    }
     await supabase.auth.signOut();
     router.push("/login");
   };
@@ -288,12 +308,12 @@ export default function ProfilePage() {
   const availableStates = getStatesForCountry(profile.country);
 
   const tabs = [
-    { id: 0, label: "Account", icon: Settings },
-    { id: 1, label: "Personal", icon: User },
-    { id: 2, label: "Career", icon: Briefcase },
-    { id: 3, label: "Education", icon: GraduationCap },
-    { id: 4, label: "Links", icon: Link2 },
-    { id: 5, label: "Achievements", icon: Award },
+    { id: 0, label: "Account", icon: Settings, color: "bg-brutal-yellow" },
+    { id: 1, label: "Personal", icon: User, color: "bg-brutal-pink" },
+    { id: 2, label: "Career", icon: Briefcase, color: "bg-brutal-blue" },
+    { id: 3, label: "Education", icon: GraduationCap, color: "bg-brutal-mint" },
+    { id: 4, label: "Links", icon: Link2, color: "bg-purple-300" },
+    { id: 5, label: "Achievements", icon: Award, color: "bg-orange-300" },
   ];
 
   if (loading) {
@@ -367,9 +387,17 @@ export default function ProfilePage() {
   return (
     <PageShell title="Profile" subtitle="Manage your career identity" subtitleColor="bg-brutal-blue text-white"
       actions={
-        <Button onClick={handleSave} disabled={saving} variant="brutal" className="gap-2">
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {saving ? "Saving..." : "Save Profile"}
+        <Button 
+          onClick={handleSave} 
+          disabled={saving} 
+          className={`gap-2 px-6 py-3 text-sm font-black uppercase border-3 border-brutal-black transition-all ${
+            saving 
+              ? 'bg-gray-300 text-gray-500 shadow-none' 
+              : 'bg-gradient-to-r from-brutal-mint to-brutal-yellow text-brutal-black shadow-[4px_4px_0_#000] hover:shadow-[2px_2px_0_#000] hover:translate-x-0.5 hover:translate-y-0.5 active:shadow-none active:translate-x-1 active:translate-y-1'
+          }`}
+        >
+          {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+          {saving ? "Saving..." : "💾 Save Profile"}
         </Button>
       }>
       {error && <ErrorBanner message={error} onDismiss={() => setError(null)} className="mb-6" />}

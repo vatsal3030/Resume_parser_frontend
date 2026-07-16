@@ -69,6 +69,21 @@ function LoginForm() {
     if (error) setError(error.message);
   };
 
+  const [savedAccounts, setSavedAccounts] = useState([]);
+
+  useEffect(() => {
+    try {
+      const accounts = JSON.parse(localStorage.getItem('saved_accounts') || '[]');
+      setSavedAccounts(accounts);
+    } catch { /* ignore */ }
+  }, []);
+
+  const removeSavedAccount = (accountId) => {
+    const updated = savedAccounts.filter(a => a.id !== accountId);
+    setSavedAccounts(updated);
+    localStorage.setItem('saved_accounts', JSON.stringify(updated));
+  };
+
   return (
     <Card>
       <CardHeader className="bg-brutal-pink">
@@ -76,6 +91,45 @@ function LoginForm() {
         <CardDescription className="text-brutal-black">Sign in to review AI insights</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+
+        {/* Saved Accounts Section */}
+        {savedAccounts.length > 0 && (
+          <div className="space-y-3">
+            <p className="text-xs font-black uppercase tracking-tight text-gray-500">Quick Login — Saved Accounts</p>
+            {savedAccounts.map((acc) => (
+              <div key={acc.id} className="flex items-center gap-3 p-3 border-3 border-brutal-black bg-brutal-bg hover:bg-brutal-yellow/20 cursor-pointer shadow-[2px_2px_0_#000] transition-all group"
+                onClick={() => {
+                  setEmail(acc.email);
+                  setSuccess(`Logging in as ${acc.name || acc.email}. Enter your password.`);
+                }}
+              >
+                <div className="w-10 h-10 bg-white border-2 border-brutal-black flex items-center justify-center overflow-hidden shrink-0">
+                  {acc.avatarUrl ? (
+                    <img src={acc.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-lg font-black">{(acc.name || acc.email)?.[0]?.toUpperCase()}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-sm truncate">{acc.name || 'User'}</p>
+                  <p className="text-xs font-bold text-gray-500 truncate">{acc.email}</p>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeSavedAccount(acc.id); }}
+                  className="text-xs font-bold text-gray-400 hover:text-red-500 px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Remove saved account"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <div className="relative flex items-center py-1">
+              <div className="grow border-t-2 border-gray-300"></div>
+              <span className="shrink-0 px-3 font-bold text-xs text-gray-400">or login with another account</span>
+              <div className="grow border-t-2 border-gray-300"></div>
+            </div>
+          </div>
+        )}
         
         {success && (
           <div className="p-3 border-3 border-brutal-black bg-brutal-mint text-brutal-black font-bold shadow-brutal-sm">

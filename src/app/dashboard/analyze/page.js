@@ -172,22 +172,84 @@ export default function NewAnalysis() {
         historyResult={historyResult}
         onClearHistory={() => { setData(null); setHistoryResult(null); router.push('/dashboard/analyze'); }}
       >
-        <div className="min-h-screen p-4 max-w-7xl mx-auto space-y-8 animate-pulse">
-          <Card className="bg-white border-4 border-brutal-black">
-            <CardContent className="p-8 space-y-4">
-              <SkeletonLine width="w-64" height="h-10" />
-              <div className="flex gap-4">
-                <SkeletonBlock width="w-32" height="h-8" />
-                <SkeletonBlock width="w-32" height="h-8" />
+        <div className="max-w-7xl mx-auto space-y-8 animate-pulse">
+          {/* Blue header card skeleton — matches the real candidate profile card */}
+          <Card className="bg-brutal-blue border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex-1">
+                  <div className="h-10 bg-blue-400/40 rounded w-64 mb-4" />
+                  <div className="flex flex-wrap gap-3">
+                    <div className="h-7 bg-white/40 border-2 border-black/20 rounded w-36" />
+                    <div className="h-7 bg-white/40 border-2 border-black/20 rounded w-28" />
+                    <div className="h-7 bg-white/40 border-2 border-black/20 rounded w-20" />
+                  </div>
+                </div>
+                <div className="h-8 bg-brutal-yellow/40 border-2 border-black/20 rounded w-40" />
+              </div>
+              <div className="mt-8 pt-6 border-t-4 border-brutal-black">
+                <div className="h-7 bg-blue-400/30 rounded w-32 mb-3" />
+                <div className="bg-white/40 border-3 border-black/20 p-4 space-y-2">
+                  <div className="h-4 bg-blue-300/30 rounded w-full" />
+                  <div className="h-4 bg-blue-300/30 rounded w-4/5" />
+                </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Tab buttons skeleton */}
+          <div className="flex space-x-4">
+            <div className="h-10 bg-brutal-black/80 border-3 border-brutal-black rounded w-44" />
+            <div className="h-10 bg-white border-3 border-gray-300 rounded w-52" />
+          </div>
+
+          {/* Results grid: 4-col charts left + 8-col content right */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-4 space-y-8">
-               <SkeletonCard height="h-64" />
+              {/* ATS Score chart card */}
+              <div className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_#000]">
+                <div className="bg-brutal-yellow border-b-4 border-brutal-black p-4">
+                  <div className="h-5 bg-yellow-600/20 rounded w-24 mx-auto" />
+                </div>
+                <div className="p-6 flex flex-col items-center">
+                  <div className="w-36 h-36 bg-gray-200 rounded-full border-4 border-gray-300" />
+                </div>
+              </div>
+              {/* Job Fit chart card */}
+              <div className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_#000]">
+                <div className="bg-brutal-pink border-b-4 border-brutal-black p-4">
+                  <div className="h-5 bg-pink-600/20 rounded w-20 mx-auto" />
+                </div>
+                <div className="p-6 flex flex-col items-center">
+                  <div className="w-36 h-36 bg-gray-200 rounded-full border-4 border-gray-300" />
+                </div>
+              </div>
             </div>
             <div className="lg:col-span-8 space-y-6">
-               <SkeletonCard height="h-48" />
+              {/* Strengths card */}
+              <div className="bg-white border-4 border-brutal-black p-6 shadow-[4px_4px_0_#000]">
+                <div className="h-6 bg-gray-300 rounded w-28 mb-4" />
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-5 h-5 bg-green-200 rounded shrink-0 mt-0.5" />
+                      <div className="h-4 bg-gray-200 rounded w-full" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Weaknesses card */}
+              <div className="bg-white border-4 border-brutal-black p-6 shadow-[4px_4px_0_#000]">
+                <div className="h-6 bg-gray-300 rounded w-32 mb-4" />
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-5 h-5 bg-red-200 rounded shrink-0 mt-0.5" />
+                      <div className="h-4 bg-gray-200 rounded w-full" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -346,10 +408,51 @@ export default function NewAnalysis() {
                         </div>
                       </div>
                       <p className="font-bold text-xs mt-6 bg-slate-100 border-2 border-black p-2 shadow-[2px_2px_0_#000] text-center w-full">
-                        Alignment with key industry tech standards.
+                        Alignment with domain-relevant role standards.
                       </p>
                     </CardContent>
                   </Card>
+
+                  {/* Domain & Role Fit Details */}
+                  {(data.detectedDomain || data.suggestedRoles) && (
+                    <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_#000]">
+                      <CardContent className="p-5 space-y-4">
+                        {data.detectedDomain && (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-black uppercase text-gray-500">Domain:</span>
+                            <span className="px-3 py-1 bg-purple-200 border-2 border-brutal-black font-black text-sm uppercase shadow-[2px_2px_0_#000]">
+                              🎯 {data.detectedDomain}
+                            </span>
+                          </div>
+                        )}
+                        {data.roleFitExplanation && (
+                          <p className="text-sm font-medium text-gray-700 bg-brutal-bg border-2 border-brutal-black p-3">
+                            {data.roleFitExplanation}
+                          </p>
+                        )}
+                        {data.suggestedRoles?.length > 0 && (
+                          <div>
+                            <p className="text-xs font-black uppercase text-gray-500 mb-2">Best Fit Roles</p>
+                            <div className="space-y-2">
+                              {data.suggestedRoles.map((r, i) => (
+                                <div key={i} className="flex items-center gap-3 p-2 border-2 border-brutal-black bg-brutal-bg">
+                                  <div className="w-12 text-center shrink-0">
+                                    <span className={`text-lg font-black ${r.matchPercentage >= 80 ? 'text-green-600' : r.matchPercentage >= 60 ? 'text-yellow-600' : 'text-red-500'}`}>
+                                      {r.matchPercentage}%
+                                    </span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-black text-sm">{r.role}</p>
+                                    <p className="text-xs text-gray-500 font-medium truncate">{r.reasoning}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
 
                 {/* Suggestions Right Column */}

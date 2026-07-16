@@ -288,43 +288,116 @@ export default function MockInterviewGenerator() {
                   setShowGuidance(false);
                 }} 
               />
+
+              {/* Domain & Level Badges */}
+              {(displayResult.detectedDomain || displayResult.interviewLevel) && (
+                <div className="flex flex-wrap gap-3 mt-4">
+                  {displayResult.detectedDomain && (
+                    <span className="px-4 py-2 bg-purple-200 border-3 border-brutal-black font-black text-sm uppercase shadow-[3px_3px_0_#000]">
+                      🎯 Domain: {displayResult.detectedDomain}
+                    </span>
+                  )}
+                  {displayResult.interviewLevel && (
+                    <span className="px-4 py-2 bg-brutal-mint border-3 border-brutal-black font-black text-sm uppercase shadow-[3px_3px_0_#000]">
+                      📊 Level: {displayResult.interviewLevel}
+                    </span>
+                  )}
+                  <span className="px-4 py-2 bg-brutal-yellow border-3 border-brutal-black font-black text-sm uppercase shadow-[3px_3px_0_#000]">
+                    📝 {displayResult.rounds.length} Rounds · {displayResult.rounds.reduce((sum, r) => sum + (r.questions?.length || 0), 0)} Questions
+                  </span>
+                </div>
+              )}
+
+              {/* Overall Progress Bar */}
+              {(() => {
+                const totalQ = displayResult.rounds.reduce((sum, r) => sum + (r.questions?.length || 0), 0);
+                const answeredQ = Object.keys(answers).filter(k => answers[k]?.length > 0).length;
+                const pct = totalQ > 0 ? Math.round((answeredQ / totalQ) * 100) : 0;
+                return (
+                  <div className="bg-white border-3 border-brutal-black p-3 shadow-[3px_3px_0_#000]">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-black text-xs uppercase">Progress</span>
+                      <span className="font-black text-sm">{answeredQ}/{totalQ} answered ({pct}%)</span>
+                    </div>
+                    <div className="w-full h-4 bg-gray-200 border-2 border-brutal-black">
+                      <div className="h-full bg-brutal-green transition-all duration-500" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                );
+              })()}
               
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-8">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
                 {/* Sidebar / Progress */}
                 <div className="lg:col-span-4 space-y-4">
                   <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
                     <CardContent className="p-4">
                       <h3 className="font-black text-xl mb-4 border-b-2 border-black pb-2">Interview Rounds</h3>
                       <div className="space-y-4">
-                        {displayResult.rounds.map((round, rIdx) => (
-                          <div key={rIdx}>
-                            <h4 className={`font-bold text-sm mb-2 ${rIdx === activeRound ? 'text-brutal-blue' : 'text-gray-500'}`}>
-                              {round.title}
-                            </h4>
-                            <div className="flex gap-2">
-                              {round.questions.map((_, qIdx) => {
-                                const isCurrent = rIdx === activeRound && qIdx === activeQuestion;
-                                const isAnswered = answers[round.questions[qIdx].id]?.length > 10;
-                                return (
-                                  <div key={qIdx} className={`w-6 h-6 border-2 border-black rounded-sm flex items-center justify-center text-xs font-bold ${isCurrent ? 'bg-brutal-yellow' : (isAnswered ? 'bg-brutal-green' : 'bg-gray-100')}`}>
-                                    {qIdx + 1}
-                                  </div>
-                                );
-                              })}
+                        {displayResult.rounds.map((round, rIdx) => {
+                          const typeColors = {
+                            aptitude: 'bg-yellow-100 text-yellow-800',
+                            mcq: 'bg-blue-100 text-blue-800',
+                            coding: 'bg-green-100 text-green-800',
+                            technical: 'bg-purple-100 text-purple-800',
+                            project_discussion: 'bg-orange-100 text-orange-800',
+                            behavioral: 'bg-pink-100 text-pink-800',
+                          };
+                          return (
+                            <div key={rIdx}>
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className={`font-bold text-sm flex-1 ${rIdx === activeRound ? 'text-brutal-blue' : 'text-gray-500'}`}>
+                                  {round.title}
+                                </h4>
+                                <span className={`text-[9px] font-black px-2 py-0.5 border border-current uppercase ${typeColors[round.type] || 'bg-gray-100'}`}>
+                                  {round.type?.replace('_', ' ')}
+                                </span>
+                              </div>
+                              <div className="flex gap-2">
+                                {round.questions.map((q, qIdx) => {
+                                  const isCurrent = rIdx === activeRound && qIdx === activeQuestion;
+                                  const isAnswered = answers[q.id]?.length > 0;
+                                  return (
+                                    <button 
+                                      key={qIdx} 
+                                      onClick={() => { setActiveRound(rIdx); setActiveQuestion(qIdx); setShowGuidance(false); }}
+                                      className={`w-7 h-7 border-2 border-black rounded-sm flex items-center justify-center text-xs font-bold cursor-pointer transition-all hover:scale-110 ${isCurrent ? 'bg-brutal-yellow shadow-[2px_2px_0_#000]' : (isAnswered ? 'bg-brutal-green' : 'bg-gray-100')}`}
+                                    >
+                                      {qIdx + 1}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </CardContent>
                   </Card>
                 </div>
 
                 <div className="lg:col-span-8">
-                  <div className="flex justify-between items-center mb-6">
+                  <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
                      <h2 className="text-2xl font-black">{currentRound.title} — Q{activeQuestion + 1}</h2>
-                     <span className="text-xs font-bold uppercase px-3 py-1 border-2 border-brutal-black bg-brutal-pink text-black">
-                       {currentRound.type}
-                     </span>
+                     <div className="flex gap-2">
+                       {/* Difficulty badge */}
+                       {currentQ.difficulty && (
+                         <span className={`text-xs font-black uppercase px-3 py-1 border-2 border-brutal-black ${
+                           currentQ.difficulty === 'Hard' ? 'bg-red-300' : currentQ.difficulty === 'Medium' ? 'bg-orange-200' : 'bg-green-200'
+                         }`}>
+                           {currentQ.difficulty}
+                         </span>
+                       )}
+                       {/* Time badge */}
+                       {currentQ.timeMinutes && (
+                         <span className="text-xs font-black uppercase px-3 py-1 border-2 border-brutal-black bg-brutal-blue text-white">
+                           ⏱ {currentQ.timeMinutes} min
+                         </span>
+                       )}
+                       {/* Type badge */}
+                       <span className="text-xs font-bold uppercase px-3 py-1 border-2 border-brutal-black bg-brutal-pink text-black">
+                         {currentRound.type?.replace('_', ' ')}
+                       </span>
+                     </div>
                   </div>
 
                   <Card className="bg-white border-4 border-brutal-black shadow-[8px_8px_0_rgba(0,0,0,1)] mb-8">
@@ -344,7 +417,7 @@ export default function MockInterviewGenerator() {
                         {currentRound.type === 'mcq' && currentQ.options && currentQ.options.length > 0 ? (
                           <div className="space-y-3 mt-4">
                             {currentQ.options.map((opt, idx) => (
-                              <label key={idx} className={`flex items-center gap-3 p-4 border-4 cursor-pointer transition-colors ${answers[currentQ.id] === opt ? 'border-brutal-blue bg-brutal-blue/10' : 'border-brutal-black hover:bg-slate-50'}`}>
+                              <label key={idx} className={`flex items-center gap-3 p-4 border-4 cursor-pointer transition-all ${answers[currentQ.id] === opt ? 'border-brutal-blue bg-brutal-blue/10 shadow-[3px_3px_0_#000]' : 'border-brutal-black hover:bg-slate-50'}`}>
                                 <input 
                                   type="radio" 
                                   name={`mcq_${currentQ.id}`} 
@@ -353,7 +426,7 @@ export default function MockInterviewGenerator() {
                                   onChange={() => handleAnswerChange(currentQ.id, opt)}
                                   className="w-5 h-5 accent-brutal-blue"
                                 />
-                                <span className="font-bold">{opt}</span>
+                                <span className="font-bold">{String.fromCharCode(65 + idx)}. {opt}</span>
                               </label>
                             ))}
                           </div>
@@ -368,6 +441,22 @@ export default function MockInterviewGenerator() {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Show Guidance Toggle */}
+                  <div className="mb-6">
+                    <button 
+                      onClick={() => setShowGuidance(!showGuidance)} 
+                      className="text-sm font-black text-brutal-blue underline decoration-2 underline-offset-4 hover:text-blue-700"
+                    >
+                      {showGuidance ? 'Hide Answer Guidance ▲' : 'Show Answer Guidance ▼'}
+                    </button>
+                    {showGuidance && currentQ.expectedAnswerGuidance && (
+                      <div className="mt-3 bg-brutal-mint/30 border-2 border-brutal-black p-4">
+                        <p className="text-xs font-black uppercase text-gray-500 mb-2">Expected Answer Points:</p>
+                        <p className="font-medium text-gray-800 whitespace-pre-wrap">{currentQ.expectedAnswerGuidance}</p>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="flex justify-between items-center border-t-4 border-brutal-black pt-6">
                      <Button variant="ghost" onClick={prevQuestion} disabled={activeRound === 0 && activeQuestion === 0} className="border-2 border-brutal-black font-bold">

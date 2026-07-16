@@ -11,6 +11,8 @@ const PLATFORMS = [
   { key: 'leetcode', label: 'LeetCode', icon: '🟡', color: 'bg-yellow-100 border-yellow-400', url: 'https://leetcode.com' },
   { key: 'codeforces', label: 'Codeforces', icon: '🔵', color: 'bg-blue-100 border-blue-400', url: 'https://codeforces.com' },
   { key: 'gfg', label: 'GeeksForGeeks', icon: '🟢', color: 'bg-green-100 border-green-400', url: 'https://geeksforgeeks.org' },
+  { key: 'codechef', label: 'CodeChef', icon: '🟠', color: 'bg-orange-100 border-orange-400', url: 'https://codechef.com' },
+  { key: 'hackerrank', label: 'HackerRank', icon: '🟩', color: 'bg-emerald-100 border-emerald-400', url: 'https://hackerrank.com' },
 ];
 
 const CODEFORCES_RANK_COLORS = {
@@ -27,7 +29,7 @@ const CODEFORCES_RANK_COLORS = {
 };
 
 export default function DSATrackerPage() {
-  const [usernames, setUsernames] = useState({ leetcode: '', codeforces: '', gfg: '' });
+  const [usernames, setUsernames] = useState({ leetcode: '', codeforces: '', gfg: '', codechef: '', hackerrank: '' });
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,6 +46,8 @@ export default function DSATrackerPage() {
           leetcode: dsa.leetcode || '',
           codeforces: dsa.codeforces || '',
           gfg: dsa.gfg || '',
+          codechef: dsa.codechef || '',
+          hackerrank: dsa.hackerrank || '',
         });
         // Auto-fetch if usernames exist
         if (dsa.leetcode || dsa.codeforces || dsa.gfg) {
@@ -60,7 +64,7 @@ export default function DSATrackerPage() {
 
   const fetchStats = useCallback(async (overrideUsernames) => {
     const u = overrideUsernames || usernames;
-    if (!u.leetcode && !u.codeforces && !u.gfg) {
+    if (!u.leetcode && !u.codeforces && !u.gfg && !u.codechef && !u.hackerrank) {
       toast.warning('No Usernames', 'Enter at least one platform username.');
       return;
     }
@@ -70,6 +74,8 @@ export default function DSATrackerPage() {
       if (u.leetcode) params.append('leetcode', u.leetcode);
       if (u.codeforces) params.append('codeforces', u.codeforces);
       if (u.gfg) params.append('gfg', u.gfg);
+      if (u.codechef) params.append('codechef', u.codechef);
+      if (u.hackerrank) params.append('hackerrank', u.hackerrank);
       const { data } = await api.get(`/dsa/stats?${params}`);
       setStats(data);
     } catch (e) {
@@ -160,7 +166,7 @@ export default function DSATrackerPage() {
       }
     >
       {/* Platform Username Inputs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
         {PLATFORMS.map(p => (
           <Card key={p.key} className={`border-4 border-brutal-black shadow-brutal ${p.color}`}>
             <CardContent className="p-4">
@@ -300,11 +306,12 @@ export default function DSATrackerPage() {
                     {/* Codeforces specific */}
                     {platform.platform === 'Codeforces' && (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                          <StatBox label="Total Solved" value={platform.totalSolved || 0} color="bg-brutal-yellow" />
                           <StatBox label="Rating" value={platform.rating} color="bg-blue-200" />
                           <StatBox label="Max Rating" value={platform.maxRating} color="bg-purple-200" />
                           <StatBox label="Contests" value={platform.contestCount} color="bg-brutal-mint" />
-                          <StatBox label="Contribution" value={platform.contribution} color="bg-brutal-yellow" />
+                          <StatBox label="Contribution" value={platform.contribution} color="bg-gray-100" />
                         </div>
                         <div className="flex items-center gap-3 mt-4">
                           <Award className="w-5 h-5" />
@@ -344,6 +351,44 @@ export default function DSATrackerPage() {
                         <StatBox label="Easy" value={platform.easySolved} color="bg-green-100" />
                         <StatBox label="Medium" value={platform.mediumSolved} color="bg-yellow-200" />
                         <StatBox label="Hard" value={platform.hardSolved} color="bg-red-200" />
+                      </div>
+                    )}
+
+                    {/* CodeChef specific */}
+                    {platform.platform === 'CodeChef' && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <StatBox label="Total Solved" value={platform.totalSolved ?? '—'} color="bg-orange-200" />
+                          <StatBox label="Rating" value={platform.rating} color="bg-orange-100" />
+                          <StatBox label="Max Rating" value={platform.maxRating} color="bg-purple-200" />
+                          <StatBox label="Stars" value={platform.stars} color="bg-brutal-yellow" />
+                        </div>
+                        <div className="flex items-center gap-3 mt-2">
+                          <Award className="w-5 h-5" />
+                          <span className="font-bold">Global Rank: </span>
+                          <span className="font-black text-lg">{platform.globalRank || '—'}</span>
+                          {platform.countryRank && (
+                            <span className="text-xs text-gray-400 font-medium">(Country: #{platform.countryRank})</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* HackerRank specific */}
+                    {platform.platform === 'HackerRank' && (
+                      <div className="space-y-3">
+                        {platform.badges?.length > 0 ? (
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            {platform.badges.map((b, i) => (
+                              <div key={i} className="p-3 border-2 border-brutal-black bg-emerald-50 text-center">
+                                <p className="text-2xl font-black">{b.score ?? '—'}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-wider mt-1">{b.name}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm font-bold text-gray-500">No badge data available.</p>
+                        )}
                       </div>
                     )}
                   </>

@@ -28,7 +28,14 @@ export function TemplateSelector({ isOpen, onClose, onSelect, currentTemplateId 
     <BrutalModal isOpen={isOpen} onClose={onClose} title="Choose Template" size="lg">
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
-          {[...Array(5)].map((_, i) => <div key={i} className="h-40 bg-gray-100 border-4 border-brutal-black skeleton-shimmer" />)}
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="p-4 border-4 border-brutal-black bg-white animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-16 mb-3" />
+              <div className="h-4 bg-gray-300 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-gray-200 rounded w-full mb-1" />
+              <div className="h-3 bg-gray-100 rounded w-24 mt-3" />
+            </div>
+          ))}
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">

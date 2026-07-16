@@ -20,7 +20,7 @@ export function CreditBalance({ className = "" }) {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className={`h-8 w-20 bg-gray-200 skeleton-shimmer border-2 border-brutal-black ${className}`} />;
+  if (loading) return <div className={`h-8 w-20 bg-gray-200 animate-pulse border-2 border-brutal-black ${className}`} />;
 
   const isLow = balance !== null && balance <= 10;
   const isEmpty = balance !== null && balance <= 0;

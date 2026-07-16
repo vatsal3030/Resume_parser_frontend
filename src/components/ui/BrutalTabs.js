@@ -2,9 +2,9 @@
 import React from "react";
 
 /**
- * BrutalTabs — Brutalist styled tab navigation with keyboard support.
+ * BrutalTabs — Prominent, button-like tab navigation with icons and color accents.
  *
- * @param {Array} tabs - Array of { id, label, icon?: LucideIcon }
+ * @param {Array} tabs - Array of { id, label, icon?: LucideIcon, color?: string }
  * @param {string} activeTab - Currently active tab id
  * @param {function} onTabChange - Tab change handler
  * @param {string} className - Additional classes
@@ -25,7 +25,6 @@ export function BrutalTabs({ tabs, activeTab, onTabChange, className = "" }) {
     }
     e.preventDefault();
     onTabChange(tabs[nextIndex].id);
-    // Focus the new tab button
     const tabList = e.currentTarget.parentElement;
     tabList?.children[nextIndex]?.focus();
   };
@@ -34,11 +33,12 @@ export function BrutalTabs({ tabs, activeTab, onTabChange, className = "" }) {
     <div
       role="tablist"
       aria-label="Tabs"
-      className={`flex border-b-4 border-brutal-black overflow-x-auto ${className}`}
+      className={`flex flex-wrap gap-2 ${className}`}
     >
       {tabs.map((tab, index) => {
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
+        const activeColor = tab.color || "bg-brutal-yellow";
         return (
           <button
             key={tab.id}
@@ -50,16 +50,16 @@ export function BrutalTabs({ tabs, activeTab, onTabChange, className = "" }) {
             onClick={() => onTabChange(tab.id)}
             onKeyDown={(e) => handleKeyDown(e, tab.id, index)}
             className={`
-              flex items-center gap-2 px-5 py-3 font-bold text-sm uppercase tracking-tight
-              border-b-4 -mb-[4px] whitespace-nowrap transition-all
+              flex items-center gap-2 px-4 py-2.5 font-black text-xs uppercase tracking-tight
+              border-3 border-brutal-black transition-all whitespace-nowrap
               ${
                 isActive
-                  ? "border-brutal-yellow bg-brutal-yellow text-brutal-black"
-                  : "border-transparent hover:bg-gray-100 text-gray-600 hover:text-brutal-black"
+                  ? `${activeColor} text-brutal-black shadow-[3px_3px_0_#000] translate-x-0 translate-y-0`
+                  : "bg-white text-gray-500 hover:bg-gray-100 hover:text-brutal-black shadow-[2px_2px_0_#000] hover:shadow-[3px_3px_0_#000]"
               }
             `}
           >
-            {Icon && <Icon className="w-4 h-4" />}
+            {Icon && <Icon className={`w-4 h-4 ${isActive ? '' : 'opacity-60'}`} />}
             {tab.label}
           </button>
         );

@@ -167,7 +167,7 @@ export function CopilotPanel() {
                         msg.role === 'user' 
                           ? 'bg-brutal-blue text-black shadow-[2px_2px_0_rgba(0,0,0,1)]' 
                           : msg.isError
-                            ? 'bg-red-100 text-red-800 shadow-[2px_2px_0_rgba(0,0,0,1)]'
+                            ? 'bg-red-100 text-red-800 shadow-[2px_2px_0_rgba(0,0,0,1)] border-red-400'
                             : 'bg-white text-black shadow-[2px_2px_0_rgba(0,0,0,1)]'
                       }`}
                     >
@@ -178,9 +178,33 @@ export function CopilotPanel() {
                           <span className="w-2 h-2 bg-black rounded-full animate-bounce delay-200"></span>
                         </div>
                       ) : (
-                        <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">
-                          {msg.content}
-                        </p>
+                        <>
+                          <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">
+                            {msg.content}
+                          </p>
+                          {msg.isStreaming && (
+                            <span className="inline-flex items-center gap-1 mt-1 text-xs font-bold text-gray-400">
+                              <span className="w-1.5 h-1.5 bg-brutal-blue rounded-full animate-pulse"></span>
+                              Typing...
+                            </span>
+                          )}
+                          {msg.isError && (
+                            <button
+                              onClick={() => {
+                                // Find the last user message before this error and resend
+                                const userMessages = messages.slice(0, idx).filter(m => m.role === 'user');
+                                const lastUserMsg = userMessages[userMessages.length - 1];
+                                if (lastUserMsg) {
+                                  // Remove the error message and resend
+                                  sendMessage(lastUserMsg.content);
+                                }
+                              }}
+                              className="mt-2 text-xs font-black text-red-700 underline decoration-2 underline-offset-2 hover:text-red-900 flex items-center gap-1"
+                            >
+                              ↻ Retry
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

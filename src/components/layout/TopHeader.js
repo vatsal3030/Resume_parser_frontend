@@ -88,6 +88,25 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
   };
 
   const handleAddAccount = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const savedAccounts = JSON.parse(localStorage.getItem('saved_accounts') || '[]');
+        const existing = savedAccounts.find(a => a.id === session.user.id);
+        if (!existing) {
+          savedAccounts.push({
+            id: session.user.id,
+            email: session.user.email,
+            avatarUrl: profile?.avatarUrl || null,
+            name: profile?.fullName || profile?.username || session.user.email?.split('@')[0],
+            savedAt: new Date().toISOString()
+          });
+          localStorage.setItem('saved_accounts', JSON.stringify(savedAccounts));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to save account info:', e);
+    }
     await supabase.auth.signOut();
     router.push("/login");
   };

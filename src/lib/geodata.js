@@ -126,25 +126,66 @@ export const STATUS_OPTIONS = [
   { value: "career_break", label: "Career Break" },
 ];
 
-/**
- * Fetch universities from Hipo Labs API.
- * Free API, no auth required.
- * @param {string} query - Search term (min 3 chars)
- * @param {string} [country] - Optional country filter
- * @returns {Promise<Array<{name: string, domain: string}>>}
- */
+// In-memory cache for university data (fetched once, filtered client-side)
+let _uniCache = null;
+let _uniCachePromise = null;
+
+async function getUniversityData() {
+  if (_uniCache) return _uniCache;
+  if (_uniCachePromise) return _uniCachePromise;
+  
+  _uniCachePromise = (async () => {
+    try {
+      const res = await fetch(
+        'https://raw.githubusercontent.com/Hipo/university-domains-list/master/world_universities_and_domains.json',
+        { signal: AbortSignal.timeout(12000) }
+      );
+      if (res.ok) {
+        _uniCache = await res.json();
+        return _uniCache;
+      }
+    } catch {
+      // GitHub raw failed
+    }
+    return null;
+  })();
+  
+  const result = await _uniCachePromise;
+  _uniCachePromise = null;
+  return result;
+}
+
 export async function searchUniversities(query, country = null) {
   if (!query || query.length < 3) return [];
   
+  // Try cached HTTPS dataset first
+  try {
+    const allUnis = await getUniversityData();
+    if (allUnis) {
+      const q = query.toLowerCase();
+      const filtered = allUnis.filter(u => {
+        const nameMatch = u.name?.toLowerCase().includes(q);
+        const countryMatch = !country || u.country?.toLowerCase() === country.toLowerCase();
+        return nameMatch && countryMatch;
+      });
+      return filtered.slice(0, 15).map(u => ({
+        name: u.name,
+        domain: u.domains?.[0] || "",
+        country: u.country || ""
+      }));
+    }
+  } catch {
+    // HTTPS failed, try fallback
+  }
+
+  // Fallback: HTTP API (works in dev, may be blocked in prod)
   try {
     let url = `http://universities.hipolabs.com/search?name=${encodeURIComponent(query)}`;
     if (country) {
       url += `&country=${encodeURIComponent(country)}`;
     }
-    
     const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return [];
-    
     const data = await res.json();
     return data.slice(0, 15).map(u => ({
       name: u.name,

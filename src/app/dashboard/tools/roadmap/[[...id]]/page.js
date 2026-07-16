@@ -12,6 +12,7 @@ import { ToolPageLayout } from '@/components/layout/ToolPageLayout';
 import { Select } from '@/components/ui/Select';
 import { RegenerateBlock } from '@/components/ui/RegenerateBlock';
 import { BranchingNavigation } from '@/components/ui/BranchingNavigation';
+import { ResultActions } from '@/components/ui/ResultActions';
 import { useResumes } from '@/hooks/useResumes';
 
 export default function RoadmapGenerator() {

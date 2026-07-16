@@ -413,29 +413,35 @@ export default function GitHubAnalyzer() {
               <div className="overflow-x-auto pb-2 hide-scrollbar">
                 <div className="min-w-[700px]">
                   <ErrorBoundary>
-                    {(displayResult.githubUsername || githubUsername) ? (
-                      <>
-                        <GitHubCalendar 
-                          username={displayResult.githubUsername || githubUsername} 
-                          colorScheme="light"
-                          theme={{
-                            light: ['#f1f5f9', '#bbf7d0', '#4ade80', '#16a34a', '#14532d'],
-                          }}
-                          fontSize={13}
-                          blockSize={11}
-                          blockMargin={3}
-                          renderBlock={(block, activity) => React.cloneElement(block, {
-                            'data-tooltip-id': 'github-calendar-tooltip',
-                            'data-tooltip-content': `${activity.count} contributions on ${activity.date}`,
-                          })}
-                        />
-                        <Tooltip id="github-calendar-tooltip" />
-                      </>
-                    ) : (
-                      <div className="p-4 border-2 border-dashed border-gray-300 text-gray-500 font-bold">
-                        Username required for activity calendar.
-                      </div>
-                    )}
+                    {(() => {
+                      // Use analyzed username first, fallback to input only if it looks complete (min 2 chars, no spaces)
+                      const calendarUsername = displayResult.githubUsername || 
+                        (githubUsername && githubUsername.length >= 2 && !githubUsername.includes(' ') ? githubUsername : null);
+                      
+                      return calendarUsername ? (
+                        <>
+                          <GitHubCalendar 
+                            username={calendarUsername} 
+                            colorScheme="light"
+                            theme={{
+                              light: ['#f1f5f9', '#bbf7d0', '#4ade80', '#16a34a', '#14532d'],
+                            }}
+                            fontSize={13}
+                            blockSize={11}
+                            blockMargin={3}
+                            renderBlock={(block, activity) => React.cloneElement(block, {
+                              'data-tooltip-id': 'github-calendar-tooltip',
+                              'data-tooltip-content': `${activity.count} contributions on ${activity.date}`,
+                            })}
+                          />
+                          <Tooltip id="github-calendar-tooltip" />
+                        </>
+                      ) : (
+                        <div className="p-4 border-2 border-dashed border-gray-300 text-gray-500 font-bold">
+                          Complete a GitHub analysis to see the activity calendar.
+                        </div>
+                      );
+                    })()}
                   </ErrorBoundary>
                 </div>
               </div>

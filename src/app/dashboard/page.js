@@ -32,10 +32,11 @@ export default function Dashboard() {
           api.get('/resumes'),
           api.get('/users/me').catch(() => ({ data: null }))
         ]);
-        setResumes(resumesRes.data);
+        setResumes(Array.isArray(resumesRes?.data) ? resumesRes.data : []);
         if (profileRes.data?.profile) setProfile(profileRes.data.profile);
       } catch (error) {
         console.error("Error fetching resumes:", error.response?.data || error.message);
+        setResumes([]);
         if (error.response?.status === 401) {
            toast.error('Session Expired', 'Please log in again.');
            await supabase.auth.signOut();

@@ -44,7 +44,8 @@ export default function NewAnalysis() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams();
-  const outputId = params?.id || searchParams.get('outputId');
+  const rawId = params?.id;
+  const outputId = Array.isArray(rawId) ? rawId[0] : (rawId || searchParams.get('outputId'));
 
   // 1. Fetch analysis details when outputId parameter changes in URL
   useEffect(() => {
@@ -283,6 +284,7 @@ export default function NewAnalysis() {
                       {data.phone && <span className="px-2 py-1 bg-white border-2 border-black">{data.phone}</span>}
                       {data.linkedin && <a href={data.linkedin} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-white border-2 border-black hover:bg-brutal-yellow transition flex items-center gap-1"><ExternalLink className="w-4 h-4" />LinkedIn</a>}
                       {data.github && <a href={data.github} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-white border-2 border-black hover:bg-brutal-yellow transition flex items-center gap-1"><ExternalLink className="w-4 h-4" />GitHub</a>}
+                      {(data.portfolio || data.website) && <a href={data.portfolio || data.website} target="_blank" rel="noopener noreferrer" className="px-2 py-1 bg-white border-2 border-black hover:bg-brutal-yellow transition flex items-center gap-1"><ExternalLink className="w-4 h-4" />Portfolio / Web</a>}
                     </div>
                   </div>
                   <div className="flex flex-col gap-3 items-end w-full md:w-auto">
@@ -443,7 +445,7 @@ export default function NewAnalysis() {
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="font-black text-sm">{r.role}</p>
-                                    <p className="text-xs text-gray-500 font-medium truncate">{r.reasoning}</p>
+                                    <p className="text-xs text-gray-700 font-medium leading-relaxed mt-0.5 whitespace-normal break-words">{r.reasoning}</p>
                                   </div>
                                 </div>
                               ))}
@@ -604,11 +606,11 @@ export default function NewAnalysis() {
             )}
 
             {/* Global result Actions inside platform output standard */}
-            {data.id && (
+            {(data.id || historyResult?.id || currentJobId) && (
               <div className="flex justify-end pt-4 border-t-2 border-brutal-black">
                 <ResultActions 
-                  resultId={data.id}
-                  isPinned={data.isPinned}
+                  resultId={historyResult?.id || data.id || currentJobId}
+                  isPinned={historyResult?.isPinned || data.isPinned}
                   onDelete={() => { setData(null); setHistoryResult(null); router.push('/dashboard/analyze'); }}
                   resultText={data.recommendedDoc || data.recommended_doc || ""}
                 />

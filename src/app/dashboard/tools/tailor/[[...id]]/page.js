@@ -66,6 +66,7 @@ export default function ResumeTailor() {
       toolType="TAILOR"
       onHistorySelect={handleHistorySelect}
       historyResult={historyResult}
+      activeResult={activeResult}
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
     >
@@ -152,7 +153,7 @@ export default function ResumeTailor() {
               />
               <div className="flex justify-end">
                 <ResultActions 
-                  resultId={activeResult?.id}
+                  resultId={activeResult?.id || activeResult?.aiJobId || jobId}
                   isPinned={activeResult?.isPinned}
                   onDelete={() => { setHistoryResult(null); resetJob(); }}
                   resultText={displayResult ? JSON.stringify(displayResult, null, 2) : ''}

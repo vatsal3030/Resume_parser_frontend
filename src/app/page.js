@@ -62,7 +62,7 @@ export default function Home() {
       <section className="px-6 py-16 md:py-24 max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <div className="inline-block px-4 py-1.5 mb-6 border-3 border-black bg-brutal-yellow font-black uppercase tracking-wider shadow-brutal-sm text-sm">
-            Powered by Gemini 2.5 AI
+            Powered by Gemini 3.6 & Multi-Model AI
           </div>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-[0.9] mb-6">
             Your AI-Powered<br />

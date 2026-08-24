@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { 
@@ -62,6 +63,10 @@ const serializeNotes = (customNotes, timeline, checklist, reminders) => {
 };
 
 export default function ApplicationTracker() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const targetAppId = searchParams.get('appId');
+
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -94,6 +99,20 @@ export default function ApplicationTracker() {
   useEffect(() => {
     fetchApps();
   }, [fetchApps]);
+
+  // Sync URL appId query param to open modal automatically
+  useEffect(() => {
+    if (targetAppId && apps.length > 0) {
+      const found = apps.find(a => a.id === targetAppId);
+      if (found && activeApp?.id !== found.id) {
+        setActiveApp(found);
+        setActiveAppParsed(parseNotes(found.notes));
+      }
+    } else if (!targetAppId && activeApp) {
+      setActiveApp(null);
+      setActiveAppParsed(null);
+    }
+  }, [targetAppId, apps, activeApp]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -187,6 +206,13 @@ export default function ApplicationTracker() {
     setActiveApp(app);
     setActiveAppParsed(parseNotes(app.notes));
     setModalTab('details');
+    router.push(`/dashboard/tracker?appId=${app.id}`);
+  };
+
+  const closeAppDetails = () => {
+    setActiveApp(null);
+    setActiveAppParsed(null);
+    router.push('/dashboard/tracker');
   };
 
   // Sync state changes in Details Modal to DB
@@ -372,7 +398,7 @@ export default function ApplicationTracker() {
   };
 
   return (
-    <div className="min-h-screen p-8 max-w-7xl mx-auto">
+    <div className="min-h-screen p-4 md:p-8 w-full max-w-[99%] 2xl:max-w-[1920px] mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b-4 border-brutal-black pb-6 gap-4">
         <div>
           <h1 className="text-4xl font-black uppercase tracking-tighter">Job Application Tracker</h1>
@@ -386,9 +412,9 @@ export default function ApplicationTracker() {
       </div>
 
       {loading ? (
-        <div className="flex overflow-x-auto gap-6 pb-8 snap-x">
+        <div className="flex overflow-x-auto gap-4 md:gap-5 pb-8 snap-x w-full">
           {COLUMNS.map(col => (
-            <div key={col} className={`min-w-[320px] max-w-[320px] border-4 border-brutal-black flex-1 flex flex-col snap-center ${COL_COLORS[col]} shadow-[4px_4px_0_rgba(0,0,0,1)]`}>
+            <div key={col} className={`min-w-[240px] md:min-w-[260px] lg:min-w-0 flex-1 border-4 border-brutal-black flex flex-col snap-center ${COL_COLORS[col]} shadow-[4px_4px_0_rgba(0,0,0,1)]`}>
               <div className="p-4 border-b-4 border-brutal-black bg-white flex justify-between items-center">
                 <h2 className="text-xl font-black uppercase tracking-tight">{col}</h2>
                 <span className="text-sm font-black bg-black text-white px-2 py-0.5 border border-black shadow-[2px_2px_0_rgba(255,255,255,1)]">—</span>
@@ -409,13 +435,13 @@ export default function ApplicationTracker() {
           ))}
         </div>
       ) : (
-        <div className="flex overflow-x-auto gap-6 pb-8 snap-x">
+        <div className="flex overflow-x-auto gap-4 md:gap-5 pb-8 snap-x w-full">
           {COLUMNS.map(col => {
             const columnApps = apps.filter(a => a.status === col);
             return (
               <div 
                 key={col}
-                className={`min-w-[320px] max-w-[320px] border-4 border-brutal-black flex-1 flex flex-col snap-center ${COL_COLORS[col]} shadow-[4px_4px_0_rgba(0,0,0,1)]`}
+                className={`min-w-[240px] md:min-w-[260px] lg:min-w-0 flex-1 border-4 border-brutal-black flex flex-col snap-center ${COL_COLORS[col]} shadow-[4px_4px_0_rgba(0,0,0,1)]`}
                 onDragOver={onDragOver}
                 onDrop={(e) => onDrop(e, col)}
               >
@@ -568,7 +594,7 @@ export default function ApplicationTracker() {
                 </h2>
               </div>
               <button 
-                onClick={() => { setActiveApp(null); setActiveAppParsed(null); }}
+                onClick={closeAppDetails}
                 className="text-black hover:bg-gray-100 border-2 border-brutal-black p-1.5 shadow-[2px_2px_0_#000] active:shadow-none"
               >
                 <X className="w-5 h-5" />

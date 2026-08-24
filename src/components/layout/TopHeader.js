@@ -112,9 +112,18 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
   };
 
   const switchAccount = async (acc) => {
-    if (acc.user.id === user?.id) return;
-    await supabase.auth.setSession({ access_token: acc.session.access_token, refresh_token: acc.session.refresh_token });
-    setAccountsOpen(false);
+    if (!acc?.user?.id || acc.user.id === user?.id) return;
+    if (acc.session?.access_token && acc.session?.refresh_token) {
+      await supabase.auth.setSession({ 
+        access_token: acc.session.access_token, 
+        refresh_token: acc.session.refresh_token 
+      });
+      setAccountsOpen(false);
+      window.location.reload();
+    } else {
+      setAccountsOpen(false);
+      router.push('/login');
+    }
   };
 
   const handleSaveAvatar = async () => {

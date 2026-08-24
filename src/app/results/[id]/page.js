@@ -10,7 +10,7 @@ export default function ResultsPage() {
 
   useEffect(() => {
     if (id) {
-      router.replace(`/dashboard/analyze?outputId=${id}`);
+      router.replace(`/dashboard/analyze/${id}`);
     } else {
       router.replace('/dashboard/analyze');
     }

@@ -1,4 +1,3 @@
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
 import { CopilotProvider } from "@/context/CopilotContext";
@@ -11,11 +10,13 @@ import { Inter, Space_Grotesk } from "next/font/google";
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata = {

@@ -55,7 +55,8 @@ export default function MockInterviewGenerator() {
     startJob,
     monitorJob,
     cancelJob,
-    resetJob
+    resetJob,
+    jobId
   } = useAsyncJob();
 
   const handleGenerate = () => {
@@ -148,6 +149,7 @@ export default function MockInterviewGenerator() {
       toolType="MOCK_INTERVIEW"
       onHistorySelect={handleHistorySelect}
       historyResult={historyResult}
+      activeResult={activeResult}
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
       fullWidth={true}
@@ -288,6 +290,15 @@ export default function MockInterviewGenerator() {
                   setShowGuidance(false);
                 }} 
               />
+              <div className="flex justify-end">
+                <ResultActions 
+                  resultId={activeResult?.id || activeResult?.aiJobId || jobId}
+                  isPinned={activeResult?.isPinned}
+                  onDelete={() => { setHistoryResult(null); resetJob(); }}
+                  resultText={displayResult ? JSON.stringify(displayResult, null, 2) : ''}
+                  className="mb-2"
+                />
+              </div>
 
               {/* Domain & Level Badges */}
               {(displayResult.detectedDomain || displayResult.interviewLevel) && (

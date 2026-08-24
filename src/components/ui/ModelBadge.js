@@ -15,12 +15,15 @@ export function ModelBadge({ meta }) {
   
   // Format model nicely
   displayName = displayName
-    .replace('gemini-2.5-flash', 'Gemini 2.5 Flash')
-    .replace('gemini-2.5-pro', 'Gemini 2.5 Pro')
+    .replace('gemini-3.7-flash', 'Gemini 3.7 Flash')
+    .replace('gemini-3.6-flash', 'Gemini 3.6 Flash')
+    .replace('gemini-flash-latest', 'Gemini Flash Latest')
+    .replace('gemini-2.0-flash', 'Gemini 2.0 Flash')
+    .replace('nemotron-3.5-lightning:free', 'Nemotron 3.5 Free')
+    .replace('gemma-4-26b-a4b-it:free', 'Gemma 4 Free')
+    .replace('claude-3.5-sonnet', 'Claude 3.5 Sonnet')
     .replace('gpt-4o-mini', 'GPT-4o Mini')
-    .replace('gpt-4o', 'GPT-4o')
-    .replace('claude-sonnet-latest', 'Claude Sonnet (Latest)')
-    .replace('claude-3-5-sonnet', 'Claude 3.5 Sonnet');
+    .replace('gpt-4o', 'GPT-4o');
 
   const providerLabel = provider === 'openrouter' ? 'via OpenRouter' : 'Direct';
 

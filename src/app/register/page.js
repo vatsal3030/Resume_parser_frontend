@@ -77,7 +77,13 @@ export default function RegisterPage() {
 
   const handleGoogleLogin = async () => {
     setError(null);
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo
+      }
+    });
     if (error) setError(error.message);
   };
 

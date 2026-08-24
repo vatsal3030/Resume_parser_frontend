@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Save, Download, FileText, Code, LayoutTemplate, Plus, ArrowLeft, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
@@ -23,13 +24,19 @@ const DEFAULT_DATA = {
 const DEFAULT_ORDER = ["personal", "summary", "experience", "education", "skills", "projects", "certifications"];
 
 export default function ResumeStudio() {
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const rawId = params?.id;
+  const urlResumeId = Array.isArray(rawId) ? rawId[0] : (rawId || searchParams?.get("id"));
+
   // Resume list vs editor mode
-  const [mode, setMode] = useState("list"); // "list" | "editor"
+  const [mode, setMode] = useState(urlResumeId ? "editor" : "list"); // "list" | "editor"
   const [resumes, setResumes] = useState([]);
   const [listLoading, setListLoading] = useState(true);
 
   // Editor state
-  const [resumeId, setResumeId] = useState(null);
+  const [resumeId, setResumeId] = useState(urlResumeId || null);
   const [title, setTitle] = useState("Untitled Resume");
   const [data, setData] = useState(DEFAULT_DATA);
   const [sectionOrder, setSectionOrder] = useState(DEFAULT_ORDER);
@@ -112,24 +119,51 @@ export default function ResumeStudio() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
-  // Open editor
-  const openResume = async (id) => {
+  // Open editor & update URL
+  const openResume = useCallback(async (id, skipPush = false) => {
     try {
       const res = await api.get(`/studio/resumes/${id}`);
       const r = res.data;
       setResumeId(r.id); setTitle(r.title); setData(r.resumeData || DEFAULT_DATA);
       setSectionOrder(r.sectionOrder || DEFAULT_ORDER); setStyleConfig(r.styleConfig || {});
       setTemplateId(r.templateId); setVersion(r.version); versionRef.current = r.version; setMode("editor");
-    } catch (e) { toast.error("Error", "Failed to load resume"); }
+      if (!skipPush && urlResumeId !== r.id) {
+        router.push(`/dashboard/studio/${r.id}`);
+      }
+    } catch (e) { 
+      toast.error("Error", "Failed to load resume"); 
+      setMode("list");
+      setResumeId(null);
+      router.push('/dashboard/studio');
+    }
+  }, [router, toast, urlResumeId]);
+
+  // Deep link sync on URL change
+  useEffect(() => {
+    if (urlResumeId && urlResumeId !== resumeId) {
+      openResume(urlResumeId, true);
+    } else if (!urlResumeId && mode === "editor") {
+      setMode("list");
+      setResumeId(null);
+    }
+  }, [urlResumeId, openResume, resumeId, mode]);
+
+  // Exit editor back to list view
+  const handleBackToList = () => {
+    if (dirty.current) save();
+    setMode("list");
+    setResumeId(null);
+    router.push("/dashboard/studio");
+    fetchList();
   };
 
-  // Create new
+  // Create new resume
   const createNew = async (template) => {
     try {
       const res = await api.post(`/studio/resumes`, { title: "Untitled Resume", templateId: template?.id });
       const r = res.data;
-      await openResume(r.id);
       toast.success("Created", "New resume created!");
+      router.push(`/dashboard/studio/${r.id}`);
     } catch (e) { toast.error("Error", "Failed to create resume"); }
   };
 
@@ -310,7 +344,7 @@ export default function ResumeStudio() {
       <div className="w-full xl:w-1/2 p-4 md:p-6 overflow-y-auto border-r-0 xl:border-r-4 border-brutal-black xl:h-[calc(100vh-80px)] pb-12">
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-3 mb-6 border-b-4 border-brutal-black pb-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => { if (dirty.current) save(); setMode("list"); fetchList(); }} className="p-1.5 border-2 border-brutal-black hover:bg-gray-100">
+            <button onClick={handleBackToList} className="p-1.5 border-2 border-brutal-black hover:bg-gray-100" title="Back to Resumes">
               <ArrowLeft className="w-4 h-4" />
             </button>
             <input className="text-2xl font-black uppercase tracking-tighter bg-transparent outline-none border-b-2 border-transparent focus:border-brutal-black"

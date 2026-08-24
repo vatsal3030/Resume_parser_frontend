@@ -68,6 +68,7 @@ export function ToolPageLayout({
   toolType,
   onHistorySelect,
   historyResult,
+  activeResult,
   onClearHistory,
   onJobIdFound,
   children,
@@ -86,22 +87,23 @@ export function ToolPageLayout({
   const isTool = segments[2] === 'tools';
   const basePath = isTool ? segments.slice(0, 4).join('/') : segments.slice(0, 3).join('/');
 
-  // Sync historyResult?.id to URL route path — uses ref to prevent infinite loop
+  const targetResult = activeResult || historyResult;
+  const targetId = targetResult?.id || targetResult?.aiJobId;
+
+  // Sync targetId to URL route path — uses ref to prevent infinite loop
   useEffect(() => {
-    if (historyResult?.id && toolType && historyResult.id !== lastSyncedIdRef.current) {
-      lastSyncedIdRef.current = historyResult.id;
+    if (targetId && toolType && targetId !== lastSyncedIdRef.current) {
+      lastSyncedIdRef.current = targetId;
       const rawId = params?.id;
       const currentId = Array.isArray(rawId) ? rawId[0] : (rawId || searchParams.get('outputId'));
-      if (currentId !== historyResult.id) {
+      if (currentId !== targetId) {
         const queryParams = new URLSearchParams(searchParams.toString());
         queryParams.delete('outputId'); // Path is primary now
         const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
-        router.replace(`${basePath}/${historyResult.id}${queryString}`);
+        router.replace(`${basePath}/${targetId}${queryString}`);
       }
     }
-    // Intentionally excluding searchParams and params from deps to prevent re-render loop
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyResult?.id, toolType, basePath, router]);
+  }, [targetId, toolType, basePath, router]);
 
   const handleClear = () => {
     const queryParams = new URLSearchParams(searchParams.toString());

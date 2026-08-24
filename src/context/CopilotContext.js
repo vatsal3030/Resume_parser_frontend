@@ -98,16 +98,26 @@ export const CopilotProvider = ({ children }) => {
   // Load conversations list
   const loadConversations = useCallback(async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
       const { data } = await api.get('/chat/conversations');
-      setConversations(data);
+      setConversations(Array.isArray(data) ? data : []);
     } catch (e) {
-      console.error("Failed to load conversations", e);
+      if (e.response?.status !== 401) {
+        console.error("Failed to load conversations", e);
+      }
+      setConversations([]);
     }
   }, []);
 
   // Load messages for a specific conversation
   const loadConversation = useCallback(async (convId) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setMessages([WELCOME_MSG]);
+        return;
+      }
       const url = convId ? `/chat?conversationId=${convId}` : '/chat';
       const res = await api.get(url);
       if (res.data?.messages && res.data.messages.length > 0) {
@@ -121,7 +131,9 @@ export const CopilotProvider = ({ children }) => {
       }
       setActiveConversationId(res.data?.conversationId || null);
     } catch (e) {
-      console.error("Failed to load conversation", e);
+      if (e.response?.status !== 401) {
+        console.error("Failed to load conversation", e);
+      }
       setMessages([WELCOME_MSG]);
     }
   }, []);

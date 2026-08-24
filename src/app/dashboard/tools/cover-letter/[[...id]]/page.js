@@ -94,6 +94,7 @@ export default function CoverLetterGenerator() {
       fullWidth={true}
       onHistorySelect={handleHistorySelect}
       historyResult={historyResult}
+      activeResult={activeResult}
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
     >
@@ -190,7 +191,7 @@ export default function CoverLetterGenerator() {
                   />
                   <div className="flex justify-end">
                     <ResultActions 
-                      resultId={activeResult?.id}
+                      resultId={activeResult?.id || activeResult?.aiJobId || jobId}
                       isPinned={activeResult?.isPinned}
                       onDelete={() => { setHistoryResult(null); resetJob(); }}
                       resultText={resultText}

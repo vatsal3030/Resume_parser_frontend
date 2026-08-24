@@ -11,54 +11,40 @@ const MODELS = [
     ]
   },
   {
-    id: 'gemini-2.5-flash',
-    name: 'Gemini 2.5 Flash',
+    id: 'gemini-3.6-flash',
+    name: 'Gemini 3.6 Flash',
     tags: [
-      { text: 'Fast', color: 'bg-blue-300' }
+      { text: 'Direct AI', color: 'bg-blue-300' },
+      { text: 'Fast', color: 'bg-green-200' }
     ]
   },
   {
-    id: 'gemini-2.5-pro',
-    name: 'Gemini 2.5 Pro',
+    id: 'gemini-3.7-flash',
+    name: 'Gemini 3.7 Flash',
     tags: [
-      { text: 'Powerful', color: 'bg-purple-300' },
-      { text: 'Slower', color: 'bg-orange-200' }
+      { text: 'Latest', color: 'bg-purple-300' },
+      { text: 'Advanced', color: 'bg-yellow-200' }
     ]
   },
   {
-    id: 'deepseek/deepseek-chat:free',
-    name: 'DeepSeek V3 (Free)',
+    id: 'nvidia/nemotron-3.5-lightning:free',
+    name: 'Nemotron 3.5 (Free)',
     tags: [
-      { text: 'Strong Reasoning', color: 'bg-pink-200' }
+      { text: 'OpenRouter Free', color: 'bg-pink-200' }
     ]
   },
   {
-    id: 'deepseek/deepseek-r1:free',
-    name: 'DeepSeek R1 (Free)',
-    tags: [
-      { text: 'Advanced Reasoning', color: 'bg-red-300' }
-    ]
-  },
-  {
-    id: 'meta-llama/llama-3.3-70b-instruct:free',
-    name: 'Llama 3.3 (70B) Free',
+    id: 'google/gemma-4-26b-a4b-it:free',
+    name: 'Gemma 4 (Free)',
     tags: [
       { text: 'Open Source', color: 'bg-yellow-300' }
     ]
   },
   {
-    id: 'google/gemini-2.0-flash-lite-preview-02-05:free',
-    name: 'Gemini 2.0 Flash (Free)',
+    id: 'anthropic/claude-3.5-sonnet',
+    name: 'Claude 3.5 Sonnet',
     tags: [
-      { text: 'Premium', color: 'bg-purple-300' },
-      { text: 'Versatile', color: 'bg-blue-200' }
-    ]
-  },
-  {
-    id: 'google/gemini-2.0-pro-exp-02-05:free',
-    name: 'Gemini 2.0 Pro (Free)',
-    tags: [
-      { text: 'Fast & Cheap', color: 'bg-green-200' }
+      { text: 'Pro / Deep Reasoning', color: 'bg-red-300' }
     ]
   }
 ];

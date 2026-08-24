@@ -17,6 +17,18 @@ import { Button } from "@/components/ui/button";
  * @param {string} headerColor - Tailwind bg class for header
  * @param {boolean} closeOnOverlay - Whether clicking overlay closes the modal
  */
+const SIZE_MAP = {
+  sm: "max-w-sm",
+  md: "max-w-md",
+  lg: "max-w-2xl",
+  xl: "max-w-3xl",
+  "2xl": "max-w-4xl",
+  "3xl": "max-w-5xl",
+  "4xl": "max-w-6xl",
+  "5xl": "max-w-7xl",
+  full: "max-w-[96vw]",
+};
+
 export function BrutalModal({
   isOpen,
   onClose,
@@ -24,10 +36,12 @@ export function BrutalModal({
   description,
   children,
   footer,
-  maxWidth = "max-w-lg",
+  size,
+  maxWidth,
   headerColor = "bg-brutal-yellow",
   closeOnOverlay = true,
 }) {
+  const resolvedMaxWidth = maxWidth || (size ? SIZE_MAP[size] || size : "max-w-lg");
   const modalRef = useRef(null);
   const previousFocus = useRef(null);
 
@@ -86,7 +100,7 @@ export function BrutalModal({
       {/* Modal Panel */}
       <div
         ref={modalRef}
-        className={`relative ${maxWidth} w-full bg-white border-4 border-brutal-black shadow-brutal-lg animate-scale-in`}
+        className={`relative ${resolvedMaxWidth} w-full bg-white border-4 border-brutal-black shadow-brutal-lg animate-scale-in`}
       >
         {/* Header */}
         {title && (

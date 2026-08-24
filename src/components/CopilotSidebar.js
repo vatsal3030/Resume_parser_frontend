@@ -5,9 +5,10 @@ import { useCopilot } from '@/context/CopilotContext';
 import { formatDate } from '@/lib/formatDate';
 
 const MODEL_OPTIONS = [
-  { value: 'default', label: 'Auto (Gemini Flash)' },
-  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+  { value: 'default', label: 'Auto (Gemini 3.6 Flash)' },
+  { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash' },
+  { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
+  { value: 'nvidia/nemotron-3.5-lightning:free', label: 'Nemotron 3.5 (Free)' },
 ];
 
 export default function CopilotSidebar() {

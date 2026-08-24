@@ -4,7 +4,33 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Download, Monitor, Smartphone, Tablet, Github, Code, CheckCircle2, ChevronDown, ChevronUp, Copy, Eye, Layout, Sparkles } from 'lucide-react';
+import { 
+  Download, 
+  Monitor, 
+  Smartphone, 
+  Tablet, 
+  Laptop, 
+  Github, 
+  Code, 
+  CheckCircle2, 
+  ChevronDown, 
+  ChevronUp, 
+  Copy, 
+  Eye, 
+  Layout, 
+  Sparkles,
+  Terminal,
+  Globe,
+  Maximize2,
+  Check,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  BookOpen,
+  CheckCircle,
+  ExternalLink,
+  QrCode
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/toast';
 import { ModelSelector } from '@/components/ui/ModelSelector';
@@ -182,7 +208,8 @@ export default function PortfolioGenerator() {
     startJob,
     monitorJob,
     cancelJob,
-    resetJob
+    resetJob,
+    jobId
   } = useAsyncJob();
 
   // Handle Full Screen Esc Key and Body Scroll Lock
@@ -317,6 +344,7 @@ export default function PortfolioGenerator() {
       toolType="PORTFOLIO"
       onHistorySelect={handleHistorySelect}
       historyResult={historyResult}
+      activeResult={activeResult}
       onClearHistory={() => setHistoryResult(null)}
       onJobIdFound={monitorJob}
     >
@@ -401,7 +429,7 @@ export default function PortfolioGenerator() {
               />
               <div className="flex justify-end">
                 <ResultActions 
-                  resultId={activeResult?.id}
+                  resultId={activeResult?.id || activeResult?.aiJobId || jobId}
                   isPinned={activeResult?.isPinned}
                   onDelete={() => { setHistoryResult(null); resetJob(); }}
                   resultText={displayResult ? JSON.stringify(displayResult, null, 2) : ''}

@@ -50,7 +50,8 @@ export default function GitHubAnalyzer() {
     startJob,
     monitorJob,
     cancelJob,
-    resetJob
+    resetJob,
+    jobId
   } = useAsyncJob();
 
   const handleGenerate = () => {

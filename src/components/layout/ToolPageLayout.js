@@ -5,12 +5,13 @@ import { useSearchParams, useRouter, usePathname, useParams } from "next/navigat
 import { Button } from "@/components/ui/button";
 import { HistoryPanel } from "@/components/ui/HistoryPanel";
 import { PageShell } from "@/components/ui/PageShell";
+import { ResultSkeleton } from "@/components/ui/ResultSkeleton";
 import api from "@/lib/api";
 
 // UUID v4 pattern for validating outputIds before API calls
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function SearchParamLoader({ onHistorySelect, onJobIdFound, activeOutputId }) {
+function SearchParamLoader({ onHistorySelect, onJobIdFound, activeOutputId, onLoadingChange }) {
   const searchParams = useSearchParams();
   const params = useParams();
   // For catch-all routes like [[...id]], params.id is an array
@@ -24,6 +25,7 @@ function SearchParamLoader({ onHistorySelect, onJobIdFound, activeOutputId }) {
     // Validate UUID format before making API call to prevent 404s
     if (outputId && onHistorySelect && outputId !== processedOutputRef.current && outputId !== activeOutputId && UUID_REGEX.test(outputId)) {
       processedOutputRef.current = outputId;
+      if (onLoadingChange) onLoadingChange(true);
       api.get(`/history/${outputId}`)
         .then(res => {
           onHistorySelect(res.data);
@@ -33,6 +35,9 @@ function SearchParamLoader({ onHistorySelect, onJobIdFound, activeOutputId }) {
           if (err.response?.status !== 404) {
             console.error("Failed to load output from dynamic route/query param:", err);
           }
+        })
+        .finally(() => {
+          if (onLoadingChange) onLoadingChange(false);
         });
     }
   }, [outputId, onHistorySelect, activeOutputId]);
@@ -76,6 +81,7 @@ export function ToolPageLayout({
   fullWidth = true,
 }) {
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -122,6 +128,7 @@ export function ToolPageLayout({
           onHistorySelect={onHistorySelect} 
           onJobIdFound={onJobIdFound} 
           activeOutputId={historyResult?.id}
+          onLoadingChange={setIsLoadingHistory}
         />
       </Suspense>
       {/* History Panel */}
@@ -130,7 +137,10 @@ export function ToolPageLayout({
           toolType={toolType}
           onSelect={(item) => {
              // Don't auto-close history panel when clicking, let user browse
+             setIsLoadingHistory(true);
              onHistorySelect(item);
+             // Brief delay to allow state transition, then clear loading
+             setTimeout(() => setIsLoadingHistory(false), 300);
           }}
           isOpen={historyOpen}
           onToggle={() => setHistoryOpen(!historyOpen)}
@@ -177,7 +187,15 @@ export function ToolPageLayout({
             </div>
           )}
 
-          {children}
+          {/* Loading skeleton while fetching history */}
+          {isLoadingHistory && (
+            <ResultSkeleton />
+          )}
+
+          {/* Actual page content — hidden while loading history, smooth transition in */}
+          <div className={`transition-opacity duration-300 ${isLoadingHistory ? 'opacity-0 pointer-events-none h-0 overflow-hidden' : 'opacity-100'}`}>
+            {typeof children === 'function' ? children({ isLoadingHistory }) : children}
+          </div>
         </PageShell>
       </div>
     </div>

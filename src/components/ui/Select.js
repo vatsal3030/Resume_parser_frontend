@@ -1,9 +1,19 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function Select({ value, onChange, options, placeholder = "Select an option", disabled = false, className }) {
+export function Select({ 
+  value, 
+  onChange, 
+  options = [], 
+  placeholder = "Select an option", 
+  disabled = false, 
+  loading = false,
+  loadingText = "Fetching resumes...",
+  emptyText = "No resumes uploaded yet",
+  className 
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -26,6 +36,24 @@ export function Select({ value, onChange, options, placeholder = "Select an opti
     };
   }, [isOpen]);
 
+  if (loading) {
+    return (
+      <div 
+        className={cn(
+          "w-full flex items-center justify-between px-4 py-3 bg-gray-100 border-4 border-brutal-black text-left font-bold text-gray-500",
+          "shadow-[4px_4px_0_#000] animate-pulse cursor-wait",
+          className
+        )}
+      >
+        <div className="flex items-center gap-2.5">
+          <Loader2 className="w-4 h-4 animate-spin text-black" />
+          <span className="text-sm font-black uppercase tracking-tight text-gray-700">{loadingText}</span>
+        </div>
+        <div className="w-2.5 h-2.5 bg-brutal-yellow border-2 border-black rounded-full animate-ping" />
+      </div>
+    );
+  }
+
   const selectedOption = options.find(opt => opt.value === value);
 
   return (
@@ -41,16 +69,16 @@ export function Select({ value, onChange, options, placeholder = "Select an opti
           disabled && "opacity-50 cursor-not-allowed shadow-none translate-x-1 translate-y-1"
         )}
       >
-        <span className={selectedOption ? "text-black" : "text-gray-500"}>
+        <span className={selectedOption ? "text-black truncate pr-2" : "text-gray-500 truncate pr-2"}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown className={cn("w-5 h-5 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown className={cn("w-5 h-5 flex-shrink-0 transition-transform", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
         <div className="absolute z-50 w-full mt-2 bg-white border-4 border-brutal-black shadow-[4px_4px_0_#000] max-h-60 overflow-y-auto">
           {options.length === 0 ? (
-            <div className="p-4 text-center font-bold text-gray-500">No options available</div>
+            <div className="p-4 text-center font-bold text-sm text-gray-500">{emptyText}</div>
           ) : (
             options.map((option) => (
               <button
@@ -60,10 +88,10 @@ export function Select({ value, onChange, options, placeholder = "Select an opti
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 text-left font-bold hover:bg-brutal-yellow transition-colors border-b-2 border-brutal-black last:border-0"
+                className="w-full flex items-center justify-between px-4 py-3 text-left font-bold hover:bg-brutal-yellow transition-colors border-b-2 border-brutal-black last:border-0 text-sm"
               >
-                {option.label}
-                {value === option.value && <Check className="w-5 h-5" />}
+                <span className="truncate pr-2">{option.label}</span>
+                {value === option.value && <Check className="w-5 h-5 flex-shrink-0" />}
               </button>
             ))
           )}

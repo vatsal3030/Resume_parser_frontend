@@ -10,6 +10,7 @@ import api from "@/lib/api";
 
 import { CommandPalette } from "@/components/ui/CommandPalette";
 import { NotificationDropdown } from "@/components/ui/NotificationDropdown";
+import { CreditBalance } from "@/components/ui/CreditBalance";
 
 export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCollapsed }) {
   const [user, setUser] = useState(null);
@@ -162,7 +163,10 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
 
         <CommandPalette isOpen={commandPaletteOpen} setIsOpen={setCommandPaletteOpen} />
 
-        <div className="flex items-center gap-4 md:gap-6">
+        <div className="flex items-center gap-3 md:gap-5">
+          {/* Live Credit Balance in Header */}
+          <CreditBalance />
+
           <NotificationDropdown />
 
           {user ? (

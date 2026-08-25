@@ -43,6 +43,8 @@ const UTILITY_ITEMS = [
   { name: "Help", path: "/dashboard/help", icon: HelpCircle },
 ];
 
+import { CreditBalance } from "@/components/ui/CreditBalance";
+
 const SidebarContent = ({ pathname, isDesktopCollapsed, isMobileOpen, setIsMobileOpen }) => (
   <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden">
     <div className={`p-4 border-b-4 border-brutal-black sticky top-0 bg-brutal-bg z-10 flex items-center ${isDesktopCollapsed ? 'justify-center' : 'justify-between'}`}>
@@ -107,6 +109,14 @@ const SidebarContent = ({ pathname, isDesktopCollapsed, isMobileOpen, setIsMobil
           );
         })}
       </nav>
+
+      {/* Live Credit Widget in Sidebar */}
+      {!isDesktopCollapsed && (
+        <div className="p-3 border-t-2 border-dashed border-gray-300 bg-slate-50/50">
+          <p className="text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5 px-1">Remaining Balance</p>
+          <CreditBalance className="w-full justify-between" />
+        </div>
+      )}
 
       <div className={`p-4 border-t-4 border-brutal-black text-xs font-bold uppercase tracking-widest text-gray-500 ${isDesktopCollapsed ? 'text-center' : 'text-center'}`}>
         {isDesktopCollapsed ? 'v1' : 'v1.0.0'}

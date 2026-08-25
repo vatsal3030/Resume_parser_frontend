@@ -33,8 +33,15 @@ export default function RoadmapGenerator() {
     startJob,
     monitorJob,
     cancelJob,
-    resetJob
+    resetJob,
+    jobId
   } = useAsyncJob();
+
+  useEffect(() => {
+    if (!selectedResume && resumes?.length > 0) {
+      setSelectedResume(resumes[0].id);
+    }
+  }, [resumes, selectedResume]);
 
   const handleGenerate = () => {
     if (!selectedResume || !targetRole) {
@@ -81,6 +88,7 @@ export default function RoadmapGenerator() {
                 value={selectedResume}
                 onChange={setSelectedResume}
                 disabled={isGenerating}
+                loading={resumesLoading}
                 placeholder="-- Select Resume --"
                 options={resumes.map(r => ({
                   value: r.id,

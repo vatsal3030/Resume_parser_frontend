@@ -98,7 +98,8 @@ export default function NewAnalysis() {
     error,
     startJob,
     cancelJob,
-    resetJob
+    resetJob,
+    jobId
   } = useAsyncJob({
     onComplete: (jobResult) => {
       toast.success('Analysis Complete', 'Resume parsed successfully.');
@@ -606,12 +607,12 @@ export default function NewAnalysis() {
             )}
 
             {/* Global result Actions inside platform output standard */}
-            {(data.id || historyResult?.id || currentJobId) && (
+            {(data.id || jobId) && (
               <div className="flex justify-end pt-4 border-t-2 border-brutal-black">
                 <ResultActions 
-                  resultId={historyResult?.id || data.id || currentJobId}
-                  isPinned={historyResult?.isPinned || data.isPinned}
-                  onDelete={() => { setData(null); setHistoryResult(null); router.push('/dashboard/analyze'); }}
+                  resultId={data.id || jobId}
+                  isPinned={data.isPinned}
+                  onDelete={() => { setData(null); router.push('/dashboard/analyze'); }}
                   resultText={data.recommendedDoc || data.recommended_doc || ""}
                 />
               </div>

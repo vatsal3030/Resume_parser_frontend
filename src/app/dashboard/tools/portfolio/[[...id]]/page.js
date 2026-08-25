@@ -212,6 +212,12 @@ export default function PortfolioGenerator() {
     jobId
   } = useAsyncJob();
 
+  useEffect(() => {
+    if (!selectedResume && resumes?.length > 0) {
+      setSelectedResume(resumes[0].id);
+    }
+  }, [resumes, selectedResume]);
+
   // Handle Full Screen Esc Key and Body Scroll Lock
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -358,6 +364,7 @@ export default function PortfolioGenerator() {
                 value={selectedResume}
                 onChange={setSelectedResume}
                 disabled={isGenerating}
+                loading={resumesLoading}
                 placeholder="-- Select Resume --"
                 options={resumes.map(r => ({
                   value: r.id,

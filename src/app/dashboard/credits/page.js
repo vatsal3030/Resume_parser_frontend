@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { PageShell } from '@/components/ui/PageShell';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, Star, Zap, CreditCard, Loader2, Smartphone, QrCode, Shield } from 'lucide-react';
+import { Check, Star, Zap, CreditCard, Loader2, Smartphone, QrCode, Shield, Coins } from 'lucide-react';
 import { useRazorpay } from '@/hooks/useRazorpay';
 import { useToast } from '@/components/ui/toast';
 import { supabase } from '@/lib/supabase';
@@ -58,9 +58,11 @@ export default function CreditsPage() {
   const [processingPlan, setProcessingPlan] = useState(null);
   const [userEmail, setUserEmail] = useState('');
   const [userName, setUserName] = useState('');
+  const [currentCredits, setCurrentCredits] = useState(null);
+  const [tier, setTier] = useState('FREE');
   const toast = useToast();
 
-  // Get current user email for Razorpay prefill
+  // Get current user email & live credit balance
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user) {
@@ -68,6 +70,14 @@ export default function CreditsPage() {
         setUserName(data.user.user_metadata?.full_name || '');
       }
     });
+
+    api.get('/users/me').then(({ data }) => {
+      if (data) {
+        const bal = data.creditBalance ?? data.credits ?? data.profile?.creditBalance ?? 0;
+        setCurrentCredits(bal);
+        setTier(data.tier || data.profile?.tier || 'FREE');
+      }
+    }).catch(() => setCurrentCredits(0));
   }, []);
 
   const handlePurchase = async (plan) => {
@@ -179,11 +189,32 @@ export default function CreditsPage() {
       subtitle="Power up your career tools with AI credits."
     >
       <div className="max-w-6xl mx-auto py-8">
-        <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-8">
+        <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-8">
           <h2 className="text-4xl font-black uppercase tracking-tighter mb-4">Choose Your Power-Up</h2>
           <p className="text-xl font-bold max-w-2xl mx-auto bg-brutal-green inline-block px-2 border-2 border-brutal-black">
             Simple, transparent pricing. No subscriptions, just buy what you need.
           </p>
+        </div>
+
+        {/* Current Balance Banner */}
+        <div className="bg-brutal-yellow border-4 border-brutal-black p-6 mb-8 shadow-[6px_6px_0_#000] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white border-3 border-black flex items-center justify-center shadow-[3px_3px_0_#000]">
+              <Coins className="w-8 h-8 text-black" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase text-gray-800 tracking-wider">Your Current Available Balance</p>
+              <h3 className="text-4xl font-black">{currentCredits ?? '--'} Credits</h3>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-3 py-1 bg-white border-2 border-black font-black text-xs uppercase shadow-[2px_2px_0_#000]">
+              {tier === 'PRO' ? 'Pro Plan Active' : 'Free Tier'}
+            </span>
+            <span className="px-3 py-1 bg-brutal-mint border-2 border-black font-black text-xs uppercase shadow-[2px_2px_0_#000]">
+              Lifetime Validity
+            </span>
+          </div>
         </div>
 
         {/* Payment Methods Banner */}

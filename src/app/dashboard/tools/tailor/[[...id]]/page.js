@@ -12,6 +12,7 @@ import { ToolPageLayout } from '@/components/layout/ToolPageLayout';
 import { Select } from '@/components/ui/Select';
 import { RegenerateBlock } from '@/components/ui/RegenerateBlock';
 import { BranchingNavigation } from '@/components/ui/BranchingNavigation';
+import { ResultActions } from '@/components/ui/ResultActions';
 import { useResumes } from '@/hooks/useResumes';
 
 export default function ResumeTailor() {
@@ -32,8 +33,15 @@ export default function ResumeTailor() {
     startJob,
     monitorJob,
     cancelJob,
-    resetJob
+    resetJob,
+    jobId
   } = useAsyncJob();
+
+  useEffect(() => {
+    if (!selectedResume && resumes?.length > 0) {
+      setSelectedResume(resumes[0].id);
+    }
+  }, [resumes, selectedResume]);
 
   const handleTailor = () => {
     if (!selectedResume || !jobDescription) {
@@ -81,6 +89,7 @@ export default function ResumeTailor() {
                 value={selectedResume}
                 onChange={setSelectedResume}
                 disabled={isGenerating}
+                loading={resumesLoading}
                 placeholder="-- Select Resume --"
                 options={resumes.map(r => ({
                   value: r.id,

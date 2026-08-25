@@ -10,10 +10,12 @@ const Button = React.forwardRef(({ className, variant = "default", size = "defau
   // Variants mapping
   const variants = {
     default: "bg-brutal-yellow text-brutal-black hover:bg-yellow-400 shadow-brutal",
+    brutal: "bg-brutal-yellow text-brutal-black hover:bg-yellow-400 shadow-brutal",
     pink: "bg-brutal-pink text-brutal-black hover:bg-pink-400 shadow-brutal",
     mint: "bg-brutal-mint text-brutal-black hover:bg-teal-300 shadow-brutal",
-    white: "bg-brutal-white text-brutal-black shadow-brutal hover:bg-slate-100",
-    outline: "bg-transparent text-brutal-black border-brutal-black shadow-brutal hover:bg-brutal-black hover:text-white",
+    green: "bg-brutal-green text-brutal-black hover:bg-emerald-400 shadow-brutal",
+    white: "bg-white text-brutal-black shadow-brutal hover:bg-yellow-100 hover:text-black",
+    outline: "bg-white text-brutal-black border-brutal-black shadow-brutal hover:bg-brutal-black hover:text-white",
     ghost: "border-transparent shadow-none hover:bg-brutal-black hover:text-white active:translate-x-0 active:translate-y-0 relative !border-0",
   };
 

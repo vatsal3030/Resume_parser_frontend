@@ -33,7 +33,15 @@ export default function Dashboard() {
           api.get('/users/me').catch(() => ({ data: null }))
         ]);
         setResumes(Array.isArray(resumesRes?.data) ? resumesRes.data : []);
-        if (profileRes.data?.profile) setProfile(profileRes.data.profile);
+        if (profileRes.data) {
+          const userObj = profileRes.data;
+          const balance = userObj.creditBalance ?? userObj.credits ?? userObj.profile?.creditBalance ?? 0;
+          setProfile({
+            ...(userObj.profile || {}),
+            creditBalance: balance,
+            tier: userObj.tier || userObj.profile?.tier || 'FREE'
+          });
+        }
       } catch (error) {
         console.error("Error fetching resumes:", error.response?.data || error.message);
         setResumes([]);

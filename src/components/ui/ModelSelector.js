@@ -11,40 +11,67 @@ const MODELS = [
     ]
   },
   {
-    id: 'gemini-3.6-flash',
-    name: 'Gemini 3.6 Flash',
-    tags: [
-      { text: 'Direct AI', color: 'bg-blue-300' },
-      { text: 'Fast', color: 'bg-green-200' }
-    ]
-  },
-  {
     id: 'gemini-3.7-flash',
     name: 'Gemini 3.7 Flash',
     tags: [
       { text: 'Latest', color: 'bg-purple-300' },
-      { text: 'Advanced', color: 'bg-yellow-200' }
+      { text: 'Ultra Fast', color: 'bg-green-200' }
     ]
   },
   {
-    id: 'nvidia/nemotron-3.5-lightning:free',
-    name: 'Nemotron 3.5 (Free)',
+    id: 'gemini-3.6-flash',
+    name: 'Gemini 3.6 Flash',
     tags: [
-      { text: 'OpenRouter Free', color: 'bg-pink-200' }
+      { text: 'Google Direct', color: 'bg-blue-300' },
+      { text: 'Stable', color: 'bg-yellow-200' }
     ]
   },
   {
-    id: 'google/gemma-4-26b-a4b-it:free',
-    name: 'Gemma 4 (Free)',
+    id: 'anthropic/claude-sonnet-5',
+    name: 'Claude Sonnet 5',
     tags: [
-      { text: 'Open Source', color: 'bg-yellow-300' }
+      { text: 'Best Quality', color: 'bg-red-300' },
+      { text: 'Pro', color: 'bg-purple-200' }
     ]
   },
   {
-    id: 'anthropic/claude-3.5-sonnet',
-    name: 'Claude 3.5 Sonnet',
+    id: 'anthropic/claude-haiku-4.5',
+    name: 'Claude Haiku 4.5',
     tags: [
-      { text: 'Pro / Deep Reasoning', color: 'bg-red-300' }
+      { text: 'Fast', color: 'bg-cyan-300' },
+      { text: 'Affordable', color: 'bg-green-200' }
+    ]
+  },
+  {
+    id: 'deepseek/deepseek-v4-flash',
+    name: 'DeepSeek V4 Flash',
+    tags: [
+      { text: 'Top Coder', color: 'bg-cyan-300' },
+      { text: 'Fast', color: 'bg-yellow-300' }
+    ]
+  },
+  {
+    id: 'deepseek/deepseek-r1',
+    name: 'DeepSeek R1',
+    tags: [
+      { text: 'Deep Reasoning', color: 'bg-amber-300' },
+      { text: 'Chain-of-Thought', color: 'bg-orange-200' }
+    ]
+  },
+  {
+    id: 'google/gemma-4-31b-it:free',
+    name: 'Gemma 4 31B (Free)',
+    tags: [
+      { text: 'Free Tier', color: 'bg-emerald-300' },
+      { text: 'Google Open', color: 'bg-blue-200' }
+    ]
+  },
+  {
+    id: 'nvidia/nemotron-3-ultra-550b-a55b:free',
+    name: 'Nemotron 3 Ultra (Free)',
+    tags: [
+      { text: 'Free Tier', color: 'bg-emerald-300' },
+      { text: '550B Params', color: 'bg-pink-200' }
     ]
   }
 ];

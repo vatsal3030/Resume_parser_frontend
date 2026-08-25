@@ -95,6 +95,8 @@ const TYPE_COLORS = {
   orange: { border: 'border-l-orange-400',  bg: 'bg-orange-50',   badge: 'bg-orange-400 text-white',  icon: 'text-orange-500' },
 };
 
+import { supabase } from '@/lib/supabase';
+
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -125,6 +127,29 @@ export function NotificationDropdown() {
       setLoading(false);
     }
   }, []);
+
+  // Reset notifications on account switch or logout
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setNotifications([]); // Instantly clear previous account data
+      if (session?.user) {
+        fetchNotifications();
+      }
+    });
+
+    const handleAuthReset = () => {
+      setNotifications([]);
+      fetchNotifications();
+    };
+    window.addEventListener('accountSwitched', handleAuthReset);
+    window.addEventListener('AUTH_STATE_CHANGED', handleAuthReset);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('accountSwitched', handleAuthReset);
+      window.removeEventListener('AUTH_STATE_CHANGED', handleAuthReset);
+    };
+  }, [fetchNotifications]);
 
   // Fetch on first open, then poll every 30s when open
   useEffect(() => {

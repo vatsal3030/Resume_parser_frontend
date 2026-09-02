@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
-import { formatDate } from '@/lib/formatDate';
 import { 
   Bell, 
   Sparkles, 
@@ -19,9 +18,9 @@ import {
   LayoutTemplate, 
   AlertTriangle, 
   Zap, 
-  GitBranch 
+  GitBranch,
+  XCircle
 } from 'lucide-react';
-import { Button } from './button';
 import { supabase } from '@/lib/supabase';
 
 function classifyNotification(notif) {
@@ -30,90 +29,47 @@ function classifyNotification(notif) {
   const message = (notif.message || '').toLowerCase();
 
   if (title.includes('failed') || title.includes('error') || message.includes('failed')) {
-    return { type: 'error', label: 'Failed', color: 'red', icon: AlertCircle };
+    return { type: 'error', label: 'Failed', icon: XCircle, iconColor: 'text-red-500', iconBg: 'bg-red-500/10 border-red-500/20' };
   }
   if (url.includes('credit') || title.includes('credit') || title.includes('payment')) {
-    return { type: 'credit', label: 'Credits', color: 'yellow', icon: CreditCard };
+    return { type: 'credit', label: 'Credits', icon: CreditCard, iconColor: 'text-amber-500', iconBg: 'bg-amber-500/10 border-amber-500/20' };
   }
   if (url.includes('github') || title.includes('github')) {
-    return { type: 'github', label: 'GitHub', color: 'green', icon: GitBranch };
+    return { type: 'github', label: 'GitHub', icon: GitBranch, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-500/10 border-emerald-500/20' };
   }
   if (url.includes('studio') || title.includes('studio')) {
-    return { type: 'studio', label: 'Studio', color: 'mint', icon: FileEdit };
+    return { type: 'studio', label: 'Studio', icon: FileEdit, iconColor: 'text-(--primary)', iconBg: 'bg-(--primary)/10 border-(--primary)/20' };
   }
   if (title.includes('resume') || title.includes('analysis') || title.includes('analyze')) {
-    return { type: 'analysis', label: 'Analysis', color: 'blue', icon: FileText };
+    return { type: 'analysis', label: 'Analysis', icon: FileText, iconColor: 'text-blue-500', iconBg: 'bg-blue-500/10 border-blue-500/20' };
   }
   if (url.includes('tailor') || title.includes('tailor')) {
-    return { type: 'tailor', label: 'Tailor', color: 'pink', icon: Zap };
+    return { type: 'tailor', label: 'Tailor', icon: Zap, iconColor: 'text-purple-500', iconBg: 'bg-purple-500/10 border-purple-500/20' };
   }
   if (url.includes('cover') || title.includes('cover letter')) {
-    return { type: 'cover', label: 'Cover Letter', color: 'pink', icon: FileText };
+    return { type: 'cover', label: 'Cover Letter', icon: FileText, iconColor: 'text-purple-500', iconBg: 'bg-purple-500/10 border-purple-500/20' };
   }
   if (url.includes('interview') || title.includes('interview')) {
-    return { type: 'interview', label: 'Interview', color: 'mint', icon: MessageSquare };
+    return { type: 'interview', label: 'Interview', icon: MessageSquare, iconColor: 'text-teal-500', iconBg: 'bg-teal-500/10 border-teal-500/20' };
   }
   if (url.includes('roadmap') || title.includes('roadmap')) {
-    return { type: 'roadmap', label: 'Roadmap', color: 'purple', icon: Map };
+    return { type: 'roadmap', label: 'Roadmap', icon: Map, iconColor: 'text-indigo-500', iconBg: 'bg-indigo-500/10 border-indigo-500/20' };
   }
   if (url.includes('portfolio') || title.includes('portfolio')) {
-    return { type: 'portfolio', label: 'Portfolio', color: 'orange', icon: LayoutTemplate };
+    return { type: 'portfolio', label: 'Portfolio', icon: LayoutTemplate, iconColor: 'text-(--primary)', iconBg: 'bg-(--primary)/10 border-(--primary)/20' };
   }
   if (url.includes('tracker') || title.includes('job')) {
-    return { type: 'tracker', label: 'Tracker', color: 'blue', icon: Briefcase };
+    return { type: 'tracker', label: 'Tracker', icon: Briefcase, iconColor: 'text-blue-500', iconBg: 'bg-blue-500/10 border-blue-500/20' };
   }
   if (notif.priority === 'URGENT') {
-    return { type: 'urgent', label: 'Urgent', color: 'red', icon: AlertTriangle };
+    return { type: 'urgent', label: 'Urgent', icon: AlertTriangle, iconColor: 'text-red-500', iconBg: 'bg-red-500/10 border-red-500/20' };
   }
   if (notif.priority === 'HIGH') {
-    return { type: 'high', label: 'Important', color: 'orange', icon: AlertCircle };
+    return { type: 'high', label: 'Important', icon: AlertCircle, iconColor: 'text-amber-500', iconBg: 'bg-amber-500/10 border-amber-500/20' };
   }
 
-  return { type: 'general', label: 'Update', color: 'blue', icon: Sparkles };
+  return { type: 'general', label: 'Update', icon: Sparkles, iconColor: 'text-(--primary)', iconBg: 'bg-(--primary)/10 border-(--primary)/20' };
 }
-
-const TYPE_COLORS = {
-  red: { 
-    bg: 'bg-red-500/[0.04] dark:bg-red-500/[0.08]', 
-    badge: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20', 
-    icon: 'text-red-500' 
-  },
-  yellow: { 
-    bg: 'bg-amber-500/[0.04] dark:bg-amber-500/[0.08]', 
-    badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20', 
-    icon: 'text-amber-500' 
-  },
-  green: { 
-    bg: 'bg-emerald-500/[0.04] dark:bg-emerald-500/[0.08]', 
-    badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20', 
-    icon: 'text-emerald-500' 
-  },
-  blue: { 
-    bg: 'bg-sky-500/[0.04] dark:bg-sky-500/[0.08]', 
-    badge: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20', 
-    icon: 'text-sky-500' 
-  },
-  pink: { 
-    bg: 'bg-rose-500/[0.04] dark:bg-rose-500/[0.08]', 
-    badge: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20', 
-    icon: 'text-rose-500' 
-  },
-  mint: { 
-    bg: 'bg-teal-500/[0.04] dark:bg-teal-500/[0.08]', 
-    badge: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20', 
-    icon: 'text-teal-500' 
-  },
-  purple: { 
-    bg: 'bg-purple-500/[0.04] dark:bg-purple-500/[0.08]', 
-    badge: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20', 
-    icon: 'text-purple-500' 
-  },
-  orange: { 
-    bg: 'bg-orange-500/[0.04] dark:bg-orange-500/[0.08]', 
-    badge: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20', 
-    icon: 'text-orange-500' 
-  },
-};
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -194,7 +150,7 @@ export function NotificationDropdown() {
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-(--primary) text-white text-[10px] font-medium px-1 rounded-full shadow-sm group-hover:scale-110 transition-transform">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-(--primary) text-white text-[10px] font-medium px-1 rounded-full shadow-xs group-hover:scale-110 transition-transform">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -203,11 +159,11 @@ export function NotificationDropdown() {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-96 bg-(--surface-card) rounded-2xl border border-(--hairline) shadow-2xl z-50 overflow-hidden backdrop-blur-2xl animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Header */}
-          <div className="p-4 border-b border-(--hairline-soft) flex justify-between items-center bg-(--surface-soft)/50">
+          <div className="p-4 border-b border-(--hairline-soft) flex justify-between items-center bg-(--surface-soft)/40">
             <div className="flex items-center gap-2">
-              <h3 className="font-serif text-base text-(--ink)">Notifications</h3>
+              <h3 className="font-serif text-sm font-medium text-(--ink)">Notifications</h3>
               {unreadCount > 0 && (
-                <span className="text-[11px] font-medium bg-(--primary)/10 text-(--primary) px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-medium bg-(--primary)/10 text-(--primary) border border-(--primary)/20 px-2 py-0.5 rounded-full">
                   {unreadCount} new
                 </span>
               )}
@@ -215,7 +171,7 @@ export function NotificationDropdown() {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="text-[11px] text-(--muted) hover:text-(--primary) transition-colors cursor-pointer"
+                className="text-[11px] font-medium text-(--muted) hover:text-(--primary) transition-colors cursor-pointer"
               >
                 Mark all read
               </button>
@@ -233,43 +189,42 @@ export function NotificationDropdown() {
               notifications.map((notif) => {
                 const classification = classifyNotification(notif);
                 const Icon = classification.icon;
-                const colors = TYPE_COLORS[classification.color] || TYPE_COLORS.blue;
                 const isClickable = !!notif.actionUrl;
 
                 return (
                   <div 
                     key={notif.id} 
                     onClick={() => handleNotifClick(notif)}
-                    className={`p-3.5 transition-all cursor-pointer group/notif ${
+                    className={`p-3.5 transition-colors cursor-pointer group/notif flex gap-3 items-start ${
                       notif.isRead 
-                        ? 'opacity-60 hover:opacity-100 hover:bg-(--surface-soft)' 
-                        : `${colors.bg} hover:brightness-95`
+                        ? 'opacity-65 hover:opacity-100 hover:bg-(--surface-soft)/50' 
+                        : 'bg-(--surface-card) hover:bg-(--surface-soft)'
                     }`}
                   >
-                    <div className="flex gap-3">
-                      <div className="mt-0.5 shrink-0 w-8 h-8 rounded-xl bg-(--surface-soft) border border-(--hairline-soft) flex items-center justify-center">
-                        <Icon className={`w-4 h-4 ${colors.icon}`} strokeWidth={2} />
+                    <div className={`mt-0.5 shrink-0 w-8 h-8 rounded-xl flex items-center justify-center border ${classification.iconBg}`}>
+                      <Icon className={`w-4 h-4 ${classification.iconColor}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start gap-2 mb-1">
+                        <h4 className="font-medium text-xs text-(--ink) leading-tight truncate">
+                          {notif.title}
+                        </h4>
+                        <span className="text-[10px] text-(--muted-soft) shrink-0">
+                          {timeAgo(notif.createdAt)}
+                        </span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2 mb-0.5">
-                          <h4 className="font-medium text-xs text-(--ink) leading-tight truncate">
-                            {notif.title}
-                          </h4>
-                          <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${colors.badge}`}>
-                            {classification.label}
+                      <p className="text-xs text-(--muted) leading-relaxed line-clamp-2">{notif.message}</p>
+                      {isClickable && (
+                        <div className="flex items-center justify-end mt-1.5">
+                          <span className="inline-flex items-center gap-0.5 text-[11px] text-(--primary) font-medium group-hover/notif:translate-x-0.5 transition-transform">
+                            View <ChevronRight className="w-3 h-3" />
                           </span>
                         </div>
-                        <p className="text-xs text-(--muted) leading-relaxed line-clamp-2">{notif.message}</p>
-                        <div className="flex items-center justify-between mt-1.5 text-[10px] text-(--muted-soft)">
-                          <span>{timeAgo(notif.createdAt)}</span>
-                          {isClickable && (
-                            <span className="inline-flex items-center gap-0.5 text-(--primary) opacity-0 group-hover/notif:opacity-100 transition-opacity">
-                              View <ChevronRight className="w-3 h-3" />
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      )}
                     </div>
+                    {!notif.isRead && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-(--primary) shrink-0 mt-1.5" />
+                    )}
                   </div>
                 );
               })
@@ -282,9 +237,9 @@ export function NotificationDropdown() {
           </div>
           
           {/* Footer */}
-          <div className="p-2 border-t border-(--hairline-soft) bg-(--surface-soft)/50">
+          <div className="p-2 border-t border-(--hairline-soft) bg-(--surface-soft)/40">
             <button 
-              className="w-full py-2 rounded-xl text-xs font-medium text-(--ink) bg-(--surface-card) hover:bg-(--surface-soft) border border-(--hairline) transition-colors text-center"
+              className="w-full py-2 rounded-xl text-xs font-medium text-(--ink) bg-(--surface-card) hover:bg-(--surface-soft) border border-(--hairline) transition-colors text-center shadow-xs"
               onClick={() => {
                 setIsOpen(false);
                 router.push('/dashboard/notifications');

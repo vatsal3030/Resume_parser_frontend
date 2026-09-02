@@ -1,5 +1,6 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AlertTriangle, X } from 'lucide-react';
 import { Button } from './button';
 
@@ -13,12 +14,18 @@ export function ConfirmDialog({
   cancelText = "Cancel", 
   variant = "danger" 
 }) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={onClose} />
-      <div className="relative bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/65 backdrop-blur-md animate-in fade-in" onClick={onClose} />
+      <div className="relative z-[10000] bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-150">
         <button 
           onClick={onClose} 
           className="absolute right-4 top-4 p-1.5 text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft) rounded-xl transition-colors"
@@ -57,6 +64,7 @@ export function ConfirmDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

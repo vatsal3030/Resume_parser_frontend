@@ -287,7 +287,7 @@ export default function MockInterviewGenerator() {
  setHistoryResult(item);
  const inputs = item.outputPayload?._meta?.inputs || item.inputSummary || {};
  if (inputs.resumeId) setSelectedResume(inputs.resumeId);
- if (inputs.company || inputs.companyName) setCompanyName(inputs.company || inputs.companyName);
+ if (inputs.targetRole || inputs.role) setTargetRole(inputs.targetRole || inputs.role);
  if (item.modelUsed || item.outputPayload?._meta?.model) setModelId(item.modelUsed || item.outputPayload?._meta?.model);
  setActiveRound(0);
  setActiveQuestion(0);
@@ -300,7 +300,7 @@ export default function MockInterviewGenerator() {
  setTimerActive(true);
  };
 
- const activeResult = historyResult || (status === JOB_STATUS.COMPLETED ? { id: jobId, aiJobId: jobId, outputPayload: result, inputSummary: { resumeId: selectedResume, company: companyName }, modelUsed: modelId, createdAt: new Date().toISOString() } : null);
+ const activeResult = historyResult || (status === JOB_STATUS.COMPLETED ? { id: jobId, aiJobId: jobId, outputPayload: result, inputSummary: { resumeId: selectedResume, targetRole }, modelUsed: modelId, createdAt: new Date().toISOString() } : null);
  const displayResult = typeof activeResult === 'object' && activeResult?.outputPayload 
  ? activeResult.outputPayload 
  : activeResult;

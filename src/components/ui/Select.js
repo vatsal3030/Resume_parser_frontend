@@ -11,7 +11,7 @@ export function Select({
   disabled = false, 
   loading = false,
   loadingText = "Fetching resumes...",
-  emptyText = "No resumes uploaded yet",
+  emptyText = "No options available",
   className 
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,29 +27,18 @@ export function Select({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (!isOpen) {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
   if (loading) {
     return (
       <div 
         className={cn(
-          "w-full flex items-center justify-between px-4 py-3 bg-gray-100 border-4 border-brutal-black text-left font-bold text-gray-500",
-          "shadow-[4px_4px_0_#000] animate-pulse cursor-wait",
+          "w-full flex items-center justify-between px-3.5 py-2.5 bg-(--surface-card) border border-(--hairline) rounded-xl text-left text-xs text-(--muted) shadow-xs animate-pulse cursor-wait",
           className
         )}
       >
-        <div className="flex items-center gap-2.5">
-          <Loader2 className="w-4 h-4 animate-spin text-black" />
-          <span className="text-sm font-black uppercase tracking-tight text-gray-700">{loadingText}</span>
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-(--primary)" />
+          <span className="text-xs text-(--muted)">{loadingText}</span>
         </div>
-        <div className="w-2.5 h-2.5 bg-brutal-yellow border-2 border-black rounded-full animate-ping" />
       </div>
     );
   }
@@ -63,22 +52,21 @@ export function Select({
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between px-4 py-3 bg-white border-4 border-brutal-black text-left font-bold text-black",
-          "shadow-[4px_4px_0_#000] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all",
-          "focus:outline-none focus:ring-2 focus:ring-brutal-pink",
-          disabled && "opacity-50 cursor-not-allowed shadow-none translate-x-1 translate-y-1"
+          "w-full flex items-center justify-between px-3.5 py-2.5 bg-(--surface-card) border border-(--hairline) hover:border-(--muted-soft) rounded-xl text-left text-xs font-medium transition-colors shadow-xs",
+          "focus:outline-none focus:border-(--primary)",
+          disabled && "opacity-50 cursor-not-allowed pointer-events-none"
         )}
       >
-        <span className={selectedOption ? "text-black truncate pr-2" : "text-gray-500 truncate pr-2"}>
+        <span className={selectedOption ? "text-(--ink) truncate pr-2" : "text-(--muted-soft) truncate pr-2"}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown className={cn("w-5 h-5 flex-shrink-0 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown className={cn("w-4 h-4 text-(--muted) shrink-0 transition-transform duration-200", isOpen && "rotate-180")} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border-4 border-brutal-black shadow-[4px_4px_0_#000] max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1.5 bg-(--surface-card)/95 backdrop-blur-xl border border-(--hairline) shadow-xl rounded-2xl max-h-60 overflow-y-auto p-1.5 animate-in fade-in zoom-in-95 duration-150">
           {options.length === 0 ? (
-            <div className="p-4 text-center font-bold text-sm text-gray-500">{emptyText}</div>
+            <div className="p-3 text-center text-xs text-(--muted)">{emptyText}</div>
           ) : (
             options.map((option) => (
               <button
@@ -88,10 +76,15 @@ export function Select({
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 text-left font-bold hover:bg-brutal-yellow transition-colors border-b-2 border-brutal-black last:border-0 text-sm"
+                className={cn(
+                  "w-full flex items-center justify-between p-2.5 rounded-xl text-left text-xs transition-colors cursor-pointer",
+                  value === option.value 
+                    ? "bg-(--surface-soft) text-(--primary) font-medium" 
+                    : "hover:bg-(--surface-soft) text-(--body) hover:text-(--ink)"
+                )}
               >
                 <span className="truncate pr-2">{option.label}</span>
-                {value === option.value && <Check className="w-5 h-5 flex-shrink-0" />}
+                {value === option.value && <Check className="w-4 h-4 shrink-0 text-(--primary)" />}
               </button>
             ))
           )}

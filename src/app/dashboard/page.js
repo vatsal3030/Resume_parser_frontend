@@ -5,12 +5,26 @@ import { formatDate } from "@/lib/formatDate";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
-import { FileText, ArrowRight, Activity, TrendingUp, Coins, FileCheck, ClipboardCheck, MessageSquare, Map, LayoutTemplate, Code, Users, Briefcase, FileEdit } from 'lucide-react';
+import { 
+  FileText, 
+  ArrowRight, 
+  Activity, 
+  TrendingUp, 
+  Coins, 
+  FileCheck, 
+  ClipboardCheck, 
+  MessageSquare, 
+  Map, 
+  LayoutTemplate, 
+  Code, 
+  Users, 
+  Briefcase, 
+  FileEdit,
+  Sparkles
+} from 'lucide-react';
 
-// New Shared Components
 import { PageHeader, SectionHeader } from '@/components/ui/Headers';
 import { DashboardCard, ToolCard } from '@/components/ui/BrutalCards';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -46,9 +60,9 @@ export default function Dashboard() {
         console.error("Error fetching resumes:", error.response?.data || error.message);
         setResumes([]);
         if (error.response?.status === 401) {
-           toast.error('Session Expired', 'Please log in again.');
-           await supabase.auth.signOut();
-           router.push('/login');
+          toast.error('Session Expired', 'Please log in again.');
+          await supabase.auth.signOut();
+          router.push('/login');
         }
       } finally {
         setLoading(false);
@@ -58,21 +72,25 @@ export default function Dashboard() {
   }, [router, toast]);
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-12">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-10">
       
       {/* 1. Header Area */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-(--hairline) pb-6">
         <PageHeader 
           title="Overview" 
           subtitle="Welcome back. Here is your career progress." 
-          className="mb-0 border-b-0" 
+          className="mb-0 border-b-0 pb-0" 
         />
-        <div className="flex gap-4 w-full md:w-auto border-b-4 border-brutal-black pb-2 md:border-b-0 md:pb-0">
+        <div className="flex gap-2.5 w-full md:w-auto">
           <Link href="/dashboard/studio" className="w-full sm:w-auto">
-             <Button variant="brutal" className="w-full text-lg bg-brutal-blue text-black shadow-brutal-sm">+ Resume Studio</Button>
+            <Button variant="secondary" size="sm" className="w-full">
+              + Resume Studio
+            </Button>
           </Link>
           <Link href="/dashboard/analyze" className="w-full sm:w-auto">
-             <Button variant="mint" className="w-full text-lg shadow-brutal-sm">+ New Analysis</Button>
+            <Button variant="default" size="sm" className="w-full">
+              + New Analysis
+            </Button>
           </Link>
         </div>
       </div>
@@ -80,39 +98,34 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Left Column: Metrics & Resumes */}
-        <div className="lg:col-span-2 space-y-12">
+        <div className="lg:col-span-2 space-y-10">
           {/* 2. Alive Dashboard Metrics */}
           <section>
             <SectionHeader title="Activity" icon={Activity} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <DashboardCard 
                 title="Analyzed" 
                 value={loading ? '--' : resumes.length} 
                 subtext="Total resumes" 
                 icon={FileCheck} 
-                bgColor="bg-brutal-mint" 
               />
               <DashboardCard 
                 title="Avg ATS" 
                 value={loading ? '--' : (resumes.length > 0 ? Math.round(resumes.reduce((acc, r) => acc + (r.atsScore || 0), 0) / (resumes.filter(r => r.atsScore).length || 1)) : 0)} 
                 subtext="Across all uploads" 
                 icon={TrendingUp} 
-                bgColor="bg-brutal-yellow" 
               />
               <DashboardCard 
                 title="Applications" 
                 value="0" 
-                subtext="Pending integration" 
+                subtext="Active job tracker entries" 
                 icon={Briefcase} 
-                bgColor="bg-brutal-pink" 
               />
               <DashboardCard 
                 title="Credits" 
                 value={loading ? '--' : (profile?.creditBalance || 0)} 
-                subtext={profile?.tier === 'PRO' ? "Pro Plan Active" : "Free Plan"} 
+                subtext={profile?.tier === 'PRO' ? "Pro Plan Active" : "Available Credits"} 
                 icon={Coins} 
-                bgColor="bg-brutal-blue" 
-                textColor="text-white" 
               />
             </div>
           </section>
@@ -120,7 +133,7 @@ export default function Dashboard() {
           {/* Analytics Visualization */}
           <section>
             <SectionHeader title="Analytics" icon={TrendingUp} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <CreditUsageChart />
               <ToolUsageChart />
             </div>
@@ -131,53 +144,53 @@ export default function Dashboard() {
             <SectionHeader title="Recent Resumes" icon={FileText} />
             
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <SkeletonCard />
-                 <SkeletonCard />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SkeletonCard />
+                <SkeletonCard />
               </div>
             ) : resumes.length === 0 ? (
               <EmptyState 
                 title="No resumes analyzed yet"
                 description="Upload your first resume to get detailed AI feedback."
                 actionLabel="Upload Resume"
-                actionHref="/"
+                actionHref="/dashboard/analyze"
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {resumes.slice(0, 4).map(r => (
-                  <Card key={r.id} className="group bg-white hover:bg-slate-50 transition-colors border-4 border-brutal-black shadow-[4px_4px_0_#000]">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-6">
-                        <div className="flex items-center space-x-3">
-                          <div className="p-3 bg-brutal-blue border-3 border-brutal-black shadow-brutal-sm group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
-                            <FileText className="w-8 h-8 text-brutal-black" />
-                          </div>
-                          <div className="pl-2">
-                             <h3 className="font-black text-xl truncate w-32 md:w-40" title={r.title}>{r.title || 'Untitled Resume'}</h3>
-                             <p className="text-sm font-bold opacity-80">{formatDate(r.createdAt)}</p>
-                          </div>
+                  <div key={r.id} className="group rounded-2xl border border-(--hairline) bg-(--surface-card) hover:bg-(--surface-soft) hover:border-(--primary)/50 transition-all p-6 flex flex-col justify-between shadow-sm">
+                    <div>
+                      <div className="flex items-center gap-3 mb-5">
+                        <div className="w-10 h-10 rounded-xl bg-(--surface-soft) border border-(--hairline-soft) flex items-center justify-center text-(--primary)">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-serif text-base text-(--ink) truncate" title={r.title}>
+                            {r.title || 'Untitled Resume'}
+                          </h3>
+                          <p className="text-xs text-(--muted) mt-0.5">{formatDate(r.createdAt)}</p>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="bg-brutal-bg border-3 border-brutal-black p-4 text-center">
-                          <p className="text-xs font-black uppercase tracking-wider mb-1">ATS Score</p>
-                          <span className="text-4xl font-black">{r.atsScore}</span>
+                      <div className="grid grid-cols-2 gap-3 mb-5">
+                        <div className="rounded-xl border border-(--hairline-soft) bg-(--surface-soft)/60 p-3 text-center">
+                          <p className="text-[10px] uppercase font-medium tracking-wider text-(--muted) mb-0.5">ATS Score</p>
+                          <span className="text-2xl font-serif text-(--ink)">{r.atsScore ?? '--'}</span>
                         </div>
-                        <div className="bg-brutal-yellow border-3 border-brutal-black p-4 text-center">
-                          <p className="text-xs font-black uppercase tracking-wider mb-1">Job Fit</p>
-                          <span className="text-4xl font-black">{r.jobFitScore}</span>
+                        <div className="rounded-xl border border-(--hairline-soft) bg-(--surface-soft)/60 p-3 text-center">
+                          <p className="text-[10px] uppercase font-medium tracking-wider text-(--muted) mb-0.5">Job Fit</p>
+                          <span className="text-2xl font-serif text-(--ink)">{r.jobFitScore ?? '--'}</span>
                         </div>
                       </div>
+                    </div>
 
-                      <Link href={`/dashboard/analyze?outputId=${r.id}`} className="block w-full">
-                        <Button variant="white" className="w-full text-lg justify-between border-3 bg-slate-100">
-                          View Details
-                          <ArrowRight className="w-5 h-5 transition group-hover:translate-x-2" />
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
+                    <Link href={`/dashboard/analyze?outputId=${r.id}`} className="block w-full">
+                      <Button variant="secondary" size="sm" className="w-full justify-between">
+                        <span>View Details</span>
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      </Button>
+                    </Link>
+                  </div>
                 ))}
               </div>
             )}
@@ -185,7 +198,7 @@ export default function Dashboard() {
         </div>
 
         {/* Right Column: Live Feed & Context */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           <ContinueWorkflowCard />
           <RecentActivityFeed />
         </div>
@@ -193,19 +206,19 @@ export default function Dashboard() {
       </div>
 
       {/* 4. Tools Grid */}
-      <section>
+      <section className="pt-4">
         <SectionHeader title="Core Tools" icon={LayoutTemplate} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <ToolCard title="Resume Studio" description="Build & edit with live AI assistance." href="/dashboard/studio" bgColor="bg-brutal-blue" textColor="text-white" icon={FileEdit} />
-          <ToolCard title="DSA Tracker" description="Track coding stats across platforms." href="/dashboard/tools/dsa-tracker" bgColor="bg-brutal-mint" icon={TrendingUp} />
-          <ToolCard title="GitHub Analyst" description="Extract your developer archetype." href="/dashboard/tools/github" bgColor="bg-black" textColor="text-white" icon={Code} />
-          <ToolCard title="Portfolio Gen" description="Wireframe a site from your resume." href="/dashboard/tools/portfolio" bgColor="bg-brutal-bg" icon={LayoutTemplate} />
-          <ToolCard title="AI Tailor" description="Match your resume to a Job Description." href="/dashboard/tools/tailor" bgColor="bg-brutal-yellow" icon={ClipboardCheck} />
-          <ToolCard title="Job Tracker" description="Drag-and-drop board for applications." href="/dashboard/tracker" bgColor="bg-brutal-blue" icon={Briefcase} />
-          <ToolCard title="Cover Letter" description="Auto-generate a highly targeted letter." href="/dashboard/tools/cover-letter" bgColor="bg-brutal-pink" icon={FileText} />
-          <ToolCard title="Mock Interview" description="Practice hard questions based on your CV." href="/dashboard/tools/mock-interview" bgColor="bg-brutal-green" icon={MessageSquare} />
-          <ToolCard title="Skill Roadmap" description="AI generated path to your next role." href="/dashboard/tools/roadmap" icon={Map} />
-          <ToolCard title="Community" description="Peer review and resume roasting." href="/dashboard/community" bgColor="bg-brutal-yellow" icon={Users} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <ToolCard title="Resume Studio" description="Build & edit with live AI assistance." href="/dashboard/studio" icon={FileEdit} />
+          <ToolCard title="DSA Tracker" description="Track coding stats across platforms." href="/dashboard/tools/dsa-tracker" icon={TrendingUp} />
+          <ToolCard title="GitHub Analyst" description="Extract your developer archetype." href="/dashboard/tools/github" icon={Code} />
+          <ToolCard title="Portfolio Gen" description="Wireframe a site from your resume." href="/dashboard/tools/portfolio" icon={LayoutTemplate} />
+          <ToolCard title="AI Tailor" description="Match your resume to a Job Description." href="/dashboard/tools/tailor" icon={ClipboardCheck} />
+          <ToolCard title="Job Tracker" description="Organized board for job applications." href="/dashboard/tracker" icon={Briefcase} />
+          <ToolCard title="Cover Letter" description="Auto-generate targeted letters." href="/dashboard/tools/cover-letter" icon={FileText} />
+          <ToolCard title="Mock Interview" description="Practice hard questions based on CV." href="/dashboard/tools/mock-interview" icon={MessageSquare} />
+          <ToolCard title="Skill Roadmap" description="AI-generated path to your next role." href="/dashboard/tools/roadmap" icon={Map} />
+          <ToolCard title="Community" description="Peer review and resume feedback." href="/dashboard/community" icon={Users} />
         </div>
       </section>
 

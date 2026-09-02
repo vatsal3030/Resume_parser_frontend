@@ -8,21 +8,21 @@ import { useToast } from '@/components/ui/toast';
 import { Trophy, Code, Loader2, RefreshCw, Save, ExternalLink, TrendingUp, Target, Zap, Award } from 'lucide-react';
 
 const PLATFORMS = [
-  { key: 'leetcode', label: 'LeetCode', icon: '🟡', color: 'bg-yellow-100 border-yellow-400', url: 'https://leetcode.com' },
-  { key: 'codeforces', label: 'Codeforces', icon: '🔵', color: 'bg-blue-100 border-blue-400', url: 'https://codeforces.com' },
-  { key: 'gfg', label: 'GeeksForGeeks', icon: '🟢', color: 'bg-green-100 border-green-400', url: 'https://geeksforgeeks.org' },
-  { key: 'codechef', label: 'CodeChef', icon: '🟠', color: 'bg-orange-100 border-orange-400', url: 'https://codechef.com' },
-  { key: 'hackerrank', label: 'HackerRank', icon: '🟩', color: 'bg-emerald-100 border-emerald-400', url: 'https://hackerrank.com' },
+  { key: 'leetcode', label: 'LeetCode', icon: '🟡', url: 'https://leetcode.com' },
+  { key: 'codeforces', label: 'Codeforces', icon: '🔵', url: 'https://codeforces.com' },
+  { key: 'gfg', label: 'GeeksForGeeks', icon: '🟢', url: 'https://geeksforgeeks.org' },
+  { key: 'codechef', label: 'CodeChef', icon: '🟠', url: 'https://codechef.com' },
+  { key: 'hackerrank', label: 'HackerRank', icon: '🟩', url: 'https://hackerrank.com' },
 ];
 
 const CODEFORCES_RANK_COLORS = {
-  'newbie': 'text-gray-500',
-  'pupil': 'text-green-500',
+  'newbie': 'text-gray-400',
+  'pupil': 'text-emerald-500',
   'specialist': 'text-cyan-500',
   'expert': 'text-blue-500',
   'candidate master': 'text-violet-500',
-  'master': 'text-orange-500',
-  'international master': 'text-orange-600',
+  'master': 'text-amber-500',
+  'international master': 'text-orange-500',
   'grandmaster': 'text-red-500',
   'international grandmaster': 'text-red-600',
   'legendary grandmaster': 'text-red-700',
@@ -36,7 +36,6 @@ export default function DSATrackerPage() {
   const [initialLoad, setInitialLoad] = useState(true);
   const toast = useToast();
 
-  // Load saved usernames on mount
   useEffect(() => {
     const load = async () => {
       try {
@@ -49,7 +48,6 @@ export default function DSATrackerPage() {
           codechef: dsa.codechef || '',
           hackerrank: dsa.hackerrank || '',
         });
-        // Auto-fetch if usernames exist
         if (dsa.leetcode || dsa.codeforces || dsa.gfg) {
           fetchStats(dsa);
         }
@@ -103,49 +101,48 @@ export default function DSATrackerPage() {
       <PageShell title="DSA Tracker" subtitle="Track your competitive programming progress">
         <div className="space-y-6 animate-pulse">
           {/* Skeleton for platform inputs */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => (
-              <Card key={i} className="border-4 border-brutal-black shadow-brutal bg-gray-100">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 bg-gray-300 rounded" />
-                    <div className="h-5 bg-gray-300 rounded w-24" />
-                  </div>
-                  <div className="h-9 bg-gray-200 rounded border-2 border-gray-300" />
-                </CardContent>
-              </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-4 shadow-xs space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-(--surface-soft)" />
+                  <div className="h-3.5 bg-(--surface-soft) rounded-md w-20" />
+                </div>
+                <div className="h-9 bg-(--surface-soft) rounded-xl border border-(--hairline-soft)" />
+              </div>
             ))}
           </div>
+
           {/* Skeleton for stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => (
-              <Card key={i} className="border-4 border-brutal-black shadow-brutal bg-gray-100">
-                <CardContent className="p-4 text-center">
-                  <div className="w-8 h-8 bg-gray-300 rounded mx-auto mb-2" />
-                  <div className="h-10 bg-gray-300 rounded w-16 mx-auto mb-2" />
-                  <div className="h-3 bg-gray-200 rounded w-20 mx-auto" />
-                </CardContent>
-              </Card>
+              <div key={i} className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-5 text-center shadow-xs space-y-2">
+                <div className="w-7 h-7 rounded-lg bg-(--surface-soft) mx-auto" />
+                <div className="h-8 bg-(--surface-soft) rounded-lg w-16 mx-auto" />
+                <div className="h-2.5 bg-(--surface-soft) rounded w-20 mx-auto" />
+              </div>
             ))}
           </div>
+
           {/* Skeleton for platform detail cards */}
           {[1, 2].map(i => (
-            <Card key={i} className="border-4 border-brutal-black shadow-brutal bg-white">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-6 border-b-4 border-gray-200 pb-4">
-                  <div className="w-10 h-10 bg-gray-300 rounded" />
-                  <div className="h-6 bg-gray-300 rounded w-32" />
+            <div key={i} className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-6 shadow-xs space-y-5">
+              <div className="flex items-center gap-3 border-b border-(--hairline-soft) pb-4">
+                <div className="w-8 h-8 rounded-xl bg-(--surface-soft)" />
+                <div className="space-y-1.5">
+                  <div className="h-4 bg-(--surface-soft) rounded-md w-28" />
+                  <div className="h-2.5 bg-(--surface-soft) rounded w-16" />
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map(j => (
-                    <div key={j} className="p-4 border-2 border-gray-200 bg-gray-50 text-center">
-                      <div className="h-8 bg-gray-300 rounded w-12 mx-auto mb-2" />
-                      <div className="h-3 bg-gray-200 rounded w-16 mx-auto" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[1, 2, 3, 4].map(j => (
+                  <div key={j} className="p-4 rounded-xl border border-(--hairline-soft) bg-(--surface-soft) text-center space-y-2">
+                    <div className="h-6 bg-(--surface-card) rounded-md w-12 mx-auto" />
+                    <div className="h-2.5 bg-(--surface-card) rounded w-14 mx-auto" />
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </PageShell>
@@ -155,83 +152,74 @@ export default function DSATrackerPage() {
   return (
     <PageShell 
       title="DSA Tracker" 
-      subtitle="Track LeetCode, Codeforces & GFG progress in one dashboard"
-      subtitleColor="bg-brutal-green text-black"
+      subtitle="Track LeetCode, Codeforces & GFG progress in one unified dashboard"
       actions={
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => fetchStats()} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          <Button variant="secondary" onClick={() => fetchStats()} disabled={loading} className="text-xs">
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
           </Button>
         </div>
       }
     >
       {/* Platform Username Inputs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
         {PLATFORMS.map(p => (
-          <Card key={p.key} className={`border-4 border-brutal-black shadow-brutal ${p.color}`}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">{p.icon}</span>
-                <h3 className="font-black text-lg uppercase tracking-tight">{p.label}</h3>
-                <a href={p.url} target="_blank" rel="noopener noreferrer" className="ml-auto opacity-50 hover:opacity-100">
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+          <div key={p.key} className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-4 shadow-xs">
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-base">{p.icon}</span>
+                <h3 className="font-serif font-medium text-xs text-(--ink)">{p.label}</h3>
               </div>
-              <input
-                type="text"
-                value={usernames[p.key]}
-                onChange={(e) => setUsernames(prev => ({ ...prev, [p.key]: e.target.value }))}
-                placeholder={`Enter ${p.label} username`}
-                className="w-full p-2 border-2 border-brutal-black font-medium text-sm outline-none focus:bg-white bg-white/70"
-              />
-            </CardContent>
-          </Card>
+              <a href={p.url} target="_blank" rel="noopener noreferrer" className="text-(--muted) hover:text-(--ink) transition-colors">
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+            <input
+              type="text"
+              value={usernames[p.key]}
+              onChange={(e) => setUsernames(prev => ({ ...prev, [p.key]: e.target.value }))}
+              placeholder={`Enter username`}
+              className="w-full px-3 py-2 rounded-xl border border-(--hairline) bg-(--surface-soft) text-xs text-(--ink) placeholder:text-(--muted-soft) outline-none focus:border-(--primary) transition-colors shadow-xs"
+            />
+          </div>
         ))}
       </div>
 
       {/* Save & Fetch Buttons */}
-      <div className="flex gap-3 mb-8">
-        <Button variant="mint" onClick={handleSave} disabled={saving}>
-          <Save className="w-4 h-4 mr-2" /> {saving ? 'Saving...' : 'Save & Fetch'}
+      <div className="flex gap-3 mb-6">
+        <Button onClick={handleSave} disabled={saving} className="text-xs px-4">
+          <Save className="w-3.5 h-3.5 mr-1.5" /> {saving ? 'Saving...' : 'Save & Fetch Stats'}
         </Button>
       </div>
 
       {/* Aggregated Stats Bar */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-in fade-in slide-in-from-bottom-4">
-          <Card className="border-4 border-brutal-black shadow-brutal bg-brutal-yellow">
-            <CardContent className="p-4 text-center">
-              <Trophy className="w-8 h-8 mx-auto mb-2" />
-              <p className="text-4xl font-black">{stats.aggregated.totalSolved}</p>
-              <p className="text-xs font-bold uppercase tracking-wider mt-1">Total Solved</p>
-            </CardContent>
-          </Card>
-          <Card className="border-4 border-brutal-black shadow-brutal bg-brutal-pink">
-            <CardContent className="p-4 text-center">
-              <Target className="w-8 h-8 mx-auto mb-2" />
-              <p className="text-4xl font-black">{stats.aggregated.platformCount}</p>
-              <p className="text-xs font-bold uppercase tracking-wider mt-1">Active Platforms</p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 animate-in fade-in slide-in-from-bottom-4">
+          <div className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-5 text-center shadow-xs">
+            <Trophy className="w-6 h-6 text-(--primary) mx-auto mb-1.5" />
+            <p className="text-2xl font-serif font-medium text-(--ink)">{stats.aggregated.totalSolved}</p>
+            <p className="text-[11px] text-(--muted) mt-0.5">Total Solved</p>
+          </div>
+          <div className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-5 text-center shadow-xs">
+            <Target className="w-6 h-6 text-(--primary) mx-auto mb-1.5" />
+            <p className="text-2xl font-serif font-medium text-(--ink)">{stats.aggregated.platformCount}</p>
+            <p className="text-[11px] text-(--muted) mt-0.5">Active Platforms</p>
+          </div>
           {/* LeetCode-specific stats */}
           {stats.platforms.find(p => p.platform === 'LeetCode' && p.available) && (() => {
             const lc = stats.platforms.find(p => p.platform === 'LeetCode');
             return (
               <>
-                <Card className="border-4 border-brutal-black shadow-brutal bg-brutal-mint">
-                  <CardContent className="p-4 text-center">
-                    <Zap className="w-8 h-8 mx-auto mb-2" />
-                    <p className="text-4xl font-black">{lc.ranking > 0 ? `#${lc.ranking.toLocaleString()}` : '—'}</p>
-                    <p className="text-xs font-bold uppercase tracking-wider mt-1">LC Ranking</p>
-                  </CardContent>
-                </Card>
-                <Card className="border-4 border-brutal-black shadow-brutal bg-brutal-blue text-white">
-                  <CardContent className="p-4 text-center">
-                    <TrendingUp className="w-8 h-8 mx-auto mb-2" />
-                    <p className="text-4xl font-black">{lc.acceptanceRate ? `${lc.acceptanceRate}%` : '—'}</p>
-                    <p className="text-xs font-bold uppercase tracking-wider mt-1">Acceptance</p>
-                  </CardContent>
-                </Card>
+                <div className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-5 text-center shadow-xs">
+                  <Zap className="w-6 h-6 text-amber-500 mx-auto mb-1.5" />
+                  <p className="text-2xl font-serif font-medium text-(--ink)">{lc.ranking > 0 ? `#${lc.ranking.toLocaleString()}` : '—'}</p>
+                  <p className="text-[11px] text-(--muted) mt-0.5">LC Ranking</p>
+                </div>
+                <div className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-5 text-center shadow-xs">
+                  <TrendingUp className="w-6 h-6 text-emerald-500 mx-auto mb-1.5" />
+                  <p className="text-2xl font-serif font-medium text-(--ink)">{lc.acceptanceRate ? `${lc.acceptanceRate}%` : '—'}</p>
+                  <p className="text-[11px] text-(--muted) mt-0.5">Acceptance</p>
+                </div>
               </>
             );
           })()}
@@ -242,177 +230,173 @@ export default function DSATrackerPage() {
       {loading ? (
         <div className="space-y-6 animate-pulse">
           {[1, 2, 3].map(i => (
-            <Card key={i} className="border-4 border-brutal-black shadow-brutal bg-white">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-6 border-b-4 border-gray-200 pb-4">
-                  <div className="w-10 h-10 bg-gray-300 rounded" />
-                  <div>
-                    <div className="h-6 bg-gray-300 rounded w-28 mb-1" />
-                    <div className="h-4 bg-gray-200 rounded w-20" />
+            <div key={i} className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-6 shadow-xs space-y-4">
+              <div className="flex items-center gap-3 border-b border-(--hairline-soft) pb-4">
+                <div className="w-8 h-8 rounded-xl bg-(--surface-soft)" />
+                <div className="space-y-1">
+                  <div className="h-4 bg-(--surface-soft) rounded w-28" />
+                  <div className="h-2.5 bg-(--surface-soft) rounded w-20" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[1, 2, 3, 4].map(j => (
+                  <div key={j} className="p-3.5 rounded-xl border border-(--hairline-soft) bg-(--surface-soft) text-center space-y-1">
+                    <div className="h-5 bg-(--surface-card) rounded w-12 mx-auto" />
+                    <div className="h-2.5 bg-(--surface-card) rounded w-16 mx-auto" />
                   </div>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map(j => (
-                    <div key={j} className="p-4 border-2 border-gray-200 bg-gray-50 text-center">
-                      <div className="h-10 bg-gray-300 rounded w-14 mx-auto mb-2" />
-                      <div className="h-3 bg-gray-200 rounded w-16 mx-auto" />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       ) : stats ? (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8">
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
           {stats.platforms.map(platform => (
-            <Card key={platform.platform} className="border-4 border-brutal-black shadow-brutal bg-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-6 border-b-4 border-brutal-black pb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{PLATFORMS.find(p => p.label === platform.platform)?.icon || '📊'}</span>
-                    <div>
-                      <h3 className="text-2xl font-black">{platform.platform}</h3>
-                      <a href={
-                        platform.platform === 'LeetCode' ? `https://leetcode.com/u/${platform.username}` :
-                        platform.platform === 'Codeforces' ? `https://codeforces.com/profile/${platform.username}` :
-                        `https://www.geeksforgeeks.org/user/${platform.username}/`
-                      } 
-                         target="_blank" rel="noopener noreferrer"
-                         className="text-sm font-bold text-brutal-blue hover:underline flex items-center gap-1">
-                        @{platform.username} <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
+            <div key={platform.platform} className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-6 shadow-xs">
+              <div className="flex items-center justify-between mb-6 border-b border-(--hairline-soft) pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{PLATFORMS.find(p => p.label === platform.platform)?.icon || '📊'}</span>
+                  <div>
+                    <h3 className="font-serif font-medium text-base text-(--ink)">{platform.platform}</h3>
+                    <a href={
+                      platform.platform === 'LeetCode' ? `https://leetcode.com/u/${platform.username}` :
+                      platform.platform === 'Codeforces' ? `https://codeforces.com/profile/${platform.username}` :
+                      `https://www.geeksforgeeks.org/user/${platform.username}/`
+                    } 
+                    target="_blank" rel="noopener noreferrer"
+                    className="text-xs font-medium text-(--primary) hover:underline flex items-center gap-1 mt-0.5">
+                      @{platform.username} <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
-                  {!platform.available && (
-                    <span className="text-xs font-bold bg-red-100 text-red-700 px-3 py-1 border-2 border-red-400">
-                      {platform.error || 'Not Found'}
-                    </span>
-                  )}
                 </div>
+                {!platform.available && (
+                  <span className="text-[11px] font-medium bg-red-500/10 text-red-500 px-2.5 py-0.5 rounded-full border border-red-500/20">
+                    {platform.error || 'Not Found'}
+                  </span>
+                )}
+              </div>
 
-                {platform.available && (
-                  <>
-                    {/* LeetCode specific */}
-                    {platform.platform === 'LeetCode' && (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <StatBox label="Total Solved" value={platform.totalSolved} color="bg-brutal-yellow" />
-                        <StatBox label="Easy" value={platform.easySolved} color="bg-green-200" />
-                        <StatBox label="Medium" value={platform.mediumSolved} color="bg-orange-200" />
-                        <StatBox label="Hard" value={platform.hardSolved} color="bg-red-200" />
+              {platform.available && (
+                <>
+                  {/* LeetCode specific */}
+                  {platform.platform === 'LeetCode' && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <StatBox label="Total Solved" value={platform.totalSolved} />
+                      <StatBox label="Easy" value={platform.easySolved} />
+                      <StatBox label="Medium" value={platform.mediumSolved} />
+                      <StatBox label="Hard" value={platform.hardSolved} />
+                    </div>
+                  )}
+
+                  {/* Codeforces specific */}
+                  {platform.platform === 'Codeforces' && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <StatBox label="Total Solved" value={platform.totalSolved || 0} />
+                        <StatBox label="Rating" value={platform.rating} />
+                        <StatBox label="Max Rating" value={platform.maxRating} />
+                        <StatBox label="Contests" value={platform.contestCount} />
+                        <StatBox label="Contribution" value={platform.contribution} />
                       </div>
-                    )}
-
-                    {/* Codeforces specific */}
-                    {platform.platform === 'Codeforces' && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <StatBox label="Total Solved" value={platform.totalSolved || 0} color="bg-brutal-yellow" />
-                          <StatBox label="Rating" value={platform.rating} color="bg-blue-200" />
-                          <StatBox label="Max Rating" value={platform.maxRating} color="bg-purple-200" />
-                          <StatBox label="Contests" value={platform.contestCount} color="bg-brutal-mint" />
-                          <StatBox label="Contribution" value={platform.contribution} color="bg-gray-100" />
-                        </div>
-                        <div className="flex items-center gap-3 mt-4">
-                          <Award className="w-5 h-5" />
-                          <span className="font-bold">Rank: </span>
-                          <span className={`font-black text-lg uppercase ${CODEFORCES_RANK_COLORS[platform.rank] || 'text-gray-500'}`}>
-                            {platform.rank}
-                          </span>
-                          {platform.maxRank !== platform.rank && (
-                            <span className="text-xs text-gray-400 font-medium">(Max: {platform.maxRank})</span>
-                          )}
-                        </div>
-                        
-                        {/* Rating History */}
-                        {platform.ratingHistory?.length > 0 && (
-                          <div className="mt-6">
-                            <h4 className="font-black text-sm uppercase tracking-tight mb-3">Recent Contests</h4>
-                            <div className="space-y-2 max-h-64 overflow-y-auto">
-                              {platform.ratingHistory.slice(-5).reverse().map((r, i) => (
-                                <div key={i} className="flex items-center justify-between p-2 bg-slate-50 border-2 border-brutal-black text-sm">
-                                  <span className="font-bold truncate flex-1">{r.contestName}</span>
-                                  <span className="font-bold text-gray-500 mx-3">#{r.rank}</span>
-                                  <span className={`font-black ${r.newRating > r.oldRating ? 'text-green-600' : 'text-red-500'}`}>
-                                    {r.newRating > r.oldRating ? '+' : ''}{r.newRating - r.oldRating}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                      <div className="flex items-center gap-2 mt-4 text-xs font-medium text-(--muted)">
+                        <Award className="w-4 h-4 text-(--primary)" />
+                        <span>Rank:</span>
+                        <span className={`font-semibold ${CODEFORCES_RANK_COLORS[platform.rank] || 'text-(--ink)'}`}>
+                          {platform.rank}
+                        </span>
+                        {platform.maxRank !== platform.rank && (
+                          <span className="text-[11px] text-(--muted-soft)">(Max: {platform.maxRank})</span>
                         )}
                       </div>
-                    )}
-
-                    {/* GeeksForGeeks specific */}
-                    {platform.platform === 'GeeksForGeeks' && (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <StatBox label="Total Solved" value={platform.totalSolved} color="bg-green-200" />
-                        <StatBox label="Easy" value={platform.easySolved} color="bg-green-100" />
-                        <StatBox label="Medium" value={platform.mediumSolved} color="bg-yellow-200" />
-                        <StatBox label="Hard" value={platform.hardSolved} color="bg-red-200" />
-                      </div>
-                    )}
-
-                    {/* CodeChef specific */}
-                    {platform.platform === 'CodeChef' && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <StatBox label="Total Solved" value={platform.totalSolved ?? '—'} color="bg-orange-200" />
-                          <StatBox label="Rating" value={platform.rating} color="bg-orange-100" />
-                          <StatBox label="Max Rating" value={platform.maxRating} color="bg-purple-200" />
-                          <StatBox label="Stars" value={platform.stars} color="bg-brutal-yellow" />
-                        </div>
-                        <div className="flex items-center gap-3 mt-2">
-                          <Award className="w-5 h-5" />
-                          <span className="font-bold">Global Rank: </span>
-                          <span className="font-black text-lg">{platform.globalRank || '—'}</span>
-                          {platform.countryRank && (
-                            <span className="text-xs text-gray-400 font-medium">(Country: #{platform.countryRank})</span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* HackerRank specific */}
-                    {platform.platform === 'HackerRank' && (
-                      <div className="space-y-3">
-                        {platform.badges?.length > 0 ? (
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {platform.badges.map((b, i) => (
-                              <div key={i} className="p-3 border-2 border-brutal-black bg-emerald-50 text-center">
-                                <p className="text-2xl font-black">{b.score ?? '—'}</p>
-                                <p className="text-[10px] font-bold uppercase tracking-wider mt-1">{b.name}</p>
+                      
+                      {/* Rating History */}
+                      {platform.ratingHistory?.length > 0 && (
+                        <div className="mt-5">
+                          <h4 className="text-xs font-medium text-(--ink) mb-2.5">Recent Contests</h4>
+                          <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                            {platform.ratingHistory.slice(-5).reverse().map((r, i) => (
+                              <div key={i} className="flex items-center justify-between p-2.5 rounded-xl bg-(--surface-soft) border border-(--hairline-soft) text-xs">
+                                <span className="font-medium text-(--ink) truncate flex-1">{r.contestName}</span>
+                                <span className="text-(--muted) mx-3">#{r.rank}</span>
+                                <span className={`font-semibold ${r.newRating > r.oldRating ? 'text-emerald-500' : 'text-red-500'}`}>
+                                  {r.newRating > r.oldRating ? '+' : ''}{r.newRating - r.oldRating}
+                                </span>
                               </div>
                             ))}
                           </div>
-                        ) : (
-                          <p className="text-sm font-bold text-gray-500">No badge data available.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* GeeksForGeeks specific */}
+                  {platform.platform === 'GeeksForGeeks' && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <StatBox label="Total Solved" value={platform.totalSolved} />
+                      <StatBox label="Easy" value={platform.easySolved} />
+                      <StatBox label="Medium" value={platform.mediumSolved} />
+                      <StatBox label="Hard" value={platform.hardSolved} />
+                    </div>
+                  )}
+
+                  {/* CodeChef specific */}
+                  {platform.platform === 'CodeChef' && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <StatBox label="Total Solved" value={platform.totalSolved ?? '—'} />
+                        <StatBox label="Rating" value={platform.rating} />
+                        <StatBox label="Max Rating" value={platform.maxRating} />
+                        <StatBox label="Stars" value={platform.stars} />
+                      </div>
+                      <div className="flex items-center gap-2 mt-2 text-xs font-medium text-(--muted)">
+                        <Award className="w-4 h-4 text-(--primary)" />
+                        <span>Global Rank:</span>
+                        <span className="font-semibold text-(--ink)">{platform.globalRank || '—'}</span>
+                        {platform.countryRank && (
+                          <span className="text-[11px] text-(--muted-soft)">(Country: #{platform.countryRank})</span>
                         )}
                       </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                  )}
+
+                  {/* HackerRank specific */}
+                  {platform.platform === 'HackerRank' && (
+                    <div className="space-y-3">
+                      {platform.badges?.length > 0 ? (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {platform.badges.map((b, i) => (
+                            <div key={i} className="p-3 rounded-xl border border-(--hairline-soft) bg-(--surface-soft) text-center">
+                              <p className="text-xl font-serif font-medium text-(--ink)">{b.score ?? '—'}</p>
+                              <p className="text-[10px] text-(--muted) mt-1">{b.name}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-(--muted)">No badge data available.</p>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 border-4 border-dashed border-brutal-black">
-          <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h2 className="text-2xl font-black mb-2">No Data Yet</h2>
-          <p className="font-bold text-gray-500 mb-4">Enter your platform usernames above and click &quot;Save &amp; Fetch&quot; to see your stats.</p>
+        <div className="text-center py-16 rounded-2xl border border-dashed border-(--hairline) bg-(--surface-card)">
+          <Trophy className="w-12 h-12 mx-auto mb-3 text-(--muted) opacity-40" />
+          <h2 className="text-base font-serif font-medium text-(--ink) mb-1">No Data Yet</h2>
+          <p className="text-xs text-(--muted)">Enter your platform usernames above and click &quot;Save &amp; Fetch Stats&quot; to see your competitive programming analytics.</p>
         </div>
       )}
     </PageShell>
   );
 }
 
-function StatBox({ label, value, color = 'bg-gray-100' }) {
+function StatBox({ label, value }) {
   return (
-    <div className={`p-4 border-2 border-brutal-black ${color} text-center`}>
-      <p className="text-3xl font-black">{value ?? '—'}</p>
-      <p className="text-[10px] font-bold uppercase tracking-wider mt-1">{label}</p>
+    <div className="p-3.5 rounded-xl border border-(--hairline-soft) bg-(--surface-soft) text-center shadow-xs">
+      <p className="text-xl font-serif font-medium text-(--ink)">{value ?? '—'}</p>
+      <p className="text-[10px] text-(--muted) mt-0.5">{label}</p>
     </div>
   );
 }

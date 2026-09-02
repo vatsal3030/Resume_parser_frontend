@@ -22,72 +22,72 @@ import { supabase } from '@/lib/supabase';
  * @param {boolean} [options.enabled=true] - Whether to activate the subscription
  */
 export function useRealtimeSubscription({
-  table,
-  event = '*',
-  filterColumn,
-  filterValue,
-  onData,
-  pollFn,
-  pollIntervalMs = 60000,
-  enabled = true,
+ table,
+ event = '*',
+ filterColumn,
+ filterValue,
+ onData,
+ pollFn,
+ pollIntervalMs = 60000,
+ enabled = true,
 }) {
-  const channelRef = useRef(null);
-  const pollRef = useRef(null);
+ const channelRef = useRef(null);
+ const pollRef = useRef(null);
 
-  const enableRealtime = process.env.NEXT_PUBLIC_ENABLE_REALTIME === 'true';
+ const enableRealtime = process.env.NEXT_PUBLIC_ENABLE_REALTIME === 'true';
 
-  const startPolling = useCallback(() => {
-    if (pollFn) {
-      pollFn(); // Initial fetch
-      pollRef.current = setInterval(pollFn, pollIntervalMs);
-    }
-  }, [pollFn, pollIntervalMs]);
+ const startPolling = useCallback(() => {
+ if (pollFn) {
+ pollFn(); // Initial fetch
+ pollRef.current = setInterval(pollFn, pollIntervalMs);
+ }
+ }, [pollFn, pollIntervalMs]);
 
-  const stopPolling = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
+ const stopPolling = useCallback(() => {
+ if (pollRef.current) {
+ clearInterval(pollRef.current);
+ pollRef.current = null;
+ }
+ }, []);
 
-  useEffect(() => {
-    if (!enabled) return;
+ useEffect(() => {
+ if (!enabled) return;
 
-    if (enableRealtime && table) {
-      // === REALTIME MODE ===
-      const filter = filterColumn && filterValue
-        ? `${filterColumn}=eq.${filterValue}`
-        : undefined;
+ if (enableRealtime && table) {
+ // === REALTIME MODE ===
+ const filter = filterColumn && filterValue
+ ? `${filterColumn}=eq.${filterValue}`
+ : undefined;
 
-      const channel = supabase
-        .channel(`realtime-${table}-${filterValue || 'global'}`)
-        .on(
-          'postgres_changes',
-          { event, schema: 'public', table, filter },
-          (payload) => {
-            if (onData) onData(payload.new || payload.old || payload);
-          }
-        )
-        .subscribe();
+ const channel = supabase
+ .channel(`realtime-${table}-${filterValue || 'global'}`)
+ .on(
+ 'postgres_changes',
+ { event, schema: 'public', table, filter },
+ (payload) => {
+ if (onData) onData(payload.new || payload.old || payload);
+ }
+ )
+ .subscribe();
 
-      channelRef.current = channel;
+ channelRef.current = channel;
 
-      // Also do an initial fetch
-      if (pollFn) pollFn();
+ // Also do an initial fetch
+ if (pollFn) pollFn();
 
-      return () => {
-        supabase.removeChannel(channel);
-        channelRef.current = null;
-      };
-    } else {
-      // === POLLING FALLBACK ===
-      startPolling();
-      return () => stopPolling();
-    }
-  }, [enabled, enableRealtime, table, event, filterColumn, filterValue, onData, pollFn, startPolling, stopPolling]);
+ return () => {
+ supabase.removeChannel(channel);
+ channelRef.current = null;
+ };
+ } else {
+ // === POLLING FALLBACK ===
+ startPolling();
+ return () => stopPolling();
+ }
+ }, [enabled, enableRealtime, table, event, filterColumn, filterValue, onData, pollFn, startPolling, stopPolling]);
 
-  return {
-    isRealtime: enableRealtime,
-    isPolling: !enableRealtime,
-  };
+ return {
+ isRealtime: enableRealtime,
+ isPolling: !enableRealtime,
+ };
 }

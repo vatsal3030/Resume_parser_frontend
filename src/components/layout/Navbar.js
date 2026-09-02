@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Menu, X, LogOut, UserCircle, Plus, ChevronDown } from "lucide-react";
+import { Menu, X, LogOut, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import Image from "next/image";
 import api from "@/lib/api";
 
@@ -20,16 +20,14 @@ export function Navbar() {
   
   const pathname = usePathname();
   const router = useRouter();
-  const toast = useToast();
 
   const saveAccountToLocal = (session) => {
     try {
-      const stored = localStorage.getItem("brutal_accounts");
+      const stored = localStorage.getItem("elevara_accounts");
       let accs = stored ? JSON.parse(stored) : [];
-      // Remove if exists to update
       accs = accs.filter(a => a.user.id !== session.user.id);
       accs.push({ user: session.user, session: { access_token: session.access_token, refresh_token: session.refresh_token } });
-      localStorage.setItem("brutal_accounts", JSON.stringify(accs));
+      localStorage.setItem("elevara_accounts", JSON.stringify(accs));
     } catch (err) {
       console.error("Could not save account", err);
     }
@@ -37,7 +35,7 @@ export function Navbar() {
 
   const loadAccounts = () => {
     try {
-      const stored = localStorage.getItem("brutal_accounts");
+      const stored = localStorage.getItem("elevara_accounts");
       if (stored) {
         setAccounts(JSON.parse(stored));
       }
@@ -47,7 +45,7 @@ export function Navbar() {
   };
 
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 0);
+    setMounted(true);
     
     const fetchProfile = async (userId) => {
       try {
@@ -57,7 +55,6 @@ export function Navbar() {
       } catch (err) {}
     };
 
-    // Check auth state
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
@@ -68,12 +65,12 @@ export function Navbar() {
         setUser(null);
         setProfile(null);
       }
-      loadAccounts();
     };
 
     getSession();
+    loadAccounts();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser(session.user);
         saveAccountToLocal(session);
@@ -82,134 +79,134 @@ export function Navbar() {
         setUser(null);
         setProfile(null);
       }
-      loadAccounts();
     });
 
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(t);
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  const switchAccount = async (account) => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
     setAccountsOpen(false);
-    toast.info("Switching Account", `Switching to ${account.user.email}`);
-    
-    const { error } = await supabase.auth.setSession({
-      access_token: account.session.access_token,
-      refresh_token: account.session.refresh_token,
-    });
-    
-    if (error) {
-      toast.error("Failed to switch account", error.message);
-      // Remove invalid session
-      const newAccs = accounts.filter(a => a.user.id !== account.user.id);
-      setAccounts(newAccs);
-      localStorage.setItem("brutal_accounts", JSON.stringify(newAccs));
-    } else {
-      window.location.reload();
+    router.push("/login");
+  };
+
+  const switchAccount = async (acc) => {
+    if (!acc.session?.access_token) return;
+    try {
+      await supabase.auth.setSession({
+        access_token: acc.session.access_token,
+        refresh_token: acc.session.refresh_token
+      });
+      setUser(acc.user);
+      setAccountsOpen(false);
+      router.refresh();
+    } catch (err) {
+      console.error("Switch account error", err);
     }
   };
 
   const addAccount = async () => {
     await supabase.auth.signOut();
-    router.push("/login");
-  };
-
-  const handleLogout = async () => {
-    if (user) {
-      // remove current user from local storage
-      const newAccs = accounts.filter(a => a.user.id !== user.id);
-      localStorage.setItem("brutal_accounts", JSON.stringify(newAccs));
-      setAccounts(newAccs);
-    }
-    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    setAccountsOpen(false);
     router.push("/login");
   };
 
   const toggleMenu = () => setIsOpen(!isOpen);
   
   const navLinks = [
-    { name: "Home", path: "/dashboard" },
-    { name: "Resume Parsing", path: "/dashboard/tools/tailor" }, // Example main tools
-    { name: "Cover Letter", path: "/dashboard/tools/cover-letter" },
-    { name: "Mock Interview", path: "/dashboard/tools/mock-interview" },
+    { name: "Dashboard", path: "/dashboard" },
+    { name: "Resume Analysis", path: "/dashboard/analyze" },
+    { name: "Resume Studio", path: "/dashboard/studio" },
+    { name: "Interviews", path: "/dashboard/tools/mock-interview" },
   ];
 
   return (
-    <nav className="bg-brutal-bg border-b-4 border-brutal-black sticky top-0 z-50 transition-colors duration-200">
+    <nav className="bg-(--canvas)/85 backdrop-blur-xl border-b border-(--hairline) sticky top-0 z-50 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20">
-          <div className="flex items-center">
-            <Link href="/" className="shrink-0 flex items-center">
-              <span className="text-2xl font-black uppercase tracking-tighter bg-brutal-mint px-2 py-1 border-2 border-brutal-black text-black shadow-brutal-sm hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+        <div className="flex justify-between h-16 items-center">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-lg bg-(--primary) text-white flex items-center justify-center font-serif text-lg group-hover:scale-105 transition-transform">
+                E
+              </div>
+              <span className="font-serif text-2xl text-(--ink) tracking-tight">
                 Elevara
               </span>
             </Link>
           </div>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-4">
+          <div className="hidden lg:flex lg:items-center lg:space-x-1">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.path}
-                className={`px-3 py-2 text-sm font-bold uppercase tracking-wider border-2 transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
                   pathname === link.path 
-                    ? "bg-brutal-yellow border-brutal-black text-black shadow-brutal-sm translate-x-0.5 translate-y-0.5" 
-                    : "border-transparent text-foreground hover:bg-brutal-bg hover:border-brutal-black hover:shadow-brutal-sm"
+                    ? "bg-(--surface-soft) text-(--ink)" 
+                    : "text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft)"
                 }`}
               >
                 {link.name}
               </Link>
             ))}
 
-            <div className="h-8 w-1 bg-brutal-black mx-2"></div>
+            <div className="h-4 w-px bg-(--hairline) mx-2" />
+
+            <ThemeToggle />
 
             {user ? (
-              <div className="relative ml-3">
+              <div className="relative ml-2">
                 <button 
                   onClick={() => setAccountsOpen(!accountsOpen)}
-                  className="flex items-center justify-center bg-white border-2 border-brutal-black font-bold shadow-brutal-sm hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all rounded-full overflow-hidden w-12 h-12"
+                  className="flex items-center justify-center rounded-full overflow-hidden w-9 h-9 border border-(--hairline) hover:border-(--primary) transition-all cursor-pointer"
                   title={user.email}
                 >
                   {profile?.avatarUrl ? (
-                    <Image src={profile.avatarUrl} alt="Avatar" width={48} height={48} className="w-full h-full object-cover" unoptimized />
+                    <Image src={profile.avatarUrl} alt="Avatar" width={36} height={36} className="w-full h-full object-cover" unoptimized />
                   ) : (
-                    <Image src={`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${user.id}`} alt="Avatar" width={48} height={48} className="w-full h-full object-cover" unoptimized />
+                    <Image src={`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${user.id}`} alt="Avatar" width={36} height={36} className="w-full h-full object-cover" unoptimized />
                   )}
                 </button>
 
                 {accountsOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white border-4 border-brutal-black shadow-brutal-lg z-50">
-                    <div className="p-3 border-b-2 border-brutal-black bg-brutal-yellow text-black font-black uppercase text-sm">
-                      Accounts
+                  <div className="absolute right-0 mt-2 w-64 bg-(--surface-card) rounded-2xl border border-(--hairline) shadow-xl z-50 overflow-hidden backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-4 py-3 border-b border-(--hairline-soft) bg-(--surface-soft)">
+                      <p className="text-xs font-medium text-(--muted)">Accounts</p>
                     </div>
                     <ul className="max-h-64 overflow-y-auto">
                       {accounts.map((acc) => (
                         <li key={acc.user.id}>
                           <button
                             onClick={() => switchAccount(acc)}
-                            className={`w-full text-left px-4 py-3 font-bold hover:bg-brutal-pink hover:text-black transition-colors ${acc.user.id === user.id ? 'bg-brutal-mint text-black border-l-4 border-brutal-black' : 'text-foreground'}`}
+                            className={`w-full text-left px-4 py-2.5 text-xs transition-colors ${
+                              acc.user.id === user.id 
+                                ? 'bg-(--surface-soft) text-(--ink) font-medium border-l-2 border-(--primary)' 
+                                : 'text-(--body) hover:bg-(--surface-soft)'
+                            }`}
                           >
-                            {acc.user.email}
-                            {acc.user.id === user.id && <span className="ml-2 text-xs opacity-70">(Active)</span>}
+                            <span className="truncate block">{acc.user.email}</span>
+                            {acc.user.id === user.id && <span className="text-[10px] text-(--muted-soft)">(Active)</span>}
                           </button>
                         </li>
                       ))}
                     </ul>
-                    <div className="border-t-2 border-brutal-black">
+                    <div className="border-t border-(--hairline-soft)">
                       <button 
                         onClick={addAccount}
-                        className="w-full flex items-center gap-2 px-4 py-3 font-bold text-foreground hover:bg-brutal-blue hover:text-black transition-colors"
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-(--body) hover:bg-(--surface-soft) transition-colors text-left"
                       >
-                        <Plus className="w-4 h-4" /> Add Account
+                        <Plus className="w-3.5 h-3.5 text-(--muted)" /> Add Account
                       </button>
                       <button 
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-3 font-bold text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-xs text-(--error) hover:bg-red-500/10 transition-colors text-left border-t border-(--hairline-soft)"
                       >
-                        <LogOut className="w-4 h-4" /> Sign Out
+                        <LogOut className="w-3.5 h-3.5" /> Sign Out
                       </button>
                     </div>
                   </div>
@@ -217,19 +214,20 @@ export function Navbar() {
               </div>
             ) : (
               <Link href="/login">
-                <Button variant="default" className="font-bold border-2 shadow-brutal-sm ml-2">Login</Button>
+                <Button variant="default" size="sm" className="ml-2">Sign In</Button>
               </Link>
             )}
           </div>
 
           {/* Mobile menu button */}
-          <div className="flex items-center lg:hidden gap-4">
+          <div className="flex items-center lg:hidden gap-2">
+            <ThemeToggle />
             <button
               onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 border-2 border-brutal-black bg-brutal-yellow text-black shadow-brutal-sm hover:bg-brutal-pink focus:outline-none"
+              className="p-2 rounded-xl border border-(--hairline) bg-(--surface-soft) text-(--ink) hover:bg-(--surface-card) transition-colors"
             >
               <span className="sr-only">Open main menu</span>
-              {isOpen ? <X className="block h-6 w-6" /> : <Menu className="block h-6 w-6" />}
+              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -237,76 +235,25 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="lg:hidden border-t-4 border-brutal-black bg-brutal-bg absolute w-full left-0">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block px-3 py-3 text-base font-bold uppercase tracking-wider border-2 mb-2 ${
-                  pathname === link.path 
-                    ? "bg-brutal-yellow border-brutal-black text-black shadow-brutal-sm" 
-                    : "border-transparent text-foreground hover:bg-brutal-blue hover:text-black hover:border-brutal-black"
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-          
-          {user ? (
-            <div className="pt-4 pb-3 border-t-4 border-brutal-black">
-              <div className="flex items-center px-5 mb-3">
-                {profile?.avatarUrl ? (
-                  <Image src={profile.avatarUrl} alt="Avatar" width={40} height={40} className="rounded-full object-cover w-10 h-10 border-2 border-brutal-black bg-white" unoptimized />
-                ) : (
-                  <Image src={`https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${user.id}`} alt="Avatar" width={40} height={40} className="rounded-full object-cover w-10 h-10 border-2 border-brutal-black bg-white" unoptimized />
-                )}
-                <div className="ml-3">
-                  <div className="text-base font-bold leading-none text-foreground">{user.user_metadata?.full_name || 'User'}</div>
-                  <div className="text-sm font-medium leading-none text-foreground mt-1 opacity-70">{user.email}</div>
-                </div>
-              </div>
-              <div className="mt-3 px-2 space-y-1">
-                <button
-                  onClick={() => { setAccountsOpen(!accountsOpen); }}
-                  className="flex w-full items-center justify-between px-3 py-3 font-bold text-foreground bg-brutal-mint border-2 border-brutal-black hover:bg-brutal-yellow mb-2"
-                >
-                  Switch Account <ChevronDown className={`w-5 h-5 transition-transform ${accountsOpen ? 'rotate-180' : ''}`}/>
-                </button>
-                
-                {accountsOpen && (
-                  <div className="ml-4 pl-4 border-l-4 border-brutal-black mb-4 space-y-2">
-                    {accounts.map(acc => (
-                      <button
-                        key={acc.user.id}
-                        onClick={() => switchAccount(acc)}
-                        className={`block w-full text-left px-3 py-2 font-bold ${acc.user.id === user.id ? 'text-brutal-blue' : 'text-foreground'}`}
-                      >
-                        {acc.user.email} {acc.user.id === user.id && '(Active)'}
-                      </button>
-                    ))}
-                    <button onClick={addAccount} className="block w-full text-left px-3 py-2 font-bold text-foreground hover:text-brutal-blue">
-                      + Add Account
-                    </button>
-                  </div>
-                )}
-
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-3 py-3 font-bold text-white bg-red-500 border-2 border-brutal-black hover:bg-red-600"
-                >
-                  Sign Out
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="pt-4 pb-3 border-t-4 border-brutal-black px-5">
-              <Link href="/login" onClick={() => setIsOpen(false)}>
-                <Button className="w-full justify-center">Login</Button>
-              </Link>
-            </div>
+        <div className="lg:hidden border-t border-(--hairline) bg-(--canvas)/95 backdrop-blur-xl p-4 space-y-2">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              href={link.path}
+              onClick={() => setIsOpen(false)}
+              className={`block px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                pathname === link.path 
+                  ? "bg-(--surface-soft) text-(--ink)" 
+                  : "text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft)"
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
+          {!user && (
+            <Link href="/login" className="block pt-2">
+              <Button variant="default" className="w-full">Sign In</Button>
+            </Link>
           )}
         </div>
       )}

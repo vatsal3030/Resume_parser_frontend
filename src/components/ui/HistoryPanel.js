@@ -1,20 +1,8 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { Search, Pin, PinOff, Trash2, ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import { BrutalBadge } from "@/components/ui/BrutalBadge";
-
+import { Search, Pin, PinOff, Trash2, ChevronLeft, Clock } from "lucide-react";
 import api from "@/lib/api";
 import { formatDate as globalFormatDate } from "@/lib/formatDate";
-
-const TOOL_COLORS = {
-  RESUME_ANALYSIS: "bg-brutal-blue",
-  TAILOR: "bg-brutal-yellow",
-  COVER_LETTER: "bg-brutal-pink",
-  MOCK_INTERVIEW: "bg-brutal-mint",
-  ROADMAP: "bg-purple-300",
-  PORTFOLIO: "bg-orange-300",
-  GITHUB_ANALYSIS: "bg-green-300",
-};
 
 const TOOL_ICONS = {
   RESUME_ANALYSIS: "📄",
@@ -28,13 +16,7 @@ const TOOL_ICONS = {
 
 /**
  * HistoryPanel — Collapsible sidebar for browsing past AI tool outputs.
- * 
- * @param {string} toolType - Filter by tool type (optional)
- * @param {function} onSelect - Called with the full tool output when an item is clicked
- * @param {boolean} isOpen - Controlled open state
- * @param {function} onToggle - Toggle callback
- * @param {string} className - Additional classes
- * @param {string} activeId - Currently active item ID for highlighting
+ * Claude Editorial Glassmorphic Design.
  */
 export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, className = "", activeId }) {
   const [items, setItems] = useState([]);
@@ -80,7 +62,7 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
     e.stopPropagation();
     try {
       await api.put(`/history/${id}`, { isPinned: !currentPinned });
-      fetchHistory(); // Refresh to reorder
+      fetchHistory();
     } catch (err) {
       console.error("Pin toggle error:", err);
     }
@@ -88,7 +70,7 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
 
   const handleDelete = async (e, id) => {
     e.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this history item?")) return;
+    if (!window.confirm("Are you sure you want to delete this session?")) return;
     try {
       await api.delete(`/history/${id}`);
       setItems((prev) => prev.filter((item) => item.id !== id));
@@ -98,7 +80,7 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
   };
 
   const handleClearAll = async () => {
-    if (!window.confirm("Are you sure you want to delete all non-pinned history items for this tool? This action is irreversible.")) return;
+    if (!window.confirm("Are you sure you want to clear all unpinned sessions for this tool?")) return;
     try {
       await api.delete(`/history/clear?tool_type=${toolType}`);
       fetchHistory();
@@ -146,149 +128,171 @@ export function HistoryPanel({ toolType, onSelect, isOpen = true, onToggle, clas
 
   return (
     <aside
-      className={`w-full md:w-64 border-r-4 border-brutal-black bg-brutal-bg flex flex-col h-full ${className}`}
+      className={`w-full md:w-64 border-r border-(--hairline) bg-(--canvas) flex flex-col h-full transition-colors ${className}`}
       role="complementary"
       aria-label="History panel"
     >
       {/* Header */}
-      <div className="bg-brutal-yellow px-4 py-4 border-b-4 border-brutal-black flex items-center justify-between">
-        <h2 className="font-black text-lg uppercase tracking-tight flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          History
+      <div className="px-4 py-3.5 border-b border-(--hairline) flex items-center justify-between bg-(--surface-soft)/50">
+        <h2 className="font-serif text-base text-(--ink) flex items-center gap-2">
+          <Clock className="w-4 h-4 text-(--primary)" />
+          <span>Past Sessions</span>
         </h2>
         {onToggle && (
-          <button onClick={onToggle} className="hover:bg-yellow-400 p-1 transition-colors" aria-label="Close history">
+          <button 
+            onClick={onToggle} 
+            className="p-1 rounded-md text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft) transition-colors" 
+            aria-label="Close history"
+          >
             <ChevronLeft className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      {/* Search & Clear All */}
-      <div className="p-4 border-b-4 border-brutal-black flex flex-col gap-3 bg-brutal-yellow/20">
-        <div className="flex items-center gap-2 border-2 border-brutal-black px-2 bg-white shadow-[2px_2px_0_#000] focus-within:shadow-[4px_4px_0_#000] focus-within:-translate-y-0.5 transition-all">
-          <Search className="w-4 h-4 text-brutal-black" />
+      {/* Search & Actions */}
+      <div className="p-3 border-b border-(--hairline-soft) flex flex-col gap-2 bg-(--surface-card)">
+        <div className="flex items-center gap-2 border border-(--hairline) rounded-xl px-2.5 py-1.5 bg-(--surface-soft)/70 focus-within:border-(--primary) focus-within:ring-1 focus-within:ring-(--primary)/20 transition-all">
+          <Search className="w-3.5 h-3.5 text-(--muted)" />
           <input
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            placeholder="Search history..."
-            className="w-full py-2 text-sm font-bold text-brutal-black focus:outline-none bg-transparent placeholder:text-gray-400"
+            placeholder="Search sessions..."
+            className="w-full text-xs text-(--ink) focus:outline-none bg-transparent placeholder:text-(--muted-soft)"
           />
         </div>
         {items.length > 0 && (
-          <button
-            onClick={handleClearAll}
-            className="w-full py-2 border-2 border-brutal-black bg-brutal-pink hover:bg-pink-400 text-xs font-black uppercase tracking-wider transition-all shadow-[2px_2px_0_#000] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-          >
-            🗑️ Delete All
-          </button>
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[11px] text-(--muted-soft)">{items.length} items</span>
+            <button
+              onClick={handleClearAll}
+              className="text-[11px] text-(--muted) hover:text-(--error) transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <Trash2 className="w-3 h-3" /> Clear all
+            </button>
+          </div>
         )}
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-2">
         {loading ? (
-          <div className="p-2 space-y-2">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="border-2 border-gray-200 bg-white p-3 shadow-[2px_2px_0_rgba(0,0,0,0.05)] animate-pulse">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <div className="w-4 h-4 bg-gray-200 rounded" />
-                </div>
-                <div className="h-3 bg-gray-300 rounded w-4/5 mb-1.5" />
-                <div className="h-2.5 bg-gray-200 rounded w-3/5" />
+          <div className="space-y-2 p-1">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="rounded-xl border border-(--hairline-soft) bg-(--surface-soft) p-3 animate-pulse">
+                <div className="h-3.5 bg-(--hairline) rounded w-3/4 mb-2" />
+                <div className="h-2.5 bg-(--hairline) rounded w-1/2" />
               </div>
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="p-6 text-center">
-            <p className="text-xs font-bold text-gray-400 uppercase">No history yet</p>
-            <p className="text-xs text-gray-400 mt-1">Run an AI tool to see results here</p>
+          <div className="p-6 text-center text-(--muted)">
+            <Clock className="w-8 h-8 mx-auto mb-2 opacity-30 text-(--primary)" />
+            <p className="text-xs font-medium">No history yet</p>
+            <p className="text-[11px] text-(--muted-soft) mt-0.5">Outputs will appear here</p>
           </div>
         ) : (
-          <ul className="divide-y-2 divide-brutal-black flex flex-col p-2 gap-2">
-            {items.map((item) => (
-              <li key={item.id} className={`border-2 border-brutal-black bg-white transition-all shadow-[2px_2px_0_#000] hover:shadow-[4px_4px_0_#000] hover:-translate-y-0.5 ${item.id === activeId ? "bg-brutal-yellow shadow-[4px_4px_0_#000] -translate-y-0.5" : ""}`}>
-                <div
-                  onClick={() => handleSelect(item)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSelect(item); }}
-                  role="button"
-                  tabIndex={0}
-                  className="w-full text-left p-3 group cursor-pointer"
+          <ul className="flex flex-col gap-1.5">
+            {items.map((item) => {
+              const isActive = item.id === activeId;
+              return (
+                <li 
+                  key={item.id} 
+                  className={`rounded-xl border transition-all duration-150 ${
+                    isActive 
+                      ? "bg-(--surface-card) border-(--primary)/60 shadow-sm ring-1 ring-(--primary)/20" 
+                      : "bg-(--surface-soft)/50 border-(--hairline-soft) hover:bg-(--surface-card) hover:border-(--hairline)"
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-sm">{TOOL_ICONS[item.toolType] || "🤖"}</span>
-                        {item.isPinned && <Pin className="w-3 h-3 text-brutal-yellow fill-brutal-yellow" />}
+                  <div
+                    onClick={() => handleSelect(item)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSelect(item); }}
+                    role="button"
+                    tabIndex={0}
+                    className="w-full text-left p-3 group cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className="text-xs">{TOOL_ICONS[item.toolType] || "📄"}</span>
+                          {item.isPinned && <Pin className="w-3 h-3 text-(--primary) fill-(--primary)" />}
+                          <span className="text-[10px] uppercase font-medium tracking-wider text-(--muted-soft)">
+                            {item.toolType?.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                        {editingId === item.id ? (
+                          <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            onKeyDown={(e) => handleRenameSubmit(e, item.id)}
+                            onBlur={(e) => handleRenameSubmit({ ...e, key: 'Enter' }, item.id)}
+                            autoFocus
+                            className="w-full text-xs font-medium border border-(--primary) rounded px-1 py-0.5 focus:outline-none bg-(--surface-card) text-(--ink)"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <p className="text-xs font-medium text-(--ink) truncate">{item.title}</p>
+                        )}
+                        <p className="text-[10px] text-(--muted-soft) mt-1">{formatDate(item.createdAt)}</p>
                       </div>
-                      {editingId === item.id ? (
-                        <input
-                          type="text"
-                          value={editTitle}
-                          onChange={(e) => setEditTitle(e.target.value)}
-                          onKeyDown={(e) => handleRenameSubmit(e, item.id)}
-                          onBlur={(e) => handleRenameSubmit({ ...e, key: 'Enter' }, item.id)}
-                          autoFocus
-                          className="w-full text-xs font-bold border-2 border-brutal-black px-1 focus:outline-none"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        <p className="text-xs font-bold truncate">{item.title}</p>
-                      )}
-                      <p className="text-[10px] text-gray-500 mt-0.5">{formatDate(item.createdAt)}</p>
+
                       {loadingId === item.id ? (
-                        <div className="flex items-center gap-1 opacity-100 pr-2">
-                           <span className="w-4 h-4 rounded-full border-2 border-brutal-black border-t-brutal-yellow animate-spin inline-block"></span>
+                        <div className="flex items-center gap-1 opacity-100 pr-1 shrink-0">
+                          <span className="w-3.5 h-3.5 rounded-full border-2 border-(--hairline) border-t-(--primary) animate-spin inline-block"></span>
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                           <button
                             onClick={(e) => handleRenameStart(e, item)}
-                            className="p-1 border-2 border-transparent hover:border-brutal-black hover:bg-brutal-blue transition-colors text-brutal-black"
+                            className="p-1 rounded text-(--muted-soft) hover:text-(--ink) hover:bg-(--surface-soft) transition-colors"
                             aria-label="Rename"
+                            title="Rename"
                           >
-                            <span className="text-[10px] font-bold">✎</span>
+                            ✎
                           </button>
                           <button
                             onClick={(e) => handlePin(e, item.id, item.isPinned)}
-                            className="p-1 border-2 border-transparent hover:border-brutal-black hover:bg-brutal-yellow transition-colors"
+                            className="p-1 rounded text-(--muted-soft) hover:text-(--primary) hover:bg-(--surface-soft) transition-colors"
                             aria-label={item.isPinned ? "Unpin" : "Pin"}
+                            title={item.isPinned ? "Unpin" : "Pin"}
                           >
-                            {item.isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                            {item.isPinned ? <PinOff className="w-3 h-3" /> : <Pin className="w-3 h-3" />}
                           </button>
                           <button
                             onClick={(e) => handleDelete(e, item.id)}
-                            className="p-1 border-2 border-transparent hover:border-brutal-black hover:bg-brutal-pink transition-colors"
+                            className="p-1 rounded text-(--muted-soft) hover:text-(--error) hover:bg-(--surface-soft) transition-colors"
                             aria-label="Delete"
+                            title="Delete"
                           >
-                            <Trash2 className="w-4 h-4 text-brutal-black" />
+                            <Trash2 className="w-3 h-3" />
                           </button>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t-4 border-brutal-black bg-brutal-yellow">
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-(--hairline-soft) bg-(--surface-soft) text-xs text-(--muted)">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="text-xs font-bold disabled:opacity-30"
+            className="hover:text-(--ink) disabled:opacity-30 transition-colors"
           >
             ← Prev
           </button>
-          <span className="text-xs font-bold">{page}/{totalPages}</span>
+          <span>{page} / {totalPages}</span>
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="text-xs font-bold disabled:opacity-30"
+            className="hover:text-(--ink) disabled:opacity-30 transition-colors"
           >
             Next →
           </button>

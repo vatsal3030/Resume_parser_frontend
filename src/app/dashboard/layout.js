@@ -1,9 +1,9 @@
-import { ClientLayout } from "@/components/layout/ClientLayout";
+import { ClientLayout } from"@/components/layout/ClientLayout";
 
 export default function DashboardLayout({ children }) {
-  return (
-    <ClientLayout>
-      {children}
-    </ClientLayout>
-  );
+ return (
+ <ClientLayout>
+ {children}
+ </ClientLayout>
+ );
 }

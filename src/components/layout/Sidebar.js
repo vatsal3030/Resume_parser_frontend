@@ -20,6 +20,7 @@ import {
   Trophy,
   X
 } from "lucide-react";
+import { CreditBalance } from "@/components/ui/CreditBalance";
 
 const NAV_ITEMS = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -43,52 +44,68 @@ const UTILITY_ITEMS = [
   { name: "Help", path: "/dashboard/help", icon: HelpCircle },
 ];
 
-import { CreditBalance } from "@/components/ui/CreditBalance";
-
 const SidebarContent = ({ pathname, isDesktopCollapsed, isMobileOpen, setIsMobileOpen }) => (
-  <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden">
-    <div className={`p-4 border-b-4 border-brutal-black sticky top-0 bg-brutal-bg z-10 flex items-center ${isDesktopCollapsed ? 'justify-center' : 'justify-between'}`}>
-        <Link 
-          href="/" 
-          className="flex items-center" 
-          onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
-          title="Elevara"
-        >
-          <span className={`font-black uppercase tracking-tighter bg-brutal-mint px-2 py-1 border-2 border-brutal-black text-black shadow-[2px_2px_0_#000] hover:shadow-none transition-all ${isDesktopCollapsed ? 'text-xs' : 'text-xl lg:text-2xl'}`}>
-            {isDesktopCollapsed ? 'EL' : 'Elevara'}
+  <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden bg-(--canvas) border-r border-(--hairline) transition-colors">
+    {/* Logo Header */}
+    <div className={`p-4 border-b border-(--hairline) sticky top-0 bg-(--canvas)/90 backdrop-blur-md z-10 flex items-center ${isDesktopCollapsed ? 'justify-center' : 'justify-between'}`}>
+      <Link 
+        href="/" 
+        className="flex items-center gap-2.5 group" 
+        onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
+        title="Elevara"
+      >
+        <div className="w-8 h-8 rounded-xl bg-(--primary) text-white flex items-center justify-center font-serif text-base font-medium shadow-xs group-hover:scale-108 group-hover:rotate-[-4deg] transition-all duration-300">
+          E
+        </div>
+        {!isDesktopCollapsed && (
+          <span className="font-serif text-(--ink) text-2xl tracking-tight">
+            Elevara
           </span>
-        </Link>
-        {isMobileOpen && setIsMobileOpen && (
-          <button onClick={() => setIsMobileOpen(false)} className="lg:hidden p-1 border-2 border-brutal-black bg-brutal-yellow shadow-[2px_2px_0_#000]">
-            <X className="w-6 h-6" />
-          </button>
         )}
-      </div>
+      </Link>
+      {isMobileOpen && setIsMobileOpen && (
+        <button 
+          onClick={() => setIsMobileOpen(false)} 
+          className="lg:hidden p-1.5 rounded-lg text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft) transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      )}
+    </div>
 
-      <nav className="flex-1 p-3 space-y-2">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              title={item.name}
-              onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
-              className={`group flex items-center gap-3 px-3 py-3 font-bold text-sm uppercase tracking-widest border-2 transition-colors ${
+    {/* Navigation */}
+    <nav className="flex-1 px-3 py-3 space-y-0.5">
+      {NAV_ITEMS.map((item) => {
+        const isActive = pathname === item.path;
+        return (
+          <Link
+            key={item.path}
+            href={item.path}
+            title={item.name}
+            onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
+            className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 ${
+              isActive 
+                ? "bg-(--surface-card) text-(--ink) shadow-xs border border-(--hairline) font-medium" 
+                : "text-(--muted) hover:bg-(--surface-soft) hover:text-(--ink) hover:translate-x-0.5"
+            } ${isDesktopCollapsed ? 'justify-center px-0' : ''}`}
+          >
+            <div className="relative flex items-center justify-center shrink-0 w-5 h-5">
+              <item.icon className={`w-[18px] h-[18px] transition-all duration-300 ease-out group-hover:scale-118 group-hover:rotate-[-6deg] ${
                 isActive 
-                  ? "bg-brutal-yellow border-brutal-black text-black shadow-[2px_2px_0_#000]" 
-                  : "border-transparent text-foreground hover:bg-gray-100 hover:border-brutal-black hover:shadow-[2px_2px_0_#000]"
-              } ${isDesktopCollapsed ? 'justify-center' : ''}`}
-            >
-              <item.icon className={`w-5 h-5 shrink-0 transition-transform duration-200 ${isActive ? '' : 'group-hover:-translate-y-1 group-hover:scale-110'}`} />
-              {!isDesktopCollapsed && <span className="truncate">{item.name}</span>}
-            </Link>
-          );
-        })}
+                  ? 'text-(--primary) scale-105' 
+                  : 'text-(--muted-soft) group-hover:text-(--primary)'
+              }`} />
+            </div>
+            {!isDesktopCollapsed && <span className="truncate transition-colors duration-200">{item.name}</span>}
+          </Link>
+        );
+      })}
 
-        {/* Utility Section Divider */}
-        <div className={`border-t-2 border-dashed border-gray-300 my-3 ${isDesktopCollapsed ? 'mx-2' : 'mx-1'}`} />
+      {/* Utility Section Divider */}
+      <div className={`border-t border-(--hairline-soft) my-3 ${isDesktopCollapsed ? 'mx-2' : 'mx-1'}`} />
 
+      {/* Utility Nav */}
+      <div className="space-y-0.5">
         {UTILITY_ITEMS.map((item) => {
           const isActive = pathname === item.path;
           return (
@@ -97,32 +114,40 @@ const SidebarContent = ({ pathname, isDesktopCollapsed, isMobileOpen, setIsMobil
               href={item.path}
               title={item.name}
               onClick={() => setIsMobileOpen && setIsMobileOpen(false)}
-              className={`group flex items-center gap-3 px-3 py-2.5 font-bold text-xs uppercase tracking-widest border-2 transition-colors ${
+              className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 ${
                 isActive 
-                  ? "bg-brutal-pink border-brutal-black text-black shadow-[2px_2px_0_#000]" 
-                  : "border-transparent text-gray-500 hover:bg-gray-100 hover:border-brutal-black hover:text-foreground"
-              } ${isDesktopCollapsed ? 'justify-center' : ''}`}
+                  ? "bg-(--surface-card) text-(--ink) shadow-xs border border-(--hairline) font-medium" 
+                  : "text-(--muted) hover:bg-(--surface-soft) hover:text-(--ink) hover:translate-x-0.5"
+              } ${isDesktopCollapsed ? 'justify-center px-0' : ''}`}
             >
-              <item.icon className={`w-4 h-4 shrink-0 transition-transform duration-200 ${isActive ? '' : 'group-hover:-translate-y-0.5 group-hover:scale-110'}`} />
-              {!isDesktopCollapsed && <span className="truncate">{item.name}</span>}
+              <div className="relative flex items-center justify-center shrink-0 w-5 h-5">
+                <item.icon className={`w-4 h-4 transition-all duration-300 ease-out group-hover:scale-118 group-hover:rotate-[-6deg] ${
+                  isActive 
+                    ? 'text-(--primary) scale-105' 
+                    : 'text-(--muted-soft) group-hover:text-(--primary)'
+                }`} />
+              </div>
+              {!isDesktopCollapsed && <span className="truncate transition-colors duration-200">{item.name}</span>}
             </Link>
           );
         })}
-      </nav>
-
-      {/* Live Credit Widget in Sidebar */}
-      {!isDesktopCollapsed && (
-        <div className="p-3 border-t-2 border-dashed border-gray-300 bg-slate-50/50">
-          <p className="text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1.5 px-1">Remaining Balance</p>
-          <CreditBalance className="w-full justify-between" />
-        </div>
-      )}
-
-      <div className={`p-4 border-t-4 border-brutal-black text-xs font-bold uppercase tracking-widest text-gray-500 ${isDesktopCollapsed ? 'text-center' : 'text-center'}`}>
-        {isDesktopCollapsed ? 'v1' : 'v1.0.0'}
       </div>
+    </nav>
+
+    {/* Live Credit Widget */}
+    {!isDesktopCollapsed && (
+      <div className="px-3 py-3 border-t border-(--hairline-soft) bg-(--surface-soft)/50">
+        <p className="text-[10px] uppercase font-medium tracking-wider text-(--muted-soft) mb-1.5 px-1">Credits</p>
+        <CreditBalance className="w-full justify-between" />
+      </div>
+    )}
+
+    {/* Version */}
+    <div className={`px-4 py-2.5 border-t border-(--hairline-soft) text-[10px] font-medium text-(--muted-soft) ${isDesktopCollapsed ? 'text-center' : ''}`}>
+      {isDesktopCollapsed ? 'v1' : 'Elevara v1.0'}
     </div>
-  );
+  </div>
+);
 
 export function Sidebar({ isMobileOpen, setIsMobileOpen, isDesktopCollapsed }) {
   const pathname = usePathname();
@@ -131,23 +156,23 @@ export function Sidebar({ isMobileOpen, setIsMobileOpen, isDesktopCollapsed }) {
     <>
       {/* Desktop Sidebar */}
       <aside 
-        className={`hidden lg:block h-screen fixed left-0 top-0 bg-white border-r-4 border-brutal-black z-40 transition-all duration-300 ${
-          isDesktopCollapsed ? 'w-[80px]' : 'w-[280px]'
+        className={`hidden lg:block h-screen fixed left-0 top-0 bg-(--canvas) z-40 transition-all duration-300 ${
+          isDesktopCollapsed ? 'w-[72px]' : 'w-[260px]'
         }`}
       >
         <SidebarContent pathname={pathname} isDesktopCollapsed={isDesktopCollapsed} isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
       </aside>
 
-      {/* Mobile Slide-over Drawer overlay */}
+      {/* Mobile Overlay */}
       {isMobileOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-opacity"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
-      {/* Mobile Slide-over Drawer */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-white border-r-4 border-brutal-black transform transition-transform duration-300 ease-in-out lg:hidden ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {/* Mobile Drawer */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-(--canvas) shadow-2xl transform transition-transform duration-300 ease-out lg:hidden ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <SidebarContent pathname={pathname} isDesktopCollapsed={isDesktopCollapsed} isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
       </aside>
     </>

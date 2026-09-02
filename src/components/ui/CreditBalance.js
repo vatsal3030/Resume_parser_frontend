@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Coins, TrendingDown, AlertTriangle, Plus } from "lucide-react";
+import { Coins, TrendingDown, AlertTriangle } from "lucide-react";
 import api from "@/lib/api";
 
 /**
  * CreditBalance — Displays user's live credit balance in the header and sidebar.
- * Listens to 'creditsUpdated' window events to auto-refresh whenever credits change.
+ * Claude Editorial Glassmorphic styling.
  */
 export function CreditBalance({ className = "", compact = false, showTopUp = true }) {
   const [balance, setBalance] = useState(null);
@@ -46,7 +46,7 @@ export function CreditBalance({ className = "", compact = false, showTopUp = tru
 
   if (loading) {
     return (
-      <div className={`h-9 w-24 bg-gray-200 animate-pulse border-2 border-brutal-black shadow-[2px_2px_0_#000] ${className}`} />
+      <div className={`h-8 w-20 bg-(--surface-soft) animate-pulse rounded-full ${className}`} />
     );
   }
 
@@ -57,28 +57,28 @@ export function CreditBalance({ className = "", compact = false, showTopUp = tru
     <Link 
       href="/dashboard/credits" 
       title={`Current Balance: ${balance ?? 0} Credits — Click to Top Up`}
-      className={`group inline-flex items-center gap-2 px-3 py-1.5 border-2 border-brutal-black font-black text-xs uppercase tracking-tight shadow-[2px_2px_0_#000] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer select-none ${
+      className={`group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer select-none border ${
         isEmpty 
-          ? "bg-red-400 text-white" 
+          ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 hover:bg-red-500/15" 
           : isLow 
-            ? "bg-brutal-yellow text-black" 
-            : "bg-brutal-mint text-black"
+          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/15" 
+          : "bg-(--surface-soft) text-(--ink) border-(--hairline) hover:bg-(--surface-card) hover:border-(--primary)/40 shadow-xs"
       } ${className}`}
     >
       <div className="flex items-center gap-1.5">
         {isEmpty ? (
-          <AlertTriangle className="w-3.5 h-3.5 text-white animate-bounce" />
+          <AlertTriangle className="w-3.5 h-3.5 animate-pulse text-red-500" />
         ) : isLow ? (
-          <TrendingDown className="w-3.5 h-3.5 text-black" />
+          <TrendingDown className="w-3.5 h-3.5 text-amber-500" />
         ) : (
-          <Coins className="w-3.5 h-3.5 text-black group-hover:rotate-12 transition-transform" />
+          <Coins className="w-3.5 h-3.5 text-(--primary) group-hover:rotate-12 transition-transform" />
         )}
-        <span className="font-black text-sm">{balance ?? 0}</span>
-        {!compact && <span className="text-[10px] font-black opacity-80">Credits</span>}
+        <span className="font-semibold tabular-nums">{balance ?? 0}</span>
+        {!compact && <span className="text-[10px] text-(--muted) font-medium">credits</span>}
       </div>
 
       {showTopUp && !compact && (
-        <span className="w-4 h-4 bg-black text-white rounded-full flex items-center justify-center text-[10px] ml-0.5 font-bold group-hover:bg-brutal-yellow group-hover:text-black transition-colors" title="Buy more credits">
+        <span className="w-3.5 h-3.5 bg-(--primary)/15 text-(--primary) rounded-full flex items-center justify-center text-[10px] ml-0.5 opacity-0 group-hover:opacity-100 transition-opacity" title="Buy more credits">
           +
         </span>
       )}
@@ -88,11 +88,10 @@ export function CreditBalance({ className = "", compact = false, showTopUp = tru
 
 /**
  * CreditCostBadge — Shows the credit cost for a specific tool.
- * Used inline on tool pages next to the "Generate" button.
  */
 export function CreditCostBadge({ cost = 10, className = "" }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-black border border-brutal-black bg-brutal-yellow shadow-[1px_1px_0_#000] ${className}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 ${className}`}>
       <Coins className="w-3 h-3" />
       {cost} credits
     </span>

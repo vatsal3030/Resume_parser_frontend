@@ -3,20 +3,11 @@ import React from "react";
 
 /**
  * PageShell — Standard page wrapper for consistent layout.
- * All dashboard pages should use this as their root wrapper.
- * 
- * @param {string} title - Page heading (h1)
- * @param {string} subtitle - Optional subtitle/description
- * @param {string} subtitleColor - Tailwind bg class for subtitle highlight
- * @param {React.ReactNode} actions - Optional right-aligned action buttons
- * @param {React.ReactNode} children - Page content
- * @param {boolean} noPadding - Skip padding (for full-bleed layouts like studio)
- * @param {string} maxWidth - Override max-width class
+ * Claude Editorial Typography & Glassmorphism.
  */
 export function PageShell({
   title,
   subtitle,
-  subtitleColor = "bg-brutal-yellow",
   actions,
   children,
   noPadding = false,
@@ -33,23 +24,21 @@ export function PageShell({
       <div className={`${noPadding ? "" : (fullWidth ? "w-full" : `${maxWidth} mx-auto`)} w-full`}>
         {/* Page Header */}
         {(title || actions) && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b-4 border-brutal-black pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 border-b border-(--hairline) pb-6">
             <div>
               {title && (
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tighter">
+                <h1 className="text-3xl sm:text-4xl font-serif text-(--ink) tracking-tight">
                   {title}
                 </h1>
               )}
               {subtitle && (
-                <p
-                  className={`text-base sm:text-lg font-bold mt-2 ${subtitleColor} inline-block px-2 border-2 border-brutal-black shadow-brutal-sm`}
-                >
+                <p className="text-sm sm:text-base text-(--muted) mt-1.5 font-normal leading-relaxed max-w-2xl">
                   {subtitle}
                 </p>
               )}
             </div>
             {actions && (
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2.5 shrink-0">
                 {actions}
               </div>
             )}

@@ -1,29 +1,30 @@
 "use client";
-import { useState, useEffect } from 'react';
-import api from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import { useState, use } from 'react';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/components/ui/toast';
-import { ModelSelector } from '@/components/ui/ModelSelector';
 import { useAsyncJob, JOB_STATUS } from '@/hooks/useAsyncJob';
+import { RegenerateBlock } from '@/components/ui/RegenerateBlock';
+import { ModelSelector } from '@/components/ui/ModelSelector';
 import { ProcessingPipeline } from '@/components/ui/ProcessingPipeline';
 import { ToolPageLayout } from '@/components/layout/ToolPageLayout';
 import { Select } from '@/components/ui/Select';
-import { RegenerateBlock } from '@/components/ui/RegenerateBlock';
+import { useResumes } from '@/hooks/useResumes';
 import { BranchingNavigation } from '@/components/ui/BranchingNavigation';
 import { ResultActions } from '@/components/ui/ResultActions';
-import { useResumes } from '@/hooks/useResumes';
 
-export default function ResumeTailor() {
-  const { resumes, isLoading: resumesLoading } = useResumes();
+export default function TailorPage({ params }) {
+  const unwrappedParams = use(params);
+  const initialJobId = unwrappedParams?.id?.[0] || null;
+
   const [selectedResume, setSelectedResume] = useState('');
   const [jobDescription, setJobDescription] = useState('');
-  const [modelId, setModelId] = useState('default');
+  const [modelId, setModelId] = useState('gemini-2.5-flash');
   const [historyResult, setHistoryResult] = useState(null);
-  const toast = useToast();
 
+  const { resumes, isLoading: resumesLoading } = useResumes();
   const {
+    jobId,
     status,
     progress,
     stage,
@@ -33,58 +34,52 @@ export default function ResumeTailor() {
     startJob,
     monitorJob,
     cancelJob,
-    resetJob,
-    jobId
+    resetJob
   } = useAsyncJob();
 
-  useEffect(() => {
-    if (!selectedResume && resumes?.length > 0) {
-      setSelectedResume(resumes[0].id);
-    }
-  }, [resumes, selectedResume]);
+  const isGenerating = [JOB_STATUS.QUEUED, JOB_STATUS.PROCESSING, JOB_STATUS.GENERATING, JOB_STATUS.FINALIZING].includes(status);
 
   const handleTailor = () => {
-    if (!selectedResume || !jobDescription) {
-      toast.warning('Missing Info', 'Please select a resume and paste a job description.');
-      return;
-    }
+    if (!selectedResume || !jobDescription) return;
     setHistoryResult(null);
-    startJob('/career/tailor-resume', { resumeId: selectedResume, jobDescription, modelId });
+    startJob('/career/tailor-resume', {
+      resumeId: selectedResume,
+      jobDescription,
+      modelId
+    });
   };
 
   const handleHistorySelect = (item) => {
     setHistoryResult(item);
+    const inputs = item.outputPayload?._meta?.inputs || item.inputSummary || {};
+    if (inputs.resumeId) setSelectedResume(inputs.resumeId);
+    if (inputs.jobDescription) setJobDescription(inputs.jobDescription);
+    if (item.modelUsed || item.outputPayload?._meta?.model) setModelId(item.modelUsed || item.outputPayload?._meta?.model);
   };
 
-  const isGenerating = [JOB_STATUS.QUEUED, JOB_STATUS.PROCESSING, JOB_STATUS.GENERATING, JOB_STATUS.FINALIZING].includes(status);
-  
-  // Use history result if loaded, otherwise use live result
-  const activeResult = historyResult || result;
-  
-  // Parse payload from history if needed
+  const activeResult = historyResult || (status === JOB_STATUS.COMPLETED ? { id: jobId, aiJobId: jobId, outputPayload: result, inputSummary: { resumeId: selectedResume, jobDescription }, modelUsed: modelId, createdAt: new Date().toISOString() } : null);
   const displayResult = typeof activeResult === 'object' && activeResult?.outputPayload 
     ? activeResult.outputPayload 
-    : activeResult;
+    : (activeResult?.outputData || activeResult);
 
   return (
     <ToolPageLayout
-      title="AI Tailoring"
-      subtitle="Target your resume to a specific job description instantly."
-      subtitleColor="bg-brutal-yellow"
+      title="AI Resume Tailor"
+      subtitle="Optimize your resume for specific job descriptions and beat ATS filters."
       toolType="TAILOR"
       onHistorySelect={handleHistorySelect}
       historyResult={historyResult}
       activeResult={activeResult}
-      onClearHistory={() => setHistoryResult(null)}
+      onClearHistory={() => { setHistoryResult(null); resetJob(); }}
       onJobIdFound={monitorJob}
     >
+      <div className="max-w-5xl mx-auto space-y-6">
 
-      {/* INPUTS — Full-width compact bar */}
-      <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] mb-6">
-        <CardContent className="p-6">
+        {/* INPUTS — Full-width compact bar */}
+        <div className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-6 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block font-black text-sm mb-1.5 uppercase tracking-tight">1. Select Resume</label>
+              <label className="block text-xs font-medium text-(--muted) mb-1.5">1. Select Resume</label>
               <Select
                 value={selectedResume}
                 onChange={setSelectedResume}
@@ -99,9 +94,9 @@ export default function ResumeTailor() {
             </div>
 
             <div className="md:col-span-1 lg:col-span-1">
-              <label className="block font-black text-sm mb-1.5 uppercase tracking-tight">2. Job Description</label>
+              <label className="block text-xs font-medium text-(--muted) mb-1.5">2. Job Description</label>
               <textarea 
-                className="w-full border-2 border-brutal-black p-2.5 font-medium min-h-[80px] text-sm resize-y"
+                className="w-full rounded-xl border border-(--hairline) bg-(--surface-soft) p-2.5 text-xs text-(--ink) placeholder:text-(--muted-soft) min-h-[80px] resize-y outline-none focus:border-(--primary) transition-colors"
                 placeholder="Paste the target job description here..."
                 value={jobDescription}
                 onChange={e => setJobDescription(e.target.value)}
@@ -115,31 +110,30 @@ export default function ResumeTailor() {
 
             <div>
               <Button 
-                variant="brutal" 
-                className="w-full text-base py-3 bg-brutal-blue text-black shadow-[4px_4px_0_rgba(0,0,0,1)]"
+                variant="default" 
+                className="w-full py-2.5"
                 onClick={handleTailor}
                 disabled={isGenerating}
               >
                 {isGenerating ? (
-                   <span className="flex items-center gap-2 animate-pulse">
-                     <Sparkles className="w-4 h-4" /> Analyzing...
-                   </span>
+                  <span className="flex items-center gap-2 animate-pulse">
+                    <Sparkles className="w-4 h-4" /> Analyzing...
+                  </span>
                 ) : (
-                   <span className="flex items-center gap-2">
-                     <Sparkles className="w-4 h-4" /> Tailor Resume
-                   </span>
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" /> Tailor Resume
+                  </span>
                 )}
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* RESULTS — Full-width below */}
-      <div className="space-y-6 mb-8">
+        {/* RESULTS */}
+        <div className="space-y-6 mb-8">
           {status === JOB_STATUS.IDLE && !historyResult && (
-            <div className="border-4 border-dashed border-brutal-black flex items-center justify-center p-12 text-center opacity-50">
-               <p className="font-bold text-xl">Submit to see tailored results here.</p>
+            <div className="rounded-2xl border border-dashed border-(--hairline) bg-(--surface-card) flex items-center justify-center p-12 text-center">
+              <p className="text-xs text-(--muted) font-medium">Select a resume and paste a job description above to tailor.</p>
             </div>
           )}
 
@@ -170,37 +164,50 @@ export default function ResumeTailor() {
                 />
               </div>
 
-              <Card className="bg-white border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)]">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between border-b-4 border-brutal-black pb-4 mb-4">
-                     <h2 className="text-2xl font-black">Match Score</h2>
-                     <div className="text-4xl font-black bg-brutal-green text-white px-4 py-2 border-4 border-brutal-black shadow-[2px_2px_0_rgba(0,0,0,1)]">
-                       {displayResult.matchScore}%
-                     </div>
+              <div className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-6 md:p-8 shadow-sm space-y-8">
+                <div className="flex items-center justify-between border-b border-(--hairline-soft) pb-6">
+                  <div>
+                    <h2 className="text-2xl font-serif text-(--ink)">Match Score</h2>
+                    <p className="text-xs text-(--muted) mt-0.5">Calculated based on skill alignment & keyword density</p>
                   </div>
+                  <div className="text-3xl font-serif text-(--ink) bg-(--surface-soft) px-5 py-2.5 rounded-2xl border border-(--hairline-soft)">
+                    {displayResult.matchScore}%
+                  </div>
+                </div>
 
-                  <h3 className="font-black text-xl mb-2 bg-brutal-yellow inline-block px-1">Suggested Keywords</h3>
-                  <div className="flex flex-wrap gap-2 mb-6">
+                <div>
+                  <h3 className="font-serif text-lg text-(--ink) mb-3">Suggested Keywords</h3>
+                  <div className="flex flex-wrap gap-2">
                     {displayResult.suggestedKeywords?.map((kw, i) => (
-                      <span key={i} className="text-xs font-bold px-2 py-1 bg-slate-200 border-2 border-brutal-black">{kw}</span>
+                      <span key={i} className="text-xs font-medium px-3 py-1 bg-(--primary)/10 text-(--primary) border border-(--primary)/20 rounded-full">
+                        {kw}
+                      </span>
                     ))}
                   </div>
+                </div>
 
-                  <h3 className="font-black text-xl mb-2 bg-brutal-blue text-white inline-block px-1">Tailored Summary</h3>
-                  <p className="text-sm font-medium border-l-4 border-brutal-blue pl-4 py-2 mb-6 bg-slate-50">{displayResult.tailoredSummary}</p>
-
-                  <h3 className="font-black text-xl mb-2 bg-brutal-pink inline-block px-1">Rewritten Bullets</h3>
-                  <div className="space-y-4">
-                     {displayResult.tailoredBullets?.map((tb, i) => (
-                       <div key={i} className="border-2 border-brutal-black p-3 bg-slate-50 relative">
-                          <div className="absolute top-2 right-2 text-brutal-green"><CheckCircle2 className="w-5 h-5"/></div>
-                          <p className="text-xs text-red-500 line-through mb-1">{tb.original}</p>
-                          <p className="text-sm font-bold text-green-700">{tb.suggested}</p>
-                       </div>
-                     ))}
+                <div>
+                  <h3 className="font-serif text-lg text-(--ink) mb-3">Tailored Summary</h3>
+                  <div className="p-4 rounded-xl bg-(--surface-soft) border border-(--hairline-soft) text-sm text-(--body) leading-relaxed">
+                    {displayResult.tailoredSummary}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+
+                <div>
+                  <h3 className="font-serif text-lg text-(--ink) mb-4">Rewritten Bullets</h3>
+                  <div className="space-y-3">
+                    {displayResult.tailoredBullets?.map((tb, i) => (
+                      <div key={i} className="rounded-xl border border-(--hairline-soft) p-4 bg-(--surface-soft)/50 relative space-y-2">
+                        <div className="absolute top-3 right-3 text-(--primary)">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <p className="text-xs text-(--muted) line-through pr-6">{tb.original}</p>
+                        <p className="text-xs font-medium text-(--ink) pr-6">{tb.suggested}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
               <RegenerateBlock 
                 isGenerating={isGenerating} 
@@ -214,8 +221,9 @@ export default function ResumeTailor() {
                 }} 
               />
             </div>
-           )}
+          )}
         </div>
-     </ToolPageLayout>
-   );
- }
+      </div>
+    </ToolPageLayout>
+  );
+}

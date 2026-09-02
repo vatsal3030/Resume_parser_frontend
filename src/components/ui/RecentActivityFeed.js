@@ -2,28 +2,32 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/formatDate';
-import { Card, CardContent } from './card';
 import { Button } from './button';
-import { FileText, Sparkles, UserCheck, Clock, ArrowRight, CheckCircle2, Loader2, AlertCircle, Code, Map, MessageSquare } from 'lucide-react';
+import { 
+  FileText, 
+  Sparkles, 
+  Clock, 
+  ArrowRight, 
+  CheckCircle2, 
+  AlertCircle, 
+  Code, 
+  Map, 
+  MessageSquare,
+  Activity
+} from 'lucide-react';
 import Link from 'next/link';
 
-/**
- * Maps backend event types to UI display config.
- */
 const EVENT_DISPLAY = {
-  RESUME_ANALYZED: { icon: FileText, color: 'bg-brutal-blue', label: 'Resume Analyzed' },
-  RESUME_TAILORED: { icon: Sparkles, color: 'bg-brutal-pink', label: 'Resume Tailored' },
-  COVER_LETTER_GENERATED: { icon: FileText, color: 'bg-brutal-mint', label: 'Cover Letter Generated' },
-  MOCK_INTERVIEW_GENERATED: { icon: MessageSquare, color: 'bg-brutal-green', label: 'Mock Interview Ready' },
-  ROADMAP_GENERATED: { icon: Map, color: 'bg-brutal-yellow', label: 'Roadmap Generated' },
-  PORTFOLIO_GENERATED: { icon: Sparkles, color: 'bg-brutal-blue', label: 'Portfolio Generated' },
-  GITHUB_ANALYZED: { icon: Code, color: 'bg-black text-white', label: 'GitHub Analyzed' },
-  AI_JOB_FAILED: { icon: AlertCircle, color: 'bg-red-100', label: 'Job Failed' },
+  RESUME_ANALYZED: { icon: FileText, label: 'Resume Analyzed' },
+  RESUME_TAILORED: { icon: Sparkles, label: 'Resume Tailored' },
+  COVER_LETTER_GENERATED: { icon: FileText, label: 'Cover Letter Generated' },
+  MOCK_INTERVIEW_GENERATED: { icon: MessageSquare, label: 'Mock Interview Ready' },
+  ROADMAP_GENERATED: { icon: Map, label: 'Roadmap Generated' },
+  PORTFOLIO_GENERATED: { icon: Sparkles, label: 'Portfolio Generated' },
+  GITHUB_ANALYZED: { icon: Code, label: 'GitHub Analyzed' },
+  AI_JOB_FAILED: { icon: AlertCircle, label: 'Job Failed', isError: true },
 };
 
-/**
- * Format a timestamp into relative time (e.g., "2h ago", "3d ago").
- */
 function timeAgo(dateString) {
   const now = new Date();
   const date = new Date(dateString);
@@ -56,47 +60,54 @@ export function RecentActivityFeed() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-6">
-        <Clock className="w-5 h-5 text-gray-500" />
-        <h3 className="font-black text-xl uppercase tracking-tight">Recent Activity</h3>
+      <div className="flex items-center gap-2 mb-4">
+        <Activity className="w-4 h-4 text-(--primary)" />
+        <h3 className="font-serif text-lg text-(--ink)">Recent Activity</h3>
       </div>
       
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {[1, 2, 3].map(i => (
-            <div key={i} className="flex items-start gap-4 p-4 border-2 border-brutal-black bg-white animate-pulse">
-              <div className="w-9 h-9 bg-gray-200 border-2 border-brutal-black" />
+            <div key={i} className="flex items-start gap-3 p-3.5 border border-(--hairline-soft) bg-(--surface-card) rounded-xl animate-pulse">
+              <div className="w-8 h-8 rounded-lg bg-(--surface-soft)" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-100 rounded w-1/2" />
+                <div className="h-3.5 bg-(--surface-soft) rounded w-3/4" />
+                <div className="h-2.5 bg-(--surface-soft) rounded w-1/2" />
               </div>
             </div>
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="p-6 border-2 border-dashed border-gray-300 text-center">
-          <p className="text-gray-500 font-bold text-sm">No activity yet. Upload a resume to get started!</p>
+        <div className="p-6 border border-(--hairline-soft) bg-(--surface-card) rounded-2xl text-center">
+          <p className="text-(--muted) text-xs font-medium">No activity yet. Upload a resume to get started!</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {events.map((event) => {
-            const display = EVENT_DISPLAY[event.type] || { icon: Sparkles, color: 'bg-gray-100', label: event.type };
+            const display = EVENT_DISPLAY[event.type] || { icon: Sparkles, label: event.type };
             const IconComp = display.icon;
+            const isError = display.isError;
             return (
               <div 
                 key={event.id} 
-                className="flex items-start gap-4 p-4 border-2 border-brutal-black bg-white hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-3 p-3 rounded-xl border border-(--hairline) bg-(--surface-card) hover:bg-(--surface-soft) transition-colors"
               >
-                <div className={`p-2 border-2 border-brutal-black ${display.color}`}>
-                  <IconComp className="w-5 h-5" />
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                  isError 
+                    ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
+                    : 'bg-(--surface-soft) text-(--primary) border border-(--hairline-soft)'
+                }`}>
+                  <IconComp className="w-4 h-4" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-sm">{event.metadata?.label || display.label}</h4>
-                  <p className="text-gray-600 text-xs mt-1 font-medium">
-                    {event.metadata?.icon} {event.targetType || ''}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-xs text-(--ink) truncate">
+                    {event.metadata?.label || display.label}
+                  </h4>
+                  <p className="text-[11px] text-(--muted) truncate">
+                    {event.metadata?.icon} {event.targetType || 'AI Job'}
                   </p>
                 </div>
-                <span className="text-xs font-bold text-gray-400 whitespace-nowrap">
+                <span className="text-[10px] text-(--muted-soft) shrink-0">
                   {timeAgo(event.createdAt)}
                 </span>
               </div>
@@ -105,20 +116,22 @@ export function RecentActivityFeed() {
         </div>
       )}
       
-      <Button variant="outline" className="w-full text-xs font-bold uppercase tracking-widest border-dashed">
-        View All Activity
-      </Button>
+      <Link href="/dashboard/notifications" className="block pt-1">
+        <button 
+          type="button" 
+          className="w-full py-2 rounded-xl text-xs font-medium text-(--muted) hover:text-(--ink) bg-(--surface-soft) hover:bg-(--surface-card) border border-(--hairline) transition-colors text-center cursor-pointer"
+        >
+          View All Activity
+        </button>
+      </Link>
     </div>
   );
 }
 
-/**
- * Maps workflow types to display configuration.
- */
 const WORKFLOW_DISPLAY = {
-  RESUME_OPTIMIZATION: { label: 'Resume Optimization', href: '/dashboard/tools/tailor', color: 'bg-brutal-yellow' },
-  INTERVIEW_PREP: { label: 'Interview Preparation', href: '/dashboard/tools/mock-interview', color: 'bg-brutal-green' },
-  ONBOARDING: { label: 'Getting Started', href: '/dashboard', color: 'bg-brutal-mint' },
+  RESUME_OPTIMIZATION: { label: 'Resume Optimization', href: '/dashboard/tools/tailor' },
+  INTERVIEW_PREP: { label: 'Interview Preparation', href: '/dashboard/tools/mock-interview' },
+  ONBOARDING: { label: 'Getting Started', href: '/dashboard' },
 };
 
 export function ContinueWorkflowCard() {
@@ -143,56 +156,49 @@ export function ContinueWorkflowCard() {
 
   if (loading) {
     return (
-      <Card className="bg-brutal-yellow border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] mb-8 animate-pulse">
-        <CardContent className="p-6">
-          <div className="h-5 bg-yellow-300 rounded w-24 mb-3" />
-          <div className="h-6 bg-yellow-300 rounded w-3/4 mb-2" />
-          <div className="h-4 bg-yellow-200 rounded w-full mb-6" />
-          <div className="h-10 bg-white border-2 border-brutal-black rounded w-48" />
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-6 mb-8 animate-pulse">
+        <div className="h-4 bg-(--surface-soft) rounded w-28 mb-3" />
+        <div className="h-6 bg-(--surface-soft) rounded w-3/4 mb-2" />
+        <div className="h-3 bg-(--surface-soft) rounded w-full mb-6" />
+        <div className="h-9 bg-(--surface-soft) rounded-xl w-36" />
+      </div>
     );
   }
 
-  if (!workflow) return null; // No active workflow — don't render anything
+  if (!workflow) return null;
 
-  const display = WORKFLOW_DISPLAY[workflow.type] || { label: workflow.type, href: '/dashboard', color: 'bg-brutal-yellow' };
-  const totalSteps = 3; // Approximate from completionPercentage
-  const currentStepNum = Math.max(1, Math.ceil((workflow.completionPercentage / 100) * totalSteps));
+  const display = WORKFLOW_DISPLAY[workflow.type] || { label: workflow.type, href: '/dashboard' };
 
   return (
-    <Card className={`${display.color} border-4 border-brutal-black shadow-[4px_4px_0_rgba(0,0,0,1)] hover:shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all mb-8`}>
-      <CardContent className="p-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="bg-black text-white text-xs font-bold uppercase px-2 py-1">In Progress</span>
-              <span className="text-sm font-bold flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4" /> {workflow.completionPercentage}% Complete
-              </span>
-            </div>
-            <h3 className="text-2xl font-black mb-1">{display.label}</h3>
-            <p className="font-medium text-black/80 mb-6">
-              Current step: <span className="font-black">{workflow.currentStep.replace(/_/g, ' ')}</span>
-              {workflow.metadata?.title && ` — ${workflow.metadata.title}`}
-            </p>
-          </div>
-        </div>
-        
-        {/* Progress bar */}
-        <div className="w-full bg-black/10 border-2 border-brutal-black h-3 mb-6">
-          <div 
-            className="bg-black h-full transition-all duration-500" 
-            style={{ width: `${workflow.completionPercentage}%` }} 
-          />
-        </div>
+    <div className="rounded-2xl border border-(--hairline) bg-(--surface-card) p-6 shadow-sm mb-8 transition-colors">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full bg-(--primary)/10 text-(--primary) border border-(--primary)/20">
+          In Progress
+        </span>
+        <span className="text-xs text-(--muted) font-medium flex items-center gap-1">
+          <CheckCircle2 className="w-3.5 h-3.5 text-(--primary)" /> {workflow.completionPercentage}% Complete
+        </span>
+      </div>
 
-        <Link href={display.href}>
-          <Button variant="brutal" className="bg-white text-black hover:bg-gray-100 flex items-center gap-2">
-            Continue Workflow <ArrowRight className="w-4 h-4" />
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+      <h3 className="text-xl font-serif text-(--ink) mb-1">{display.label}</h3>
+      <p className="text-xs text-(--muted) mb-5">
+        Current step: <span className="text-(--ink) font-medium">{workflow.currentStep.replace(/_/g, ' ')}</span>
+        {workflow.metadata?.title && ` — ${workflow.metadata.title}`}
+      </p>
+      
+      {/* Progress bar */}
+      <div className="w-full bg-(--surface-soft) rounded-full h-2 overflow-hidden mb-5">
+        <div 
+          className="bg-(--primary) h-full rounded-full transition-all duration-500" 
+          style={{ width: `${workflow.completionPercentage}%` }} 
+        />
+      </div>
+
+      <Link href={display.href}>
+        <Button variant="default" size="sm" className="flex items-center gap-2">
+          Continue Workflow <ArrowRight className="w-3.5 h-3.5" />
+        </Button>
+      </Link>
+    </div>
   );
 }

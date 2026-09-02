@@ -1,95 +1,85 @@
 "use client";
-
-import { CheckCircle2, AlertTriangle, Loader2, XCircle } from "lucide-react";
-import { JOB_STATUS } from "@/hooks/useAsyncJob";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { JOB_STATUS } from '@/hooks/useAsyncJob';
+import { Loader2, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
 export function ProcessingPipeline({ 
   status, 
-  progress = 0, 
-  stage = '', 
-  message = '', 
-  error = null,
-  onRetry = null,
-  onCancel = null
+  progress, 
+  stage, 
+  message, 
+  error, 
+  onRetry, 
+  onCancel 
 }) {
-  if (status === JOB_STATUS.IDLE) return null;
+  if (!status || status === JOB_STATUS.IDLE) return null;
 
   const isComplete = status === JOB_STATUS.COMPLETED;
   const isFailed = status === JOB_STATUS.FAILED;
   const isCancelled = status === JOB_STATUS.CANCELLED;
   const isProcessing = [JOB_STATUS.QUEUED, JOB_STATUS.PROCESSING, JOB_STATUS.GENERATING, JOB_STATUS.FINALIZING].includes(status);
 
-  // Derive visual progress bar width
-  const visualProgress = isComplete ? 100 : (progress || 5);
+  const visualProgress = isComplete ? 100 : (progress || 8);
 
   return (
-    <Card className="bg-white border-4 border-brutal-black shadow-[8px_8px_0_#000] overflow-hidden animate-in fade-in zoom-in duration-300">
+    <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
       <CardContent className="p-0">
         
         {/* Header Status Bar */}
-        <div className={`p-4 border-b-4 border-brutal-black flex items-center justify-between ${
-          isComplete ? 'bg-brutal-green' :
-          isFailed ? 'bg-red-500 text-white' :
-          isCancelled ? 'bg-gray-300' :
-          'bg-brutal-yellow'
-        }`}>
+        <div className="px-5 py-4 border-b border-(--hairline) flex items-center justify-between bg-(--surface-soft)/60">
           <div className="flex items-center gap-3">
-            {isProcessing && <Loader2 className="w-6 h-6 animate-spin" />}
-            {isComplete && <CheckCircle2 className="w-6 h-6" />}
-            {isFailed && <XCircle className="w-6 h-6" />}
-            {isCancelled && <AlertTriangle className="w-6 h-6" />}
+            {isProcessing && <Loader2 className="w-5 h-5 animate-spin text-(--primary)" />}
+            {isComplete && <CheckCircle2 className="w-5 h-5 text-(--success)" />}
+            {isFailed && <XCircle className="w-5 h-5 text-(--error)" />}
+            {isCancelled && <AlertTriangle className="w-5 h-5 text-(--muted)" />}
             
-            <h3 className="font-black text-xl uppercase tracking-wider">
+            <h3 className="font-serif font-medium text-base text-(--ink)">
               {isComplete ? 'Task Completed' :
                isFailed ? 'Task Failed' :
                isCancelled ? 'Task Cancelled' :
-               status === JOB_STATUS.QUEUED ? 'In Queue' :
-               'Processing'}
+               status === JOB_STATUS.QUEUED ? 'In Queue...' :
+               'Processing Request...'}
             </h3>
           </div>
           
-          <div className="font-bold text-lg">
+          <div className="font-mono text-xs font-semibold text-(--primary)">
             {visualProgress}%
           </div>
         </div>
 
         {/* Progress Bar Track */}
-        <div className="h-4 bg-brutal-bg w-full border-b-4 border-brutal-black relative overflow-hidden">
+        <div className="h-1.5 bg-(--surface-soft) w-full overflow-hidden">
           <div 
-            className={`absolute top-0 left-0 h-full transition-all duration-500 ease-out border-r-4 border-brutal-black ${
-              isComplete ? 'bg-brutal-green' :
-              isFailed ? 'bg-red-500' :
-              'bg-brutal-pink'
+            className={`h-full transition-all duration-500 ease-out rounded-full ${
+              isComplete ? 'bg-(--success)' :
+              isFailed ? 'bg-(--error)' :
+              'bg-(--primary)'
             }`}
             style={{ width: `${visualProgress}%` }}
           />
-          {/* Subtle animated stripes overlay if processing */}
-          {isProcessing && (
-            <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#000_10px,#000_20px)] animate-[pan_20s_linear_infinite]" />
-          )}
         </div>
 
         {/* Body Content */}
         <div className="p-6">
-          <div className="mb-4">
-            <p className="text-sm font-black text-gray-500 uppercase tracking-widest mb-1">
+          <div className="mb-2">
+            <p className="text-xs uppercase tracking-wider font-medium text-(--muted) mb-1.5">
               {stage || 'Current Stage'}
             </p>
-            <p className="text-xl font-bold">
+            <p className="text-sm font-medium text-(--ink) leading-relaxed">
               {error ? error : (message || 'Please wait while AI processes your request...')}
             </p>
           </div>
 
           {/* Action Buttons (Retry / Cancel) */}
           {(isFailed || isProcessing) && (onRetry || onCancel) && (
-            <div className="flex gap-4 mt-6 border-t-2 border-dashed border-gray-300 pt-6">
+            <div className="flex gap-3 mt-5 border-t border-(--hairline-soft) pt-4">
               {isFailed && onRetry && (
                 <Button 
                   onClick={onRetry} 
-                  variant="brutal" 
-                  className="bg-brutal-blue text-black w-full shadow-brutal-sm border-2 font-bold"
+                  variant="default" 
+                  className="w-full py-2.5 text-xs"
                 >
                   Retry Request
                 </Button>
@@ -97,8 +87,8 @@ export function ProcessingPipeline({
               {isProcessing && onCancel && (
                 <Button 
                   onClick={onCancel} 
-                  variant="outline" 
-                  className="w-full border-2 border-brutal-black shadow-[2px_2px_0_#000] font-bold text-gray-700 hover:bg-gray-100"
+                  variant="secondary" 
+                  className="w-full py-2.5 text-xs"
                 >
                   Cancel
                 </Button>

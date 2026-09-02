@@ -1,9 +1,8 @@
 "use client";
 import { useState, useEffect, useCallback } from 'react';
 import api from '@/lib/api';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Bell, AlertCircle, FileText, CheckCircle2, Sparkles, CreditCard, Briefcase, Code, FileEdit, Map, MessageSquare, LayoutTemplate, Trash2 } from 'lucide-react';
+import { Bell, AlertCircle, FileText, CheckCircle2, Sparkles, CreditCard, Briefcase, Code, FileEdit, Map, MessageSquare, LayoutTemplate } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 import { formatDistanceToNow } from 'date-fns';
 import { useRouter } from 'next/navigation';
@@ -57,17 +56,6 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleDeleteAll = async () => {
-    if (!window.confirm("Are you sure you want to delete all notifications?")) return;
-    try {
-      // Assuming a DELETE /domain/notifications endpoint exists, or we might need to add it.
-      // If not, we can just delete one by one or create bulk delete endpoint.
-      toast.info('Feature not implemented on backend yet. Adding soon!');
-    } catch (error) {
-      toast.error('Failed to delete notifications');
-    }
-  };
-
   const handleNotifClick = async (notif) => {
     if (!notif.isRead) {
       try {
@@ -82,11 +70,11 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <div className="p-8 space-y-6 max-w-5xl mx-auto">
-        <h1 className="text-4xl font-black uppercase tracking-tighter">Notifications</h1>
-        <div className="animate-pulse space-y-4">
-          {[1,2,3].map(i => (
-            <div key={i} className="h-24 bg-white border-4 border-brutal-black"></div>
+      <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
+        <div className="h-8 bg-(--surface-soft) rounded-xl w-44 mb-2 animate-pulse" />
+        <div className="animate-pulse space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-20 bg-(--surface-card) rounded-2xl border border-(--hairline)" />
           ))}
         </div>
       </div>
@@ -94,30 +82,27 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="p-8 space-y-6 max-w-5xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-4 border-brutal-black pb-4">
+    <div className="p-4 md:p-8 space-y-6 max-w-4xl mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-(--hairline) pb-6">
         <div>
-          <h1 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-3">
-            <Bell className="w-10 h-10" /> Notifications
+          <h1 className="text-3xl font-serif text-(--ink) flex items-center gap-3">
+            <Bell className="w-7 h-7 text-(--primary)" /> Notifications
           </h1>
-          <p className="font-bold text-gray-600 mt-1">Your recent activity and updates</p>
+          <p className="text-xs text-(--muted) mt-1">Your recent activity and AI generation updates</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={handleMarkAllRead}>
-            <CheckCircle2 className="w-4 h-4 mr-2" /> Mark All Read
-          </Button>
-          <Button variant="destructive" onClick={handleDeleteAll}>
-            <Trash2 className="w-4 h-4 mr-2" /> Delete All
+        <div className="flex items-center gap-2.5">
+          <Button variant="secondary" size="sm" onClick={handleMarkAllRead}>
+            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-(--primary)" /> Mark All Read
           </Button>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {notifications.length === 0 ? (
-          <div className="p-12 border-4 border-dashed border-brutal-black bg-white text-center">
-            <Bell className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-xl font-black uppercase tracking-wider text-gray-600">No Notifications</h3>
-            <p className="font-bold text-gray-500 mt-2">You&apos;re all caught up!</p>
+          <div className="p-12 rounded-2xl border border-dashed border-(--hairline) bg-(--surface-card) text-center">
+            <Bell className="w-10 h-10 mx-auto mb-3 text-(--muted-soft)" />
+            <h3 className="font-serif text-lg text-(--ink)">No Notifications</h3>
+            <p className="text-xs text-(--muted) mt-1">You&apos;re all caught up!</p>
           </div>
         ) : (
           notifications.map(notif => {
@@ -127,24 +112,32 @@ export default function NotificationsPage() {
                 key={notif.id}
                 onClick={() => handleNotifClick(notif)}
                 className={`
-                  relative p-4 md:p-6 bg-white border-4 border-brutal-black shadow-[4px_4px_0_#000]
-                  hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all cursor-pointer
-                  flex gap-4 items-start group
-                  ${!notif.isRead ? 'border-l-brutal-pink border-l-8' : ''}
+                  p-4 md:p-5 rounded-2xl border transition-all cursor-pointer flex gap-4 items-start
+                  ${!notif.isRead 
+                    ? 'bg-(--surface-card) border-(--primary)/50 shadow-sm' 
+                    : 'bg-(--surface-card)/70 border-(--hairline) hover:bg-(--surface-card)'
+                  }
                 `}
               >
-                <div className={`p-3 border-2 border-brutal-black shadow-[2px_2px_0_#000] ${!notif.isRead ? 'bg-brutal-yellow' : 'bg-gray-100'}`}>
-                  <Icon className="w-6 h-6" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                  !notif.isRead 
+                    ? 'bg-(--primary)/10 text-(--primary) border-(--primary)/30' 
+                    : 'bg-(--surface-soft) text-(--muted) border-(--hairline-soft)'
+                }`}>
+                  <Icon className="w-5 h-5" />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <h3 className="font-black text-lg">{notif.title}</h3>
-                    <span className="text-xs font-bold text-gray-500 whitespace-nowrap bg-gray-100 px-2 py-1 border-2 border-brutal-black">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-medium text-sm text-(--ink) truncate">{notif.title}</h3>
+                    <span className="text-[10px] text-(--muted-soft) shrink-0">
                       {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true })}
                     </span>
                   </div>
-                  <p className="font-medium text-gray-700 mt-1">{notif.message}</p>
+                  <p className="text-xs text-(--body) mt-1 leading-relaxed">{notif.message}</p>
                 </div>
+                {!notif.isRead && (
+                  <span className="w-2 h-2 rounded-full bg-(--primary) shrink-0 mt-2" />
+                )}
               </div>
             );
           })

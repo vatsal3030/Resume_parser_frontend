@@ -35,37 +35,69 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
     } catch (err) {}
   };
 
-  const fetchProfile = async (userId) => {
+  const fetchProfile = async (sessionUser) => {
+    if (!sessionUser?.id) return;
     try {
+      const userId = sessionUser.id;
+      const isDismissed = typeof window !== 'undefined' && localStorage.getItem(`avatar_dismissed_${userId}`);
+      
       const { data } = await api.get('/users/me');
       const avatarUrl = data?.profile?.avatarUrl || null;
-      setProfile({ avatarUrl });
-      if (!avatarUrl) {
-        setAvatarOptions(
-          Array.from({ length: 6 }).map(() => `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${Math.random().toString(36).substring(7)}`)
-        );
-        setShowOnboarding(true);
+      
+      if (avatarUrl) {
+        setProfile({ avatarUrl });
+        setShowOnboarding(false);
+        return;
       }
-    } catch (e) { }
+
+      // Check if user has a Google avatar in auth metadata
+      const googleAvatar = sessionUser.user_metadata?.avatar_url || null;
+      if (googleAvatar) {
+        setProfile({ avatarUrl: googleAvatar });
+        setShowOnboarding(false);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(`avatar_dismissed_${userId}`, 'true');
+        }
+        api.put('/users/profile', { avatarUrl: googleAvatar }).catch(() => {});
+        return;
+      }
+
+      // If user hasn't set avatar and hasn't dismissed the prompt
+      if (!isDismissed) {
+        const generatedOptions = Array.from({ length: 6 }).map(
+          () => `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${Math.random().toString(36).substring(7)}`
+        );
+        setAvatarOptions(generatedOptions);
+        setSelectedAvatar(generatedOptions[0]);
+        setShowOnboarding(true);
+      } else {
+        // Use deterministic bottts avatar if dismissed previously
+        setProfile({ avatarUrl: `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${userId}` });
+      }
+    } catch (e) {
+      console.warn('Could not fetch user profile:', e?.message);
+    }
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+      if (session?.user && isMounted) {
         setUser(session.user);
         loadAccounts();
-        fetchProfile(session.user.id);
+        fetchProfile(session.user);
       }
     };
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
+      if (session?.user && isMounted) {
         setUser(session.user);
         loadAccounts();
-        fetchProfile(session.user.id);
-      } else {
+        fetchProfile(session.user);
+      } else if (!session && isMounted) {
         setUser(null);
         setProfile(null);
         setShowOnboarding(false);
@@ -73,11 +105,14 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
     });
 
     const handleAvatarSync = (e) => {
-      setProfile((prev) => ({ ...prev, avatarUrl: e.detail }));
+      if (e.detail) {
+        setProfile((prev) => ({ ...(prev || {}), avatarUrl: e.detail }));
+      }
     };
     window.addEventListener('profileAvatarUpdated', handleAvatarSync);
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
       window.removeEventListener('profileAvatarUpdated', handleAvatarSync);
     };
@@ -128,15 +163,41 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
   };
 
   const handleSaveAvatar = async () => {
+    const avatarToSave = selectedAvatar || allAvatars[0];
+    if (!avatarToSave) return;
+    
     setSavingAvatar(true);
-    try {
-      await api.put('/users/profile', { avatarUrl: selectedAvatar });
-      setProfile({ ...profile, avatarUrl: selectedAvatar });
-      setShowOnboarding(false);
-    } catch (e) {
-      console.error(e);
+    // Optimistic UI update & immediate modal dismiss
+    setProfile((prev) => ({ ...(prev || {}), avatarUrl: avatarToSave }));
+    setShowOnboarding(false);
+    
+    if (user?.id) {
+      localStorage.setItem(`avatar_dismissed_${user.id}`, 'true');
     }
-    setSavingAvatar(false);
+    window.dispatchEvent(new CustomEvent('profileAvatarUpdated', { detail: avatarToSave }));
+
+    try {
+      await api.put('/users/profile', { avatarUrl: avatarToSave });
+    } catch (e) {
+      console.error('Failed to save avatar to backend:', e);
+    } finally {
+      setSavingAvatar(false);
+    }
+  };
+
+  const handleSkip = async () => {
+    const fallbackAvatar = user?.user_metadata?.avatar_url || `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${user?.id || 'default'}`;
+    setProfile((prev) => ({ ...(prev || {}), avatarUrl: fallbackAvatar }));
+    setShowOnboarding(false);
+    
+    if (user?.id) {
+      localStorage.setItem(`avatar_dismissed_${user.id}`, 'true');
+    }
+    window.dispatchEvent(new CustomEvent('profileAvatarUpdated', { detail: fallbackAvatar }));
+
+    try {
+      await api.put('/users/profile', { avatarUrl: fallbackAvatar });
+    } catch (e) {}
   };
 
   // If user has a Google avatar, add it to options
@@ -228,30 +289,59 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
 
       {/* Avatar Onboarding Modal */}
       {showOnboarding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-white border-4 border-brutal-black shadow-[8px_8px_0_#000] w-full max-w-lg">
-            <div className="p-4 border-b-4 border-brutal-black bg-brutal-mint">
-              <h2 className="text-2xl font-black uppercase">Choose Your Identity</h2>
-              <p className="text-sm font-bold text-black/70">Pick a fun avatar to get started!</p>
+            <div className="p-4 border-b-4 border-brutal-black bg-brutal-mint flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tight">Choose Your Identity</h2>
+                <p className="text-xs font-bold text-black/80">Pick a fun avatar to get started!</p>
+              </div>
+              <button 
+                onClick={handleSkip}
+                className="w-8 h-8 bg-white border-2 border-black font-black text-sm flex items-center justify-center shadow-[2px_2px_0_#000] hover:bg-brutal-pink transition-colors"
+                title="Close"
+              >
+                ✕
+              </button>
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-3 gap-4">
-                {allAvatars.map((url, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedAvatar(url)}
-                    className={`relative w-full aspect-square border-4 transition-all ${selectedAvatar === url ? 'border-brutal-black bg-brutal-yellow shadow-[4px_4px_0_#000] scale-105' : 'border-transparent bg-brutal-bg hover:border-brutal-black hover:shadow-brutal-sm'}`}
-                  >
-                    <Image src={url} alt={`Avatar ${index}`} fill className="p-2 object-cover" unoptimized />
-                    {user?.user_metadata?.avatar_url === url && <span className="absolute bottom-1 right-1 text-[10px] bg-black text-white px-1 font-bold">Google</span>}
-                  </button>
-                ))}
+                {allAvatars.map((url, index) => {
+                  const isSelected = selectedAvatar === url || (!selectedAvatar && index === 0);
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => setSelectedAvatar(url)}
+                      className={`relative w-full aspect-square border-4 transition-all cursor-pointer ${
+                        isSelected 
+                          ? 'border-brutal-black bg-brutal-yellow shadow-[4px_4px_0_#000] scale-105 ring-2 ring-black' 
+                          : 'border-brutal-black/30 bg-brutal-bg hover:border-brutal-black hover:shadow-brutal-sm'
+                      }`}
+                    >
+                      <Image src={url} alt={`Avatar ${index}`} fill className="p-2 object-cover" unoptimized />
+                      {user?.user_metadata?.avatar_url === url && (
+                        <span className="absolute bottom-1 right-1 text-[9px] bg-black text-white px-1 font-black">Google</span>
+                      )}
+                      {isSelected && (
+                        <span className="absolute top-1 right-1 w-4 h-4 bg-brutal-green text-black border border-black font-black text-[10px] flex items-center justify-center">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               <div className="flex gap-4">
-                <Button variant="white" className="flex-1" onClick={() => setShowOnboarding(false)}>
-                  Skip
+                <Button variant="white" className="flex-1 font-black border-3 shadow-[2px_2px_0_#000]" onClick={handleSkip}>
+                  Skip for Now
                 </Button>
-                <Button variant="default" className="flex-1 bg-brutal-blue" disabled={!selectedAvatar || savingAvatar} onClick={handleSaveAvatar}>
+                <Button 
+                  variant="default" 
+                  className="flex-1 bg-brutal-blue text-white font-black border-3 shadow-[2px_2px_0_#000] hover:bg-black" 
+                  disabled={savingAvatar} 
+                  onClick={handleSaveAvatar}
+                >
                   {savingAvatar ? 'Saving...' : 'Looks Good!'}
                 </Button>
               </div>

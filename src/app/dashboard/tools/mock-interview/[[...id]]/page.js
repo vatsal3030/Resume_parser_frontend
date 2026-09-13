@@ -799,11 +799,9 @@ export default function MockInterviewGenerator() {
                 </div>
               </div>
             )}
- </>
- )}
 
- {/* ACTIVE QUESTION INTERACTION PANE */}
- {!gradeResult && currentQ && (
+            {/* ACTIVE QUESTION INTERACTION PANE */}
+            {!gradeResult && currentQ && (
  <div className="space-y-6">
  {/* Round Overview Cards */}
  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">

@@ -1,7 +1,9 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 import { useCopilot } from '@/context/CopilotContext';
-import { X, Send, Sparkles, Terminal, ChevronRight, MessageSquare, Plus, Clock } from 'lucide-react';
+import { X, Send, Sparkles, Terminal, ChevronRight, MessageSquare, Plus, Clock, FileText, Check, Copy } from 'lucide-react';
 import { Rnd } from 'react-rnd';
 
 export function CopilotPanel() {
@@ -88,13 +90,13 @@ export function CopilotPanel() {
       {isOpen && (
         <Rnd
           default={{
-            x: position.x !== -1 ? position.x : (typeof window !== 'undefined' ? window.innerWidth - 424 : 0),
-            y: position.y !== 0 ? position.y : (typeof window !== 'undefined' ? window.innerHeight - 624 : 0),
-            width: size.width > 0 ? size.width : 400,
-            height: size.height > 0 ? size.height : 600,
+            x: position.x !== -1 ? position.x : (typeof window !== 'undefined' ? window.innerWidth - 460 : 0),
+            y: position.y !== 0 ? position.y : (typeof window !== 'undefined' ? window.innerHeight - 660 : 0),
+            width: size.width > 0 ? size.width : 440,
+            height: size.height > 0 ? size.height : 620,
           }}
-          minWidth={300}
-          minHeight={400}
+          minWidth={340}
+          minHeight={420}
           bounds="window"
           dragHandleClassName="copilot-drag-handle"
           onDragStop={(e, d) => setPosition({ x: d.x, y: d.y })}
@@ -113,36 +115,31 @@ export function CopilotPanel() {
             <div className="copilot-drag-handle px-4 py-3.5 border-b border-(--hairline-soft) flex justify-between items-center bg-(--surface-soft)/50 cursor-move">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-lg bg-(--primary)/15 text-(--primary) flex items-center justify-center">
-                  <Sparkles className="w-3.5 h-3.5 text-(--primary) pointer-events-none" />
+                  <Sparkles className="w-3.5 h-3.5 text-(--primary)" />
                 </div>
-                <h3 className="font-serif text-base text-(--ink) pointer-events-none">Copilot</h3>
+                <span className="font-semibold text-xs text-(--ink) tracking-tight">AI Assistant Copilot</span>
               </div>
-              <div className="flex items-center gap-1.5 z-10">
-                <button
-                  onClick={(e) => { e.stopPropagation(); createNewConversation(); }}
-                  aria-label="New Chat"
-                  title="New Chat"
-                  className="text-xs font-medium px-2.5 py-1 rounded-lg border border-(--hairline) bg-(--surface-card) hover:bg-(--surface-soft) text-(--ink) transition-colors flex items-center gap-1"
+              <div className="flex items-center gap-1">
+                <button 
+                  onClick={() => setShowThreadList(!showThreadList)} 
+                  className={`p-1.5 rounded-lg transition-colors text-xs ${showThreadList ? 'bg-(--primary) text-white' : 'text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft)'}`}
+                  title="Conversations"
                 >
-                  <Plus className="w-3 h-3" /> New
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowThreadList(!showThreadList); }}
-                  aria-label="Toggle History"
-                  className={`text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1 ${
-                    showThreadList 
-                      ? 'bg-(--primary)/15 text-(--primary) border-(--primary)/30' 
-                      : 'border-(--hairline) bg-(--surface-card) hover:bg-(--surface-soft) text-(--muted)'
-                  }`}
-                >
-                  <Clock className="w-3 h-3" /> History
+                  <Clock className="w-3.5 h-3.5" />
                 </button>
                 <button 
-                  onClick={(e) => { e.stopPropagation(); toggleCopilot(); }} 
-                  aria-label="Close Copilot" 
-                  className="p-1 rounded-lg text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft) transition-colors cursor-pointer"
+                  onClick={createNewConversation} 
+                  className="p-1.5 rounded-lg text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft) transition-colors text-xs"
+                  title="New Chat"
                 >
-                  <X className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  onClick={toggleCopilot} 
+                  className="p-1.5 rounded-lg text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft) transition-colors text-xs"
+                  title="Close"
+                >
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -160,7 +157,7 @@ export function CopilotPanel() {
             {/* Content Area */}
             <div className="flex-1 overflow-hidden relative flex flex-col">
               {/* Messages Area */}
-              <div className={`flex-1 overflow-y-auto p-4 space-y-3 bg-(--canvas)/40 cursor-default transition-transform ${showThreadList ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100'}`}>
+              <div className={`flex-1 overflow-y-auto p-4 space-y-3.5 bg-(--canvas)/40 cursor-default transition-transform ${showThreadList ? 'opacity-0 pointer-events-none absolute inset-0' : 'opacity-100'}`}>
                 {messages.map((msg, idx) => {
                   const isUser = msg.role === 'user';
                   return (
@@ -169,16 +166,65 @@ export function CopilotPanel() {
                       className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
                     >
                       <div 
-                        className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                        className={`max-w-[88%] rounded-2xl px-4 py-3 text-[13px] sm:text-sm leading-relaxed ${
                           isUser 
-                            ? 'bg-(--primary) text-white shadow-sm rounded-br-xs' 
+                            ? 'bg-(--primary) text-white shadow-sm rounded-br-xs whitespace-pre-wrap' 
                             : 'bg-(--surface-card) text-(--ink) border border-(--hairline) shadow-sm rounded-bl-xs'
                         }`}
                       >
-                        {msg.content}
+                        {isUser ? (
+                          msg.content
+                        ) : (
+                          <div className="markdown-chat text-(--ink) leading-relaxed">
+                            <ReactMarkdown
+                              components={{
+                                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                strong: ({ children }) => <strong className="font-semibold text-(--ink)">{children}</strong>,
+                                h1: ({ children }) => <h1 className="text-base font-bold text-(--ink) mt-3 mb-1.5">{children}</h1>,
+                                h2: ({ children }) => <h2 className="text-sm font-bold text-(--ink) mt-2.5 mb-1">{children}</h2>,
+                                h3: ({ children }) => <h3 className="text-xs font-semibold text-(--primary) uppercase tracking-wide mt-2 mb-1">{children}</h3>,
+                                ul: ({ children }) => <ul className="list-disc pl-5 space-y-1 my-2 text-(--ink)">{children}</ul>,
+                                ol: ({ children }) => <ol className="list-decimal pl-5 space-y-1 my-2 text-(--ink)">{children}</ol>,
+                                li: ({ children }) => <li className="text-(--ink)">{children}</li>,
+                                code: ({ inline, className, children, ...props }) => {
+                                  const text = String(children).replace(/\n$/, '');
+                                  const isResume = text.toLowerCase().endsWith('.pdf') || (text.toLowerCase().includes('resume') && !text.includes(' '));
+                                  if (inline || !text.includes('\n')) {
+                                    return (
+                                      <span 
+                                        onClick={isResume ? () => setInput(`Tell me how to improve ${text}`) : undefined}
+                                        className={`font-mono text-xs px-2 py-0.5 rounded-md border inline-flex items-center gap-1 my-0.5 transition-all ${
+                                          isResume 
+                                            ? 'bg-(--primary)/10 text-(--primary) border-(--primary)/30 hover:bg-(--primary)/20 cursor-pointer font-medium shadow-xs' 
+                                            : 'bg-(--surface-soft) text-(--ink) border-(--hairline)'
+                                        }`}
+                                        title={isResume ? 'Click to ask about this resume' : undefined}
+                                      >
+                                        {isResume && <FileText className="w-3 h-3 text-(--primary) shrink-0" />}
+                                        {text}
+                                      </span>
+                                    );
+                                  }
+                                  return (
+                                    <pre className="p-3 my-2.5 rounded-xl bg-(--surface-soft) border border-(--hairline) overflow-x-auto font-mono text-xs text-(--ink) leading-normal">
+                                      <code>{text}</code>
+                                    </pre>
+                                  );
+                                },
+                                blockquote: ({ children }) => (
+                                  <blockquote className="border-l-2 border-(--primary) pl-3 py-1 my-2 bg-(--surface-soft)/60 rounded-r text-(--muted) italic">
+                                    {children}
+                                  </blockquote>
+                                )
+                              }}
+                            >
+                              {msg.content}
+                            </ReactMarkdown>
+                          </div>
+                        )}
                       </div>
-                      <span className="text-[9px] text-(--muted-soft) mt-1 px-1">
-                        {isUser ? 'You' : 'Claude'}
+                      <span className="text-[10px] text-(--muted-soft) mt-1 px-1">
+                        {isUser ? 'You' : 'Claude 3.5'}
                       </span>
                     </div>
                   );

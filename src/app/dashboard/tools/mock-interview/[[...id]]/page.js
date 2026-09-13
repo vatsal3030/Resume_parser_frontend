@@ -23,12 +23,12 @@ import { triggerConfetti } from '@/utils/confetti';
 
 // Round type configuration
 const ROUND_CONFIG = {
- aptitude: { icon: Brain, color: 'bg-yellow-200', borderColor: 'border-yellow-500', label: 'Aptitude & Logic' },
- mcq: { icon: Target, color: 'bg-blue-200', borderColor: 'border-blue-500', label: 'Technical MCQ' },
- coding: { icon: Code2, color: 'bg-emerald-200', borderColor: 'border-emerald-500', label: 'Coding & Systems' },
- technical: { icon: Code2, color: 'bg-purple-200', borderColor: 'border-purple-500', label: 'Technical Core' },
- project_discussion: { icon: MessageSquare, color: 'bg-orange-200', borderColor: 'border-orange-500', label: 'Project Deep Dive' },
- behavioral: { icon: Users, color: 'bg-pink-200', borderColor: 'border-pink-500', label: 'HR & Behavioral' },
+  aptitude: { icon: Brain, badge: 'bg-amber-500/15 text-amber-500 border-amber-500/30', card: 'hover:border-amber-500/40 bg-(--surface-card)', label: 'Aptitude & Logic' },
+  mcq: { icon: Target, badge: 'bg-blue-500/15 text-blue-500 border-blue-500/30', card: 'hover:border-blue-500/40 bg-(--surface-card)', label: 'Technical MCQ' },
+  coding: { icon: Code2, badge: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30', card: 'hover:border-emerald-500/40 bg-(--surface-card)', label: 'Coding & Systems' },
+  technical: { icon: Code2, badge: 'bg-indigo-500/15 text-indigo-500 border-indigo-500/30', card: 'hover:border-indigo-500/40 bg-(--surface-card)', label: 'Technical Core' },
+  project_discussion: { icon: MessageSquare, badge: 'bg-purple-500/15 text-purple-500 border-purple-500/30', card: 'hover:border-purple-500/40 bg-(--surface-card)', label: 'Project Deep Dive' },
+  behavioral: { icon: Users, badge: 'bg-rose-500/15 text-rose-500 border-rose-500/30', card: 'hover:border-rose-500/40 bg-(--surface-card)', label: 'HR & Behavioral' },
 };
 
 // Timer hook with warning thresholds
@@ -599,30 +599,36 @@ export default function MockInterviewGenerator() {
  />
  
  {/* VIEW MODE TABS */}
- <div className="flex items-center gap-2 bg-gray-100 p-1.5 border border-(--hairline) shadow-sm">
+ <div className="flex items-center gap-1 bg-(--surface-soft) p-1 rounded-xl border border-(--hairline) shadow-2xs">
  <button
  onClick={() => { setViewTab('interview'); interviewAudio.playClick(); }}
- className={`px-3 py-1.5 font-semibold text-xs transition-all flex items-center gap-1.5 ${
- viewTab === 'interview' ? 'bg-(--primary) text-black border border-(--hairline) shadow-sm' : 'text-gray-600 hover:text-black'
+ className={`px-3.5 py-1.5 font-medium text-xs rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+ viewTab === 'interview' 
+ ? 'bg-(--surface-card) text-(--ink) border border-(--hairline) shadow-xs font-semibold' 
+ : 'text-(--muted) hover:text-(--ink)'
  }`}
  >
- <MessageSquare className="w-3.5 h-3.5" /> Practice Room
+ <MessageSquare className="w-3.5 h-3.5 text-(--primary)" /> Practice Room
  </button>
  <button
  onClick={() => { setViewTab('solutions'); interviewAudio.playClick(); }}
- className={`px-3 py-1.5 font-semibold text-xs transition-all flex items-center gap-1.5 ${
- viewTab === 'solutions' ? 'bg-(--accent-teal) text-black border border-(--hairline) shadow-sm' : 'text-gray-600 hover:text-black'
+ className={`px-3.5 py-1.5 font-medium text-xs rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+ viewTab === 'solutions' 
+ ? 'bg-(--surface-card) text-(--ink) border border-(--hairline) shadow-xs font-semibold' 
+ : 'text-(--muted) hover:text-(--ink)'
  }`}
  >
- <BookOpen className="w-3.5 h-3.5" /> Model Solutions
+ <BookOpen className="w-3.5 h-3.5 text-blue-500" /> Model Solutions
  </button>
  <button
  onClick={() => { setViewTab('cheatsheet'); interviewAudio.playClick(); }}
- className={`px-3 py-1.5 font-semibold text-xs transition-all flex items-center gap-1.5 ${
- viewTab === 'cheatsheet' ? 'bg-purple-300 text-black border border-(--hairline) shadow-sm' : 'text-gray-600 hover:text-black'
+ className={`px-3.5 py-1.5 font-medium text-xs rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+ viewTab === 'cheatsheet' 
+ ? 'bg-(--surface-card) text-(--ink) border border-(--hairline) shadow-xs font-semibold' 
+ : 'text-(--muted) hover:text-(--ink)'
  }`}
  >
- <FileText className="w-3.5 h-3.5" /> Interview Cheat Sheet
+ <FileText className="w-3.5 h-3.5 text-purple-500" /> Interview Cheat Sheet
  </button>
  </div>
 
@@ -635,18 +641,18 @@ export default function MockInterviewGenerator() {
  </div>
 
  {/* DOMAIN & LEVEL BADGES */}
- <div className="flex flex-wrap items-center gap-3">
+ <div className="flex flex-wrap items-center gap-2.5">
  {displayResult.detectedDomain && (
- <span className="px-3.5 py-1.5 bg-purple-200 border border-(--hairline) font-semibold text-xs shadow-sm">
- 🎯 Domain: {displayResult.detectedDomain}
+ <span className="px-3 py-1 bg-(--surface-card) border border-(--hairline) font-medium text-xs text-(--ink) rounded-full shadow-2xs">
+ 🎯 Domain: <strong className="text-(--primary)">{displayResult.detectedDomain}</strong>
  </span>
  )}
  {displayResult.interviewLevel && (
- <span className="px-3.5 py-1.5 bg-(--accent-teal) border border-(--hairline) font-semibold text-xs shadow-sm">
- 📊 Level: {displayResult.interviewLevel}
+ <span className="px-3 py-1 bg-(--surface-card) border border-(--hairline) font-medium text-xs text-(--ink) rounded-full shadow-2xs">
+ 📊 Level: <strong className="text-blue-500">{displayResult.interviewLevel}</strong>
  </span>
  )}
- <span className="px-3.5 py-1.5 bg-(--primary) border border-(--hairline) font-semibold text-xs shadow-sm">
+ <span className="px-3 py-1 bg-(--surface-card) border border-(--hairline) font-medium text-xs text-(--muted) rounded-full shadow-2xs">
  📝 5 Rounds · {totalQuestions} Questions
  </span>
  {badges.length > 0 && (
@@ -664,134 +670,136 @@ export default function MockInterviewGenerator() {
  {viewTab === 'interview' && (
  <>
  {/* GRADE RESULT SCORECARD */}
- {gradeResult && (
- <div className="animate-in fade-in slide-in-from-bottom-6 space-y-6">
- <Card className="bg-(--primary) border border-(--hairline) shadow-md">
- <CardContent className="p-8 text-center">
- <div className="inline-block bg-(--surface-card) border border-(--hairline) rounded-xl px-4 py-1.5 font-semibold text-sm mb-4 shadow-sm">
- RECOMMENDATION: {gradeResult.hiringRecommendation || 'STRONG HIRE'}
- </div>
- <h2 className="text-4xl font-semibold mb-4">Interview Evaluation Scorecard</h2>
- <div className="inline-block bg-(--surface-card) border border-(--hairline) rounded-xl px-10 py-5 font-semibold text-6xl mb-6 shadow-md">
- {gradeResult.totalScore}/100
- </div>
- <p className="text-lg font-bold max-w-2xl mx-auto">{gradeResult.feedbackSummary}</p>
+            {gradeResult && (
+              <div className="animate-in fade-in slide-in-from-bottom-6 space-y-6">
+                <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-xl">
+                  <CardContent className="p-8 text-center">
+                    <div className="inline-block bg-(--primary)/10 border border-(--primary)/30 text-(--primary) rounded-full px-4 py-1.5 font-semibold text-xs mb-4 shadow-2xs">
+                      RECOMMENDATION: {gradeResult.hiringRecommendation || 'STRONG HIRE'}
+                    </div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-(--ink) mb-4">Interview Evaluation Scorecard</h2>
+                    <div className="inline-block bg-(--surface-soft) border border-(--hairline) rounded-2xl px-10 py-5 font-bold text-5xl md:text-6xl text-(--primary) mb-6 shadow-sm">
+                      {gradeResult.totalScore}/100
+                    </div>
+                    <p className="text-base sm:text-lg font-medium text-(--ink) max-w-2xl mx-auto leading-relaxed">{gradeResult.feedbackSummary}</p>
 
- {/* Category Breakdown */}
- {gradeResult.categoryBreakdown && (
- <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8 text-left">
- <div className="bg-(--surface-card) border border-(--hairline) p-3 rounded-xl shadow-sm">
- <p className="text-xs font-medium text-gray-500">Technical Accuracy</p>
- <p className="text-2xl font-semibold">{gradeResult.categoryBreakdown.technicalAccuracy || gradeResult.categoryBreakdown.technical || 85}%</p>
- </div>
- <div className="bg-(--surface-card) border border-(--hairline) p-3 rounded-xl shadow-sm">
- <p className="text-xs font-medium text-gray-500">Problem Solving</p>
- <p className="text-2xl font-semibold">{gradeResult.categoryBreakdown.problemSolving || 90}%</p>
- </div>
- <div className="bg-(--surface-card) border border-(--hairline) p-3 rounded-xl shadow-sm">
- <p className="text-xs font-medium text-gray-500">Communication</p>
- <p className="text-2xl font-semibold">{gradeResult.categoryBreakdown.communicationClarity || gradeResult.categoryBreakdown.communication || 80}%</p>
- </div>
- <div className="bg-(--surface-card) border border-(--hairline) p-3 rounded-xl shadow-sm">
- <p className="text-xs font-medium text-gray-500">Behavioral Fit</p>
- <p className="text-2xl font-semibold">{gradeResult.categoryBreakdown.behavioralFit || 88}%</p>
- </div>
- </div>
- )}
- </CardContent>
- </Card>
+                    {/* Category Breakdown */}
+                    {gradeResult.categoryBreakdown && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8 text-left">
+                        <div className="bg-(--surface-soft)/60 border border-(--hairline) p-4 rounded-xl shadow-2xs">
+                          <p className="text-xs font-medium text-(--muted)">Technical Accuracy</p>
+                          <p className="text-2xl font-bold text-(--ink) mt-1">{gradeResult.categoryBreakdown.technicalAccuracy || gradeResult.categoryBreakdown.technical || 85}%</p>
+                        </div>
+                        <div className="bg-(--surface-soft)/60 border border-(--hairline) p-4 rounded-xl shadow-2xs">
+                          <p className="text-xs font-medium text-(--muted)">Problem Solving</p>
+                          <p className="text-2xl font-bold text-(--ink) mt-1">{gradeResult.categoryBreakdown.problemSolving || 90}%</p>
+                        </div>
+                        <div className="bg-(--surface-soft)/60 border border-(--hairline) p-4 rounded-xl shadow-2xs">
+                          <p className="text-xs font-medium text-(--muted)">Communication</p>
+                          <p className="text-2xl font-bold text-(--ink) mt-1">{gradeResult.categoryBreakdown.communicationClarity || gradeResult.categoryBreakdown.communication || 80}%</p>
+                        </div>
+                        <div className="bg-(--surface-soft)/60 border border-(--hairline) p-4 rounded-xl shadow-2xs">
+                          <p className="text-xs font-medium text-(--muted)">Behavioral Fit</p>
+                          <p className="text-2xl font-bold text-(--ink) mt-1">{gradeResult.categoryBreakdown.behavioralFit || 88}%</p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
- {/* Action Plan & Strengths */}
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- {gradeResult.strengths?.length > 0 && (
- <Card className="bg-emerald-50 border border-(--hairline) shadow-sm">
- <CardContent className="p-6">
- <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
- <Award className="w-6 h-6 text-emerald-700" /> Key Strengths
- </h3>
- <ul className="space-y-2">
- {gradeResult.strengths.map((str, idx) => (
- <li key={idx} className="flex items-start gap-2 font-medium text-sm">
- <span className="font-semibold text-emerald-700">✓</span> {str}
- </li>
- ))}
- </ul>
- </CardContent>
- </Card>
- )}
+                {/* Action Plan & Strengths */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {gradeResult.strengths?.length > 0 && (
+                    <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm">
+                      <CardContent className="p-6">
+                        <h3 className="text-lg font-semibold text-(--ink) mb-4 flex items-center gap-2">
+                          <Award className="w-5 h-5 text-emerald-500" /> Key Strengths
+                        </h3>
+                        <ul className="space-y-2.5">
+                          {gradeResult.strengths.map((str, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm text-(--ink) leading-relaxed">
+                              <span className="font-bold text-emerald-500 shrink-0">✓</span> {str}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
 
- {gradeResult.actionPlan?.length > 0 && (
- <Card className="bg-blue-50 border border-(--hairline) shadow-sm">
- <CardContent className="p-6">
- <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
- <Zap className="w-6 h-6 text-blue-700" /> High-Impact Action Plan
- </h3>
- <ul className="space-y-2">
- {gradeResult.actionPlan.map((act, idx) => (
- <li key={idx} className="flex items-start gap-2 font-medium text-sm">
- <span className="font-semibold text-blue-700">→</span> {act}
- </li>
- ))}
- </ul>
- </CardContent>
- </Card>
- )}
- </div>
+                  {gradeResult.actionPlan?.length > 0 && (
+                    <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm">
+                      <CardContent className="p-6">
+                        <h3 className="text-lg font-semibold text-(--ink) mb-4 flex items-center gap-2">
+                          <Zap className="w-5 h-5 text-blue-500" /> High-Impact Action Plan
+                        </h3>
+                        <ul className="space-y-2.5">
+                          {gradeResult.actionPlan.map((act, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm text-(--ink) leading-relaxed">
+                              <span className="font-bold text-blue-500 shrink-0">→</span> {act}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
 
- {/* Detailed Round Feedback */}
- {gradeResult.rounds?.map((round, i) => (
- <Card key={i} className="border border-(--hairline) shadow-sm">
- <CardContent className="p-6">
- <div className="flex justify-between items-center mb-6 border-b border-(--hairline) pb-4">
- <h3 className="text-2xl font-semibold">{round.title}</h3>
- <span className="font-bold text-lg bg-(--accent-amber) text-white px-4 py-1 border border-(--hairline) shadow-sm">
- Score: {round.score}/100
- </span>
- </div>
- <div className="space-y-6">
- {round.questionFeedback?.map((qf, j) => {
- const originalQ = displayResult.rounds[i]?.questions?.find(q => q.id === qf.questionId);
- return (
- <div key={j} className="border border-(--hairline) p-5 relative bg-gray-50">
- <span className="absolute -top-3.5 -left-3.5 w-8 h-8 bg-(--primary-active) text-black border border-(--hairline) font-semibold flex items-center justify-center rounded-full shadow-sm">
- {qf.score}
- </span>
- <p className="font-semibold text-base mb-2 ml-4">Q: {originalQ?.question}</p>
- <p className="text-(--body) italic mb-4 ml-4 bg-(--surface-soft) p-3 rounded-xl border border-(--hairline-soft) font-normal">
- &quot;{answers[qf.questionId] || 'No answer provided'}&quot;
- </p>
- <div className="bg-(--accent-teal) border border-(--hairline) p-3 ml-4">
- <p className="font-bold text-sm text-emerald-950">{qf.feedback}</p>
- {qf.keyMissingPoint && (
- <p className="text-xs font-semibold text-red-700 mt-2">
- ⚠️ Missed Opportunity: {qf.keyMissingPoint}
- </p>
- )}
- </div>
- </div>
- );
- })}
- </div>
- </CardContent>
- </Card>
- ))}
+                {/* Detailed Round Feedback */}
+                {gradeResult.rounds?.map((round, i) => (
+                  <Card key={i} className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-center mb-6 border-b border-(--hairline-soft) pb-4">
+                        <h3 className="text-xl font-bold text-(--ink)">{round.title}</h3>
+                        <span className="font-semibold text-sm bg-(--primary)/15 text-(--primary) border border-(--primary)/30 px-3.5 py-1 rounded-full">
+                          Score: {round.score}/100
+                        </span>
+                      </div>
+                      <div className="space-y-6">
+                        {round.questionFeedback?.map((qf, j) => {
+                          const originalQ = displayResult.rounds[i]?.questions?.find(q => q.id === qf.questionId);
+                          return (
+                            <div key={j} className="border border-(--hairline) rounded-xl p-5 relative bg-(--surface-soft)/40">
+                              <span className="absolute -top-3.5 -left-3 w-8 h-8 bg-(--surface-card) text-(--primary) border border-(--hairline) font-bold text-xs flex items-center justify-center rounded-full shadow-xs">
+                                {qf.score}
+                              </span>
+                              <p className="font-semibold text-base text-(--ink) mb-2 ml-4">Q: {originalQ?.question}</p>
+                              <p className="text-(--muted) italic mb-4 ml-4 bg-(--surface-card) p-3 rounded-xl border border-(--hairline-soft) text-sm font-normal">
+                                &quot;{answers[qf.questionId] || 'No answer provided'}&quot;
+                              </p>
+                              <div className="bg-(--surface-card) border border-(--hairline) rounded-xl p-4 ml-4">
+                                <p className="font-medium text-sm text-(--ink) leading-relaxed">{qf.feedback}</p>
+                                {qf.keyMissingPoint && (
+                                  <p className="text-xs font-semibold text-amber-500 mt-2 flex items-center gap-1.5">
+                                    ⚠️ Missed Opportunity: {qf.keyMissingPoint}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
 
- <div className="flex flex-wrap justify-center gap-4 mt-8">
- <Button 
- onClick={() => { setViewTab('solutions'); interviewAudio.playClick(); }} 
- className="text-base px-6 py-3 border border-(--hairline) bg-(--accent-teal) text-black shadow-sm font-semibold"
- >
- <BookOpen className="w-4 h-4 mr-2" /> View All Ideal Solutions & Code
- </Button>
- <Button 
- variant="outline" 
- onClick={() => { setGradeResult(null); resetJob(); setHistoryResult(null); }} 
- className="text-base px-6 py-3 border border-(--hairline) bg-white hover:bg-gray-100 text-black shadow-sm font-semibold"
- >
- <RotateCcw className="w-4 h-4 mr-2" /> Retake Another Simulation
- </Button>
- </div>
- </div>
+                <div className="flex flex-wrap justify-center gap-4 mt-8">
+                  <Button 
+                    onClick={() => { setViewTab('solutions'); interviewAudio.playClick(); }} 
+                    className="text-sm px-6 py-2.5 rounded-xl border border-(--hairline) bg-(--primary) text-white shadow-sm font-semibold hover:bg-(--primary-hover)"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" /> View All Ideal Solutions & Code
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => { setGradeResult(null); resetJob(); setHistoryResult(null); }} 
+                    className="text-sm px-6 py-2.5 rounded-xl border border-(--hairline) bg-(--surface-card) hover:bg-(--surface-soft) text-(--ink) shadow-sm font-medium"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" /> Retake Another Simulation
+                  </Button>
+                </div>
+              </div>
+            )}
+ </>
  )}
 
  {/* ACTIVE QUESTION INTERACTION PANE */}
@@ -809,18 +817,18 @@ export default function MockInterviewGenerator() {
  <button
  key={rIdx}
  onClick={() => { setActiveRound(rIdx); setActiveQuestion(0); interviewAudio.playClick(); }}
- className={`p-3 border border-(--hairline) text-left transition-all hover:-translate-y-0.5 hover:shadow-sm ${
+ className={`p-3.5 rounded-xl border text-left transition-all hover:-translate-y-0.5 shadow-2xs cursor-pointer ${
  rIdx === activeRound 
- ? 'bg-(--primary) shadow-sm scale-[1.02]' 
+ ? 'bg-(--primary) text-white border-(--primary) shadow-sm scale-[1.02]' 
  : isComplete 
- ? 'bg-(--success)/30' 
- : `${config.color}`
+ ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' 
+ : `${config.card} border-(--hairline) text-(--ink)`
  }`}
  >
- <Icon className="w-5 h-5 mb-1 text-black" />
- <p className="font-semibold text-xs leading-tight">{config.label}</p>
- <p className="text-[10px] font-bold text-gray-700 mt-1">{roundAnswered}/{roundTotal} Completed</p>
- {isComplete && <CheckCircle className="w-4 h-4 text-emerald-800 mt-1" />}
+ <Icon className={`w-5 h-5 mb-1.5 ${rIdx === activeRound ? 'text-white' : 'text-(--primary)'}`} />
+ <p className={`font-semibold text-xs leading-tight ${rIdx === activeRound ? 'text-white' : 'text-(--ink)'}`}>{config.label}</p>
+ <p className={`text-[10px] font-medium mt-1 ${rIdx === activeRound ? 'text-white/80' : 'text-(--muted)'}`}>{roundAnswered}/{roundTotal} Completed</p>
+ {isComplete && <CheckCircle className={`w-4 h-4 mt-1.5 ${rIdx === activeRound ? 'text-white' : 'text-emerald-500'}`} />}
  </button>
  );
  })}
@@ -829,26 +837,26 @@ export default function MockInterviewGenerator() {
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
  {/* Sidebar Question Nav */}
  <div className="lg:col-span-4 space-y-4">
- <Card className="border border-(--hairline) shadow-sm">
+ <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm">
  <CardContent className="p-4">
- <h3 className="font-semibold text-lg mb-3 border-b border-(--hairline) pb-2 flex items-center justify-between">
+ <h3 className="font-semibold text-sm mb-3 border-b border-(--hairline-soft) pb-2 flex items-center justify-between text-(--ink)">
  <span>Interview Stages</span>
- <span className="text-xs bg-gray-100 px-2 py-0.5 border border-(--hairline) font-bold">5 Rounds</span>
+ <span className="text-[11px] bg-(--surface-soft) text-(--muted) px-2 py-0.5 rounded-md border border-(--hairline) font-medium">5 Rounds</span>
  </h3>
- <div className="space-y-4">
+ <div className="space-y-3">
  {displayResult.rounds.map((round, rIdx) => {
  const config = ROUND_CONFIG[round.type] || ROUND_CONFIG.aptitude;
  return (
- <div key={rIdx} className={`p-2.5 border ${rIdx === activeRound ? 'border-(--primary) bg-(--surface-soft) text-(--ink) font-medium' : 'border-(--hairline-soft) text-(--muted)'}`}>
+ <div key={rIdx} className={`p-3 rounded-xl border transition-all ${rIdx === activeRound ? 'border-(--primary) bg-(--surface-soft) text-(--ink) font-medium' : 'border-(--hairline-soft) text-(--muted)'}`}>
  <div className="flex items-center justify-between gap-2 mb-2">
- <h4 className={`font-semibold text-xs truncate ${rIdx === activeRound ? 'text-black' : 'text-gray-600'}`}>
+ <h4 className={`font-semibold text-xs truncate ${rIdx === activeRound ? 'text-(--ink)' : 'text-(--muted)'}`}>
  {round.title}
  </h4>
- <span className={`text-[9px] font-semibold px-1.5 py-0.5 border border-(--hairline) shrink-0 ${config.color}`}>
+ <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-md border shrink-0 ${config.badge}`}>
  {config.label}
  </span>
  </div>
- <div className="flex gap-2">
+ <div className="flex flex-wrap gap-1.5">
  {round.questions.map((q, qIdx) => {
  const isCurrent = rIdx === activeRound && qIdx === activeQuestion;
  const isAnswered = answers[q.id]?.length > 0;
@@ -856,12 +864,12 @@ export default function MockInterviewGenerator() {
  <button 
  key={qIdx} 
  onClick={() => { setActiveRound(rIdx); setActiveQuestion(qIdx); interviewAudio.playClick(); }}
- className={`w-7 h-7 border border-(--hairline) font-semibold text-xs flex items-center justify-center transition-all ${
+ className={`w-7 h-7 rounded-lg border font-semibold text-xs flex items-center justify-center transition-all cursor-pointer ${
  isCurrent 
- ? 'bg-(--primary) shadow-sm scale-110' 
+ ? 'bg-(--primary) text-white border-(--primary) shadow-xs scale-105' 
  : isAnswered 
- ? 'bg-(--success) text-black' 
- : 'bg-(--surface-card) text-(--ink) hover:bg-(--surface-soft)'
+ ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' 
+ : 'bg-(--surface-card) text-(--muted) border-(--hairline) hover:text-(--ink) hover:bg-(--surface-soft)'
  }`}
  >
  {qIdx + 1}
@@ -925,243 +933,243 @@ export default function MockInterviewGenerator() {
  </span>
  </div>
  )}
+					{/* Question Card */}
+					<Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm mb-6">
+						<CardContent className="p-6 md:p-8 relative">
+							<div className="flex items-center justify-between mb-4">
+								<span className="text-xs font-semibold tracking-wide px-3 py-1 bg-(--surface-soft) text-(--primary) border border-(--hairline) rounded-md">
+									{currentRound.type?.replace('_', ' ')} Question
+								</span>
+								{currentQ.timeMinutes && (
+									<span className="text-xs font-medium text-(--muted)">Suggested: {currentQ.timeMinutes} mins</span>
+								)}
+							</div>
 
- {/* Question Card */}
- <Card className="border border-(--hairline) shadow-sm mb-6">
- <CardContent className="p-6 md:p-8 relative">
- <div className="flex items-center justify-between mb-4">
- <span className="text-xs font-medium tracking-wide px-2 py-0.5 bg-black text-white">
- {currentRound.type?.replace('_', ' ')} Question
- </span>
- {currentQ.timeMinutes && (
- <span className="text-xs font-bold text-gray-500">Suggested: {currentQ.timeMinutes} mins</span>
- )}
- </div>
+							<h3 className="text-xl md:text-2xl font-bold leading-snug mb-5 text-(--ink)">
+								&quot;{currentQ.question}&quot;
+							</h3>
+							
+							{currentQ.context && (
+								<div className="bg-(--surface-soft)/60 border-l-2 border-(--primary) p-4 rounded-r-xl text-left mb-6">
+									<p className="text-xs font-semibold uppercase tracking-wider text-(--primary)">Interviewer Context</p>
+									<p className="font-normal text-sm text-(--ink) mt-1 leading-relaxed">{currentQ.context}</p>
+								</div>
+							)}
 
- <h3 className="text-2xl md:text-3xl font-semibold leading-tight mb-4">
- &quot;{currentQ.question}&quot;
- </h3>
- 
- {currentQ.context && (
- <div className="bg-slate-100 border-l border-(--hairline) p-3.5 text-left mb-6">
- <p className="text-xs font-semibold text-gray-500">Interviewer Context:</p>
- <p className="font-medium text-xs text-gray-800 mt-0.5">{currentQ.context}</p>
- </div>
- )}
+							{/* Evaluation Rubrics Preview */}
+							{currentQ.evaluationRubric?.length > 0 && (
+								<div className="bg-(--surface-soft)/40 border border-(--hairline-soft) rounded-xl p-4 mb-6">
+									<p className="text-xs font-semibold text-(--muted) mb-2.5 flex items-center gap-1.5">
+										<ShieldCheck className="w-3.5 h-3.5 text-(--primary)" /> What Top Interviewers Evaluate:
+									</p>
+									<div className="flex flex-wrap gap-2">
+										{currentQ.evaluationRubric.map((rub, rIdx) => (
+											<span key={rIdx} className="text-xs font-medium bg-(--surface-card) border border-(--hairline) rounded-lg px-2.5 py-1 text-(--ink) shadow-2xs">
+												• {rub}
+											</span>
+										))}
+									</div>
+								</div>
+							)}
 
- {/* Evaluation Rubrics Preview */}
- {currentQ.evaluationRubric?.length > 0 && (
- <div className="bg-blue-50/70 border border-blue-200 p-3 mb-6">
- <p className="text-[11px] font-medium text-blue-900 mb-1 flex items-center gap-1">
- <ShieldCheck className="w-3.5 h-3.5" /> What Top Interviewers Evaluate:
- </p>
- <div className="flex flex-wrap gap-2">
- {currentQ.evaluationRubric.map((rub, rIdx) => (
- <span key={rIdx} className="text-xs font-semibold bg-white border border-blue-300 px-2 py-0.5 text-blue-900">
- • {rub}
- </span>
- ))}
- </div>
- </div>
- )}
+							{/* Answer Input Section */}
+							<div className="text-left mt-6">
+								<div className="flex justify-between items-center mb-2.5">
+									<label className="block text-xs font-semibold uppercase tracking-wider text-(--muted)">
+										Your Response
+									</label>
+									{currentRound.type !== 'mcq' && (
+										<button
+											onClick={() => toggleListening(currentQ.id)}
+											className={`text-xs font-medium px-3 py-1 rounded-lg border border-(--hairline) flex items-center gap-1.5 transition-all cursor-pointer ${
+												isListening ? 'bg-rose-500 text-white animate-pulse' : 'bg-(--surface-soft) text-(--ink) hover:bg-(--surface-card)'
+											}`}
+											title="Toggle Speech-to-Text microphone dictation"
+										>
+											{isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5 text-rose-500" />}
+											{isListening ? 'Listening (Speak Now)...' : 'Dictate by Voice'}
+										</button>
+									)}
+								</div>
 
- {/* Answer Input Section */}
- <div className="text-left mt-6">
- <div className="flex justify-between items-center mb-2">
- <label className="block text-xs font-medium text-(--accent-amber)">
- Your Response
- </label>
- {currentRound.type !== 'mcq' && (
- <button
- onClick={() => toggleListening(currentQ.id)}
- className={`text-xs font-semibold px-2.5 py-1 border border-(--hairline) flex items-center gap-1.5 transition-all ${
- isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-amber-100 hover:bg-amber-200'
- }`}
- title="Toggle Speech-to-Text microphone dictation"
- >
- {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5 text-red-600" />}
- {isListening ? 'Listening (Speak Now)...' : 'Dictate by Voice'}
- </button>
- )}
- </div>
+								{/* MCQ Input Type */}
+								{currentRound.type === 'mcq' && currentQ.options && currentQ.options.length > 0 ? (
+									<div className="space-y-3 mt-4">
+										{currentQ.options.map((opt, idx) => {
+											const isSelected = answers[currentQ.id] === opt;
+											const isSubmitted = mcqSubmitted[currentQ.id];
+											const isCorrect = currentQ.correctOption === opt;
+											let optionStyle = 'border-(--hairline) bg-(--surface-card) hover:bg-(--surface-soft) text-(--ink)';
+											if (isSubmitted) {
+												if (isCorrect) optionStyle = 'border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-xs';
+												else if (isSelected && !isCorrect) optionStyle = 'border-rose-500 bg-rose-500/10 text-rose-400';
+											} else if (isSelected) {
+												optionStyle = 'border-(--primary) bg-(--primary)/10 text-(--ink) shadow-xs';
+											}
+											return (
+												<label key={idx} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${optionStyle}`}>
+													<input 
+														type="radio" 
+														name={`mcq_${currentQ.id}`} 
+														value={opt}
+														checked={isSelected}
+														onChange={() => { handleAnswerChange(currentQ.id, opt); interviewAudio.playClick(); }}
+														disabled={isSubmitted}
+														className="w-4 h-4 accent-(--primary)"
+													/>
+													<span className="font-medium text-sm flex-1">{String.fromCharCode(65 + idx)}. {opt}</span>
+													{isSubmitted && isCorrect && <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />}
+													{isSubmitted && isSelected && !isCorrect && <span className="text-rose-500 font-bold text-sm shrink-0">✗</span>}
+												</label>
+											);
+										})}
+										
+										{!mcqSubmitted[currentQ.id] && answers[currentQ.id] && (
+											<Button
+												onClick={() => handleMcqSubmit(currentQ.id, currentQ.correctOption)}
+												className="mt-2 border border-(--hairline) bg-(--primary) text-white font-medium text-xs px-5 py-2.5 rounded-xl hover:bg-(--primary-hover)"
+											>
+												Check MCQ Answer
+											</Button>
+										)}
 
- {/* MCQ Input Type */}
- {currentRound.type === 'mcq' && currentQ.options && currentQ.options.length > 0 ? (
- <div className="space-y-3 mt-4">
- {currentQ.options.map((opt, idx) => {
- const isSelected = answers[currentQ.id] === opt;
- const isSubmitted = mcqSubmitted[currentQ.id];
- const isCorrect = currentQ.correctOption === opt;
- let optionStyle = 'border-(--hairline) hover:bg-slate-50';
- if (isSubmitted) {
- if (isCorrect) optionStyle = 'border-emerald-600 bg-emerald-100 shadow-sm';
- else if (isSelected && !isCorrect) optionStyle = 'border-red-500 bg-red-50';
- } else if (isSelected) {
- optionStyle = 'border-(--primary) bg-(--accent-amber)/10 shadow-sm';
- }
- return (
- <label key={idx} className={`flex items-center gap-3 p-4 border cursor-pointer transition-all ${optionStyle}`}>
- <input 
- type="radio" 
- name={`mcq_${currentQ.id}`} 
- value={opt}
- checked={isSelected}
- onChange={() => { handleAnswerChange(currentQ.id, opt); interviewAudio.playClick(); }}
- disabled={isSubmitted}
- className="w-4 h-4 accent-brutal-blue"
- />
- <span className="font-bold text-sm flex-1">{String.fromCharCode(65 + idx)}. {opt}</span>
- {isSubmitted && isCorrect && <CheckCircle className="w-5 h-5 text-emerald-700" />}
- {isSubmitted && isSelected && !isCorrect && <span className="text-red-500 font-semibold text-sm">✗</span>}
- </label>
- );
- })}
- 
- {!mcqSubmitted[currentQ.id] && answers[currentQ.id] && (
- <Button
- onClick={() => handleMcqSubmit(currentQ.id, currentQ.correctOption)}
- className="mt-2 border border-(--hairline) bg-(--accent-amber) text-white font-semibold text-xs px-4 py-2 hover:bg-blue-600"
- >
- Check MCQ Answer
- </Button>
- )}
+										{mcqSubmitted[currentQ.id] && currentQ.correctOption && (
+											<div className="mt-4 bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-xl animate-in fade-in">
+												<p className="font-semibold text-xs text-emerald-400 mb-1">✓ Correct Answer: {currentQ.correctOption}</p>
+												{currentQ.idealSolution && (
+													<p className="text-xs font-normal text-(--ink) mt-1">{currentQ.idealSolution}</p>
+												)}
+											</div>
+										)}
+									</div>
+								) : currentRound.type === 'coding' ? (
+									/* Coding Input Type */
+									<div className="space-y-3 mt-4">
+										{currentQ.starterCode && (
+											<div className="bg-(--surface-soft) text-emerald-400 p-4 font-mono text-xs whitespace-pre-wrap border border-(--hairline) rounded-xl">
+												<p className="text-(--muted) text-[10px] font-bold mb-1">{"// Starter Skeleton"}</p>
+												{currentQ.starterCode}
+											</div>
+										)}
+										<textarea
+											className="w-full min-h-[240px] p-4 border border-(--hairline) font-mono text-sm resize-y focus:border-(--primary) outline-none bg-(--surface-soft) text-(--ink) rounded-xl leading-relaxed"
+											placeholder="// Write your code or structured solution here..."
+											value={answers[currentQ.id] || ''}
+											onChange={(e) => handleAnswerChange(currentQ.id, e.target.value)}
+										/>
+										{currentQ.expectedApproach && showGuidance && (
+											<div className="bg-(--surface-soft)/60 border border-blue-500/30 p-4 rounded-xl animate-in fade-in">
+												<p className="text-xs font-semibold text-blue-400 mb-1">Expected Algorithmic Approach:</p>
+												<p className="font-normal text-xs text-(--ink) whitespace-pre-wrap leading-relaxed">{currentQ.expectedApproach}</p>
+											</div>
+										)}
+									</div>
+								) : (
+									/* Textarea for Project, Aptitude, Behavioral */
+									<textarea
+										className="w-full min-h-[180px] p-4 border border-(--hairline) font-normal text-sm md:text-base resize-y focus:border-(--primary) outline-none bg-(--surface-soft) text-(--ink) rounded-xl leading-relaxed"
+										placeholder={
+											currentRound.type === 'behavioral' 
+												? "Apply the STAR method: Situation, Task, Action, Result..." 
+												: "Type or dictate your detailed response here..."
+										}
+										value={answers[currentQ.id] || ''}
+										onChange={(e) => handleAnswerChange(currentQ.id, e.target.value)}
+									/>
+								)}
+							</div>
+						</CardContent>
+					</Card>
 
- {mcqSubmitted[currentQ.id] && currentQ.correctOption && (
- <div className="mt-4 bg-emerald-50 border border-emerald-600 p-3.5 animate-in fade-in">
- <p className="font-semibold text-xs text-emerald-800 mb-1">✓ Correct Answer: {currentQ.correctOption}</p>
- {currentQ.idealSolution && (
- <p className="text-xs font-medium text-emerald-950 mt-1">{currentQ.idealSolution}</p>
- )}
- </div>
- )}
- </div>
- ) : currentRound.type === 'coding' ? (
- /* Coding Input Type */
- <div className="space-y-3 mt-4">
- {currentQ.starterCode && (
- <div className="bg-gray-950 text-emerald-400 p-3.5 font-mono text-xs whitespace-pre-wrap border border-(--hairline)">
- <p className="text-gray-500 text-[10px] font-bold mb-1">{"// Starter Skeleton"}</p>
- {currentQ.starterCode}
- </div>
- )}
- <textarea
- className="w-full min-h-[220px] p-4 border border-(--hairline) font-mono text-xs resize-y focus:border-(--primary) outline-none bg-(--surface-soft) text-(--ink) rounded-xl leading-relaxed"
- placeholder="// Write your code or structured solution here..."
- value={answers[currentQ.id] || ''}
- onChange={(e) => handleAnswerChange(currentQ.id, e.target.value)}
- />
- {currentQ.expectedApproach && showGuidance && (
- <div className="bg-blue-50 border border-blue-400 p-3 animate-in fade-in">
- <p className="text-xs font-medium text-blue-700 mb-1">Expected Algorithmic Approach:</p>
- <p className="font-medium text-xs text-gray-800 whitespace-pre-wrap">{currentQ.expectedApproach}</p>
- </div>
- )}
- </div>
- ) : (
- /* Textarea for Project, Aptitude, Behavioral */
- <textarea
- className="w-full min-h-[160px] p-4 border border-(--hairline) font-medium text-sm resize-y focus:border-(--primary) outline-none bg-(--surface-soft) text-(--ink) rounded-xl leading-relaxed"
- placeholder={
- currentRound.type === 'behavioral' 
- ?"Apply the STAR method: Situation, Task, Action, Result..." 
- :"Type or dictate your detailed response here..."
- }
- value={answers[currentQ.id] || ''}
- onChange={(e) => handleAnswerChange(currentQ.id, e.target.value)}
- />
- )}
- </div>
- </CardContent>
- </Card>
+					{/* Progressive Hints Section */}
+					{currentQ.hints && currentQ.hints.length > 0 && (
+						<div className="mb-4">
+							<button 
+								onClick={() => {
+									setShowHints(prev => Math.min(prev + 1, currentQ.hints.length));
+									interviewAudio.playClick();
+								}} 
+								className="flex items-center gap-2 text-xs font-medium text-amber-500 bg-amber-500/15 border border-amber-500/30 px-3.5 py-1.5 rounded-xl hover:bg-amber-500/25 transition-colors shadow-2xs cursor-pointer"
+								disabled={showHints >= currentQ.hints.length}
+							>
+								<Lightbulb className="w-3.5 h-3.5" />
+								{showHints >= currentQ.hints.length ? `All ${currentQ.hints.length} Hints Revealed` : `Reveal Progressive Hint (${showHints + 1}/${currentQ.hints.length})`}
+							</button>
+							
+							{showHints > 0 && (
+								<div className="mt-3 space-y-2">
+									{currentQ.hints.slice(0, showHints).map((hint, idx) => (
+										<div key={idx} className="bg-(--surface-soft)/60 border-l-2 border-amber-500 p-3.5 rounded-r-xl animate-in fade-in slide-in-from-left-2 duration-300">
+											<p className="text-xs font-semibold text-amber-500">Hint #{idx + 1}:</p>
+											<p className="font-normal text-xs text-(--ink) mt-0.5">{hint}</p>
+										</div>
+									))}
+								</div>
+							)}
+						</div>
+					)}
 
- {/* Progressive Hints Section */}
- {currentQ.hints && currentQ.hints.length > 0 && (
- <div className="mb-4">
- <button 
- onClick={() => {
- setShowHints(prev => Math.min(prev + 1, currentQ.hints.length));
- interviewAudio.playClick();
- }} 
- className="flex items-center gap-2 text-xs font-semibold text-amber-900 bg-amber-200 border border-(--hairline) px-3 py-1.5 hover:bg-amber-300 transition-colors shadow-sm"
- disabled={showHints >= currentQ.hints.length}
- >
- <Lightbulb className="w-3.5 h-3.5" />
- {showHints >= currentQ.hints.length ? `All ${currentQ.hints.length} Hints Revealed` : `Reveal Progressive Hint (${showHints + 1}/${currentQ.hints.length})`}
- </button>
- 
- {showHints > 0 && (
- <div className="mt-3 space-y-2">
- {currentQ.hints.slice(0, showHints).map((hint, idx) => (
- <div key={idx} className="bg-amber-50 border-l border-amber-500 p-3 animate-in fade-in slide-in-from-left-2 duration-300">
- <p className="text-xs font-semibold text-amber-900">Hint #{idx + 1}:</p>
- <p className="font-medium text-xs text-gray-800 mt-0.5">{hint}</p>
- </div>
- ))}
- </div>
- )}
- </div>
- )}
+					{/* Expected Answer Guidance Toggle */}
+					<div className="mb-6">
+						<button 
+							onClick={() => { setShowGuidance(!showGuidance); interviewAudio.playClick(); }} 
+							className="text-xs font-medium text-(--primary) hover:underline cursor-pointer flex items-center gap-1"
+						>
+							{showGuidance ? 'Hide Answer Guidance ▲' : 'Show Answer Key & Guidance ▼'}
+						</button>
+						{showGuidance && currentQ.expectedAnswerGuidance && (
+							<div className="mt-3 bg-(--surface-soft)/60 border border-(--hairline) rounded-xl p-4 animate-in fade-in duration-300">
+								<p className="text-xs font-semibold text-(--muted) mb-1.5">Expected Answer Criteria:</p>
+								<p className="font-normal text-xs text-(--ink) whitespace-pre-wrap leading-relaxed">{currentQ.expectedAnswerGuidance}</p>
+							</div>
+						)}
+					</div>
 
- {/* Expected Answer Guidance Toggle */}
- <div className="mb-6">
- <button 
- onClick={() => { setShowGuidance(!showGuidance); interviewAudio.playClick(); }} 
- className="text-xs font-semibold text-(--accent-amber) underline decoration-2 underline-offset-4 hover:text-blue-700"
- >
- {showGuidance ? 'Hide Answer Guidance ▲' : 'Show Answer Key & Guidance ▼'}
- </button>
- {showGuidance && currentQ.expectedAnswerGuidance && (
- <div className="mt-3 bg-(--accent-teal)/30 border border-(--hairline) p-4 animate-in fade-in duration-300">
- <p className="text-xs font-medium text-gray-700 mb-1">Expected Answer Criteria:</p>
- <p className="font-medium text-xs text-gray-900 whitespace-pre-wrap">{currentQ.expectedAnswerGuidance}</p>
- </div>
- )}
- </div>
+					{/* Navigation Buttons */}
+					<div className="flex justify-between items-center border-t border-(--hairline) pt-5">
+						<Button 
+							variant="ghost" 
+							onClick={prevQuestion} 
+							disabled={activeRound === 0 && activeQuestion === 0} 
+							className="border border-(--hairline) font-medium text-xs rounded-xl hover:bg-(--surface-soft)"
+						>
+							Previous Question
+						</Button>
+						
+						{activeRound === displayResult.rounds.length - 1 && activeQuestion === currentRound.questions.length - 1 ? (
+							<Button 
+								onClick={submitForGrading} 
+								disabled={isGrading} 
+								className="border border-(--hairline) font-semibold text-xs bg-(--primary) text-white hover:bg-(--primary-hover) shadow-sm rounded-xl px-5 py-2.5"
+							>
+								{isGrading ? 'Grading 5 Rounds...' : 'Finalize & Grade Interview'} <CheckCircle className="w-4 h-4 ml-1.5" />
+							</Button>
+						) : (
+							<Button 
+								onClick={nextQuestion} 
+								className="border border-(--hairline) font-medium text-xs bg-(--primary) text-white hover:bg-(--primary-hover) shadow-sm rounded-xl px-4 py-2.5"
+							>
+								Next Question <ChevronRight className="w-4 h-4 ml-1" />
+							</Button>
+						)}
+					</div>
+				</div>
+			</div>
+		</div>
+	)}
 
- {/* Navigation Buttons */}
- <div className="flex justify-between items-center border-t border-(--hairline) pt-5">
- <Button 
- variant="ghost" 
- onClick={prevQuestion} 
- disabled={activeRound === 0 && activeQuestion === 0} 
- className="border border-(--hairline) font-semibold text-xs"
- >
- Previous Question
- </Button>
- 
- {activeRound === displayResult.rounds.length - 1 && activeQuestion === currentRound.questions.length - 1 ? (
- <Button 
- onClick={submitForGrading} 
- disabled={isGrading} 
- className="border border-(--hairline) font-semibold text-xs bg-(--success) text-black hover:bg-emerald-400 shadow-sm"
- >
- {isGrading ? 'Grading 5 Rounds...' : 'Finalize & Grade Interview'} <CheckCircle className="w-4 h-4 ml-1.5" />
- </Button>
- ) : (
- <Button 
- onClick={nextQuestion} 
- className="border border-(--hairline) font-semibold text-xs bg-(--accent-amber) text-white hover:bg-blue-600 shadow-sm"
- >
- Next Question <ChevronRight className="w-4 h-4 ml-1" />
- </Button>
- )}
- </div>
- </div>
- </div>
- </div>
- )}
- </>
- )}
+				</>
+			)}
 
- {/* TAB 2: FULL SOLUTIONS & MODEL ANSWERS */}
+			 {/* TAB 2: FULL SOLUTIONS & MODEL ANSWERS */}
  {viewTab === 'solutions' && (
  <div className="space-y-6 animate-in fade-in">
- <div className="bg-(--accent-teal) border border-(--hairline) p-6 shadow-md">
- <h2 className="text-3xl font-medium mb-2">Master Solution Key & Model Code</h2>
- <p className="font-bold text-sm text-gray-800">
- Exemplary answers, step-by-step logic derivations, Big-O complexity analyses, and evaluation benchmarks for all 5 rounds.
- </p>
- </div>
+ <div className="bg-(--surface-card) border border-(--hairline) rounded-2xl p-6 md:p-8 shadow-sm">
+					<h2 className="text-2xl md:text-3xl font-bold text-(--ink) mb-2">Master Solution Key & Model Code</h2>
+					<p className="text-sm text-(--muted) font-normal">
+						Exemplary answers, step-by-step logic derivations, Big-O complexity analyses, and evaluation benchmarks for all 5 rounds.
+					</p>
+				</div>
 
  {/* Round Filter Tabs */}
  <div className="flex flex-wrap gap-2">
@@ -1170,7 +1178,7 @@ export default function MockInterviewGenerator() {
  key={rIdx}
  onClick={() => { setSelectedSolutionRound(rIdx); interviewAudio.playClick(); }}
  className={`px-4 py-2 border border-(--hairline) font-semibold text-xs transition-all ${
- selectedSolutionRound === rIdx ? 'bg-(--primary) shadow-sm' : 'bg-(--surface-card) text-(--ink) hover:bg-(--surface-soft)'
+ selectedSolutionRound === rIdx ? 'bg-(--primary) text-white shadow-xs' : 'bg-(--surface-card) text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft)'
  }`}
  >
  {r.title}
@@ -1181,7 +1189,7 @@ export default function MockInterviewGenerator() {
  {/* Questions in selected round */}
  <div className="space-y-6">
  {displayResult.rounds[selectedSolutionRound]?.questions?.map((q, qIdx) => (
- <Card key={qIdx} className="border border-(--hairline) shadow-sm">
+ <Card key={qIdx} className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm">
  <CardContent className="p-6">
  <div className="flex justify-between items-start gap-3 mb-4 border-b border-gray-200 pb-3">
  <div>
@@ -1242,24 +1250,24 @@ export default function MockInterviewGenerator() {
  {/* TAB 3: INTERVIEW CHEAT SHEET */}
  {viewTab === 'cheatsheet' && (
  <div className="space-y-6 animate-in fade-in">
- <div className="bg-purple-200 border border-(--hairline) p-6 shadow-md flex justify-between items-center">
- <div>
- <h2 className="text-3xl font-medium mb-1">Personalized Interview Cheat Sheet</h2>
- <p className="font-bold text-xs text-gray-800">
- Consolidated core principles, technical rubrics, and high-yield takeaways for {displayResult.detectedDomain || 'your target role'}.
- </p>
- </div>
- <Button
- onClick={() => window.print()}
- className="border border-(--hairline) bg-white text-black font-semibold text-xs shadow-sm hover:bg-gray-100 hidden sm:flex items-center gap-1.5"
- >
- <Printer className="w-4 h-4" /> Print / Save PDF
- </Button>
- </div>
+ <div className="bg-(--surface-card) border border-(--hairline) rounded-2xl p-6 md:p-8 shadow-sm flex justify-between items-center">
+					<div>
+						<h2 className="text-2xl md:text-3xl font-bold text-(--ink) mb-1.5">Personalized Interview Cheat Sheet</h2>
+						<p className="text-sm text-(--muted) font-normal">
+							Consolidated core principles, technical rubrics, and high-yield takeaways for {displayResult.detectedDomain || 'your target role'}.
+						</p>
+					</div>
+					<Button
+						onClick={() => window.print()}
+						className="border border-(--hairline) bg-(--surface-soft) text-(--ink) hover:bg-(--surface-card) font-medium text-xs rounded-xl shadow-xs hidden sm:flex items-center gap-1.5 px-4 py-2"
+					>
+						<Printer className="w-4 h-4" /> Print / Save PDF
+					</Button>
+				</div>
 
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {displayResult.rounds.map((round, rIdx) => (
- <Card key={rIdx} className="border border-(--hairline) shadow-sm">
+ <Card key={rIdx} className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm">
  <CardContent className="p-6">
  <h3 className="text-xl font-medium mb-3 border-b border-(--hairline) pb-2 flex items-center gap-2">
  <span>{round.title}</span>
@@ -1267,11 +1275,11 @@ export default function MockInterviewGenerator() {
  <div className="space-y-3">
  {round.questions.map((q, qIdx) => (
  <div key={qIdx} className="border-l border-(--hairline) pl-3 py-1">
- <p className="font-bold text-xs text-gray-900">{q.question}</p>
+ <p className="font-semibold text-sm sm:text-base text-(--ink) leading-snug">{q.question}</p>
  {q.keyTakeaway && (
- <p className="text-[11px] text-purple-900 font-semibold mt-1">
- 💡 <span className="font-semibold">Takeaway:</span> {q.keyTakeaway}
- </p>
+ <div className="text-xs sm:text-[13px] text-(--primary) font-medium mt-2 bg-(--surface-soft)/60 p-2.5 rounded-lg border border-(--hairline-soft) leading-relaxed">
+													💡 <span className="font-semibold">Takeaway:</span> {q.keyTakeaway}
+												</div>
  )}
  </div>
  ))}

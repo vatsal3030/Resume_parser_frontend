@@ -18,7 +18,8 @@ import {
   HelpCircle,
   Trash2,
   Trophy,
-  X
+  X,
+  Shield
 } from "lucide-react";
 import { CreditBalance } from "@/components/ui/CreditBalance";
 
@@ -40,6 +41,7 @@ const NAV_ITEMS = [
 const UTILITY_ITEMS = [
   { name: "Credits", path: "/dashboard/credits", icon: CreditCard },
   { name: "Profile", path: "/dashboard/profile", icon: User },
+  { name: "Admin", path: "/admin", icon: Shield },
   { name: "Trash", path: "/dashboard/trash", icon: Trash2 },
   { name: "Help", path: "/dashboard/help", icon: HelpCircle },
 ];

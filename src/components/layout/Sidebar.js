@@ -22,6 +22,7 @@ import {
   Shield
 } from "lucide-react";
 import { CreditBalance } from "@/components/ui/CreditBalance";
+import { useAdmin } from "@/hooks/useAdmin";
 
 const NAV_ITEMS = [
   { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -41,13 +42,19 @@ const NAV_ITEMS = [
 const UTILITY_ITEMS = [
   { name: "Credits", path: "/dashboard/credits", icon: CreditCard },
   { name: "Profile", path: "/dashboard/profile", icon: User },
-  { name: "Admin", path: "/admin", icon: Shield },
+  { name: "Admin", path: "/admin", icon: Shield, adminOnly: true },
   { name: "Trash", path: "/dashboard/trash", icon: Trash2 },
   { name: "Help", path: "/dashboard/help", icon: HelpCircle },
 ];
 
-const SidebarContent = ({ pathname, isDesktopCollapsed, isMobileOpen, setIsMobileOpen }) => (
-  <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden bg-(--canvas) border-r border-(--hairline) transition-colors">
+const SidebarContent = ({ pathname, isDesktopCollapsed, isMobileOpen, setIsMobileOpen, isAdmin }) => {
+  const visibleUtilityItems = UTILITY_ITEMS.filter(item => {
+    if (item.adminOnly) return Boolean(isAdmin);
+    return true;
+  });
+
+  return (
+    <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden bg-(--canvas) border-r border-(--hairline) transition-colors">
     {/* Logo Header */}
     <div className={`p-4 border-b border-(--hairline) sticky top-0 bg-(--canvas)/90 backdrop-blur-md z-10 flex items-center ${isDesktopCollapsed ? 'justify-center' : 'justify-between'}`}>
       <Link 
@@ -108,7 +115,7 @@ const SidebarContent = ({ pathname, isDesktopCollapsed, isMobileOpen, setIsMobil
 
       {/* Utility Nav */}
       <div className="space-y-0.5">
-        {UTILITY_ITEMS.map((item) => {
+        {visibleUtilityItems.map((item) => {
           const isActive = pathname === item.path;
           return (
             <Link
@@ -149,10 +156,12 @@ const SidebarContent = ({ pathname, isDesktopCollapsed, isMobileOpen, setIsMobil
       {isDesktopCollapsed ? 'v1' : 'Elevara v1.0'}
     </div>
   </div>
-);
+  );
+};
 
 export function Sidebar({ isMobileOpen, setIsMobileOpen, isDesktopCollapsed }) {
   const pathname = usePathname();
+  const { isAdmin } = useAdmin();
 
   return (
     <>
@@ -162,7 +171,13 @@ export function Sidebar({ isMobileOpen, setIsMobileOpen, isDesktopCollapsed }) {
           isDesktopCollapsed ? 'w-[72px]' : 'w-[260px]'
         }`}
       >
-        <SidebarContent pathname={pathname} isDesktopCollapsed={isDesktopCollapsed} isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
+        <SidebarContent 
+          pathname={pathname} 
+          isDesktopCollapsed={isDesktopCollapsed} 
+          isMobileOpen={isMobileOpen} 
+          setIsMobileOpen={setIsMobileOpen}
+          isAdmin={isAdmin}
+        />
       </aside>
 
       {/* Mobile Overlay */}
@@ -175,7 +190,13 @@ export function Sidebar({ isMobileOpen, setIsMobileOpen, isDesktopCollapsed }) {
 
       {/* Mobile Drawer */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-[280px] bg-(--canvas) shadow-2xl transform transition-transform duration-300 ease-out lg:hidden ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <SidebarContent pathname={pathname} isDesktopCollapsed={isDesktopCollapsed} isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
+        <SidebarContent 
+          pathname={pathname} 
+          isDesktopCollapsed={isDesktopCollapsed} 
+          isMobileOpen={isMobileOpen} 
+          setIsMobileOpen={setIsMobileOpen}
+          isAdmin={isAdmin}
+        />
       </aside>
     </>
   );

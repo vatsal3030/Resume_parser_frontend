@@ -14,6 +14,7 @@ import { CommandPalette } from "@/components/ui/CommandPalette";
 import { NotificationDropdown } from "@/components/ui/NotificationDropdown";
 import { CreditBalance } from "@/components/ui/CreditBalance";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useAdmin, checkIsAdminEmail } from "@/hooks/useAdmin";
 
 export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCollapsed }) {
   const [user, setUser] = useState(null);
@@ -191,8 +192,8 @@ export function TopHeader({ setIsMobileOpen, isDesktopCollapsed, setIsDesktopCol
     ? [user.user_metadata.avatar_url, ...avatarOptions] 
     : avatarOptions;
 
-  const adminEmails = ['vatsalvadgama04@gmail.com', 'vatsalvadgama05@gmail.com'];
-  const isAdmin = profile?.role === 'ADMIN' || (user?.email && adminEmails.includes(user.email.toLowerCase()));
+  const { isAdmin: hookIsAdmin } = useAdmin();
+  const isAdmin = hookIsAdmin || profile?.role === 'ADMIN' || (user?.email && checkIsAdminEmail(user.email));
 
   return (
     <>

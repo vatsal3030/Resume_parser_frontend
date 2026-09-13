@@ -131,6 +131,13 @@ export const accountManager = {
       });
 
       if (error || !data?.session) {
+        // Clear expired/invalid tokens from this saved account
+        const updatedAccounts = this.getSavedAccounts().map(a => 
+          a.id === accountId ? { ...a, session: null } : a
+        );
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedAccounts));
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+
         return { 
           success: false, 
           error: 'SESSION_EXPIRED', 

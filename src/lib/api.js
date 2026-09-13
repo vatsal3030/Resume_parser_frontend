@@ -63,7 +63,10 @@ api.interceptors.response.use(
  try {
  const { data, error: refreshError } = await supabase.auth.refreshSession();
  
- if (refreshError || !data.session) {
+ if (refreshError || !data?.session) {
+ if (refreshError?.message?.includes('Refresh Token') || refreshError?.status === 400) {
+ await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+ }
  processQueue(refreshError || new Error("Session expired"), null);
  return Promise.reject(error);
  }
@@ -74,6 +77,9 @@ api.interceptors.response.use(
  originalRequest.headers['Authorization'] = 'Bearer ' + newToken;
  return api(originalRequest);
  } catch (err) {
+ if (err?.message?.includes('Refresh Token') || err?.status === 400) {
+ await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+ }
  processQueue(err, null);
  return Promise.reject(error);
  } finally {

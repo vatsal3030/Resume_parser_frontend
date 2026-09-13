@@ -8,6 +8,7 @@ import api from "@/lib/api";
 import { Shield, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { checkIsAdminEmail } from "@/hooks/useAdmin";
 
 export default function AdminLayout({ children }) {
   const [isAdmin, setIsAdmin] = useState(null);
@@ -23,11 +24,7 @@ export default function AdminLayout({ children }) {
           return;
         }
 
-        const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || 'vatsalvadgama04@gmail.com,vatsalvadgama05@gmail.com')
-          .split(',')
-          .map(e => e.trim().toLowerCase());
-        
-        const isEmailAdmin = session.user.email && adminEmails.includes(session.user.email.toLowerCase());
+        const isEmailAdmin = session.user.email && checkIsAdminEmail(session.user.email);
 
         try {
           const { data } = await api.get('/users/me');

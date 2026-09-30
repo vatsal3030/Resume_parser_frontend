@@ -583,8 +583,20 @@ export default function NewAnalysis() {
                 id="recommended-doc-preview" 
                 className="p-6 md:p-8 bg-(--surface-card) border border-(--hairline) rounded-xl text-(--ink)"
               >
-                <div className="prose prose-sm dark:prose-invert max-w-none text-(--ink)">
-                  <ReactMarkdown>{data.recommendedDoc || data.recommended_doc || "No recommendation available."}</ReactMarkdown>
+                <div className="prose prose-sm dark:prose-invert max-w-none text-(--ink) leading-relaxed">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({ children }) => <h1 className="text-xl font-bold text-(--ink) mt-4 mb-2 pb-1 border-b border-(--hairline)">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-lg font-semibold text-(--ink) mt-3 mb-1.5">{children}</h2>,
+                      h3: ({ children }) => <h3 className="text-sm font-semibold text-(--primary) uppercase tracking-wide mt-2.5 mb-1">{children}</h3>,
+                      p: ({ children }) => <p className="text-sm text-(--body) leading-relaxed mb-2.5 font-normal">{children}</p>,
+                      ul: ({ children }) => <ul className="space-y-1.5 my-2 pl-4 list-disc text-sm text-(--body)">{children}</ul>,
+                      li: ({ children }) => <li className="leading-relaxed pl-1">{children}</li>,
+                      strong: ({ children }) => <strong className="font-semibold text-(--ink)">{children}</strong>
+                    }}
+                  >
+                    {data.recommendedDoc || data.recommended_doc || "No recommendation available."}
+                  </ReactMarkdown>
                 </div>
               </div>
             </CardContent>

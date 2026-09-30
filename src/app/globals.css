@@ -50,6 +50,63 @@
   --animate-slide-up: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-scale-in: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   --animate-shimmer: shimmer 2s ease-in-out infinite;
+
+  /* Global typography scale bump for enhanced site-wide readability */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.4rem;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.6rem;
+}
+
+/* ============================================================
+   GLOBAL SMOOTH SCROLLING & THEME WAVE VIEW TRANSITIONS
+   ============================================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Circular wave theme transition from top-right to bottom-left */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* Micro-interaction & Smooth Hover Utilities */
+.interactive-card {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(20, 20, 19, 0.08);
+}
+
+.interactive-button {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.interactive-button:hover {
+  transform: translateY(-1px);
+}
+
+.interactive-button:active {
+  transform: translateY(0) scale(0.98);
 }
 
 /* ============================================================
@@ -63,44 +120,44 @@
   --primary-disabled: #e6dfd8;
   --primary-hover: #d9856a;
 
-  /* Text Hierarchy */
-  --ink: #141413;
-  --body-strong: #252523;
-  --body: #3d3d3a;
-  --muted: #6c6a64;
-  --muted-soft: #8e8b82;
+  /* Text Hierarchy — High Readability & Darker, Crisper Contrast */
+  --ink: #111110;
+  --body-strong: #1e1e1c;
+  --body: #2c2c29;
+  --muted: #4e4c45;
+  --muted-soft: #68655e;
 
   /* Surfaces — Light Warm Cream Editorial */
   --canvas: #faf9f5;
-  --surface-soft: #f4ede4;
+  --surface-soft: #f3ede4;
   --surface-card: #ffffff;
-  --surface-cream-strong: #ede5da;
+  --surface-cream-strong: #ebe3d6;
   --surface-dark: #181715;
   --surface-dark-elevated: #252320;
   --surface-dark-soft: #1f1e1b;
 
   /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-card: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-card: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(0, 0, 0, 0.14);
 
   /* On-Surface Text */
   --on-primary: #ffffff;
   --on-dark: #faf9f5;
   --on-dark-soft: #a09d96;
 
-  /* Borders */
-  --hairline: #e6dfd8;
-  --hairline-soft: #efe9e1;
+  /* Visible Borders & Clear Section Separators */
+  --hairline: #cfc7bd;
+  --hairline-soft: #dfd8ce;
 
   /* Accent Colors */
-  --accent-teal: #4ea898;
-  --accent-amber: #d99a4e;
+  --accent-teal: #3d9e8e;
+  --accent-amber: #cf8e3c;
 
   /* Semantic */
-  --success: #4ea863;
-  --warning: #c9931b;
-  --error: #c94a4a;
+  --success: #3e9e54;
+  --warning: #c28b15;
+  --error: #c44040;
 
   /* Core aliases */
   --background: var(--canvas);
@@ -127,18 +184,18 @@
   --section-gap: var(--space-24);
   --card-gap: var(--space-6);
 
-  /* Typography Scale */
-  --text-display-xl: 4rem;    /* 64px */
-  --text-display-lg: 3rem;    /* 48px */
-  --text-display-md: 2.25rem; /* 36px */
-  --text-display-sm: 1.75rem; /* 28px */
-  --text-title-lg: 1.375rem;  /* 22px */
-  --text-title-md: 1.125rem;  /* 18px */
-  --text-title-sm: 1rem;      /* 16px */
-  --text-body-md: 1rem;       /* 16px */
-  --text-body-sm: 0.875rem;   /* 14px */
-  --text-caption: 0.8125rem;  /* 13px */
-  --text-caption-upper: 0.75rem; /* 12px */
+  /* Typography Scale — Enhanced Size for Readability */
+  --text-display-xl: 4rem;       /* 64px */
+  --text-display-lg: 3rem;       /* 48px */
+  --text-display-md: 2.25rem;    /* 36px */
+  --text-display-sm: 1.75rem;    /* 28px */
+  --text-title-lg: 1.5rem;       /* 24px */
+  --text-title-md: 1.25rem;      /* 20px */
+  --text-title-sm: 1.0625rem;    /* 17px */
+  --text-body-md: 1.0625rem;     /* 17px */
+  --text-body-sm: 0.9375rem;     /* 15px */
+  --text-caption: 0.875rem;      /* 14px */
+  --text-caption-upper: 0.8125rem; /* 13px */
 
   /* Border Radius */
   --radius-xs: 4px;
@@ -169,49 +226,49 @@
 
 .dark {
   /* Brand Accent — Claude Luminous Terracotta */
-  --primary: #d97757;
-  --primary-active: #c26546;
-  --primary-disabled: #383531;
-  --primary-hover: #e28769;
+  --primary: #e08365;
+  --primary-active: #c86c4e;
+  --primary-disabled: #3a3833;
+  --primary-hover: #e89377;
 
-  /* Text Hierarchy */
-  --ink: #f5f4ef;
-  --body-strong: #e6e4dc;
-  --body: #c2c0b6;
-  --muted: #8c8980;
-  --muted-soft: #5e5c54;
+  /* Text Hierarchy — High Readability & Crisp Contrast in Dark Mode */
+  --ink: #faf9f5;
+  --body-strong: #f0ede5;
+  --body: #dedbd0;
+  --muted: #b8b4a8;
+  --muted-soft: #969286;
 
   /* Surfaces — Matching Claude.ai deep warm charcoal */
   --canvas: #141413;
-  --surface-soft: #1c1b19;
+  --surface-soft: #1c1b18;
   --surface-card: #201f1c;
-  --surface-cream-strong: #2a2925;
+  --surface-cream-strong: #2a2924;
   --surface-dark: #0f0f0e;
   --surface-dark-elevated: #1a1917;
   --surface-dark-soft: #171614;
 
   /* Liquid Glassmorphism Tokens */
-  --glass-bg: rgba(28, 27, 25, 0.75);
-  --glass-card: rgba(255, 255, 255, 0.035);
-  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-bg: rgba(28, 27, 25, 0.85);
+  --glass-card: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.16);
 
   /* On-Surface Text */
   --on-primary: #ffffff;
-  --on-dark: #f5f4ef;
-  --on-dark-soft: #8c8980;
+  --on-dark: #faf9f5;
+  --on-dark-soft: #b8b4a8;
 
-  /* Hairline Borders */
-  --hairline: #2b2a26;
-  --hairline-soft: #23221e;
+  /* Hairline Borders — Visibly Distinguishable in Dark Mode */
+  --hairline: #3a3832;
+  --hairline-soft: #2e2c26;
 
   /* Accents */
-  --accent-teal: #4ea898;
-  --accent-amber: #d99a4e;
+  --accent-teal: #58b8a7;
+  --accent-amber: #e2a65d;
 
   /* Semantic */
-  --success: #4ea863;
-  --warning: #d49826;
-  --error: #d45252;
+  --success: #55b66c;
+  --warning: #dda433;
+  --error: #dc5c5c;
 
   /* Shadows for Dark Mode */
   --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.25);
@@ -339,6 +396,8 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-sans);
+  font-size: 15.5px;
+  line-height: 1.6;
   letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -496,13 +555,33 @@ textarea:focus-visible {
   color: var(--muted);
 }
 
-/* Hairline dividers */
+/* Hairline dividers & Section separators */
 .hairline-b {
   border-bottom: 1px solid var(--hairline);
 }
 
 .hairline-t {
   border-top: 1px solid var(--hairline);
+}
+
+.section-divider {
+  border-top: 1px solid var(--hairline);
+}
+
+.section-divider-b {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.component-border {
+  border: 1px solid var(--hairline);
+}
+
+.component-divider-y > * + * {
+  border-top: 1px solid var(--hairline);
+}
+
+.component-divider-x > * + * {
+  border-left: 1px solid var(--hairline);
 }
 
 /* ============================================================

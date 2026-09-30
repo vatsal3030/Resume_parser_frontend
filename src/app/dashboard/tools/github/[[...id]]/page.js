@@ -17,6 +17,7 @@ import 'react-tooltip/dist/react-tooltip.css';
 import { motion } from 'framer-motion';
 import { RegenerateBlock } from '@/components/ui/RegenerateBlock';
 import { BranchingNavigation } from '@/components/ui/BranchingNavigation';
+import ReactMarkdown from 'react-markdown';
 import { ResultActions } from '@/components/ui/ResultActions';
 
 export default function GitHubAnalyzer() {
@@ -38,6 +39,7 @@ export default function GitHubAnalyzer() {
  const [readmeContent, setReadmeContent] = useState(null);
  const [generatingReadme, setGeneratingReadme] = useState(false);
  const [showReadmePreview, setShowReadmePreview] = useState(false);
+ const [readmeTab, setReadmeTab] = useState('preview');
  const toast = useToast();
 
  const {
@@ -532,47 +534,71 @@ export default function GitHubAnalyzer() {
  </CardContent>
  </Card>
 
- {/* README PREVIEW */}
- {readmeContent && showReadmePreview && (
- <Card className="border border-(--hairline) shadow-sm bg-(--surface-card) rounded-2xl animate-in fade-in slide-in-from-bottom-4">
- <CardContent className="p-0">
- <div className="flex items-center justify-between px-5 py-3 bg-(--canvas) border-b border-(--hairline)">
- <div className="flex items-center gap-2">
- <Eye className="w-4 h-4" />
- <span className="font-medium text-sm">README.md Preview</span>
- </div>
- <div className="flex gap-2">
- <Button
- variant="default"
- onClick={handleCopyReadme}
- className="rounded-xl border border-(--hairline) bg-(--surface-soft) text-(--ink) text-xs font-medium px-3 py-1.5 hover:bg-(--surface-card)"
- >
- <Copy className="w-3 h-3 mr-1" /> Copy
- </Button>
- <Button
- variant="default"
- onClick={handleDownloadReadme}
- className="bg-(--primary) text-black text-xs font-bold px-3 py-1.5 border border-(--hairline) shadow-sm hover:shadow-sm"
- >
- <Download className="w-3 h-3 mr-1" /> Download
- </Button>
- <Button
- variant="ghost"
- onClick={() => setShowReadmePreview(false)}
- className="text-xs font-bold px-2 py-1.5 hover:bg-gray-200"
- >
- ✕
- </Button>
- </div>
- </div>
- <div className="p-5 max-h-[500px] overflow-y-auto">
- <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-gray-800 bg-gray-50 p-4 border border-gray-200 overflow-x-auto">
- {readmeContent}
- </pre>
- </div>
- </CardContent>
- </Card>
- )}
+	{/* README PREVIEW */}
+	{readmeContent && showReadmePreview && (
+		<Card className="border border-(--hairline) shadow-sm bg-(--surface-card) rounded-2xl animate-in fade-in slide-in-from-bottom-4">
+			<CardContent className="p-0">
+				<div className="flex items-center justify-between px-5 py-3 bg-(--canvas) border-b border-(--hairline)">
+					<div className="flex items-center gap-3">
+						<div className="flex items-center gap-2">
+							<Eye className="w-4 h-4 text-(--primary)" />
+							<span className="font-semibold text-sm text-(--ink)">Profile README.md</span>
+						</div>
+						<div className="flex rounded-lg border border-(--hairline) p-0.5 bg-(--surface-soft) text-xs">
+							<button
+								onClick={() => setReadmeTab('preview')}
+								type="button"
+								className={`px-2.5 py-1 rounded-md font-medium transition-all ${readmeTab === 'preview' ? 'bg-(--surface-card) text-(--ink) shadow-2xs font-semibold' : 'text-(--muted) hover:text-(--ink)'}`}
+							>
+								Preview
+							</button>
+							<button
+								onClick={() => setReadmeTab('raw')}
+								type="button"
+								className={`px-2.5 py-1 rounded-md font-medium transition-all ${readmeTab === 'raw' ? 'bg-(--surface-card) text-(--ink) shadow-2xs font-semibold' : 'text-(--muted) hover:text-(--ink)'}`}
+							>
+								Raw Markdown
+							</button>
+						</div>
+					</div>
+					<div className="flex gap-2">
+						<Button
+							variant="default"
+							onClick={handleCopyReadme}
+							className="rounded-xl border border-(--hairline) bg-(--surface-soft) text-(--ink) text-xs font-medium px-3 py-1.5 hover:bg-(--surface-card)"
+						>
+							<Copy className="w-3 h-3 mr-1" /> Copy
+						</Button>
+						<Button
+							variant="default"
+							onClick={handleDownloadReadme}
+							className="bg-(--primary) text-white text-xs font-bold px-3 py-1.5 border border-(--hairline) shadow-sm hover:shadow-sm"
+						>
+							<Download className="w-3 h-3 mr-1" /> Download
+						</Button>
+						<Button
+							variant="ghost"
+							onClick={() => setShowReadmePreview(false)}
+							className="text-xs font-bold px-2 py-1.5 hover:bg-(--surface-soft)"
+						>
+							✕
+						</Button>
+					</div>
+				</div>
+				<div className="p-6 max-h-[500px] overflow-y-auto">
+					{readmeTab === 'preview' ? (
+						<div className="prose prose-sm dark:prose-invert max-w-none text-(--ink) leading-relaxed">
+							<ReactMarkdown>{readmeContent}</ReactMarkdown>
+						</div>
+					) : (
+						<pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-gray-800 dark:text-gray-200 bg-(--surface-soft) p-4 rounded-xl border border-(--hairline) overflow-x-auto">
+							{readmeContent}
+						</pre>
+					)}
+				</div>
+			</CardContent>
+		</Card>
+	)}
  
  <RegenerateBlock 
  isGenerating={isGenerating} 

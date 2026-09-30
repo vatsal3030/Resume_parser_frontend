@@ -262,7 +262,18 @@ export default function CoverLetterGenerator() {
  lineHeight: '1.6'
  }}
  >
- <ReactMarkdown>{resultText || ''}</ReactMarkdown>
+ <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-4 leading-relaxed font-serif text-gray-900 text-sm sm:text-base">{children}</p>,
+                      h1: ({ children }) => <h1 className="text-xl font-bold font-serif text-gray-900 mb-3">{children}</h1>,
+                      h2: ({ children }) => <h2 className="text-lg font-semibold font-serif text-gray-900 mb-2">{children}</h2>,
+                      ul: ({ children }) => <ul className="list-disc pl-5 space-y-1.5 mb-4 text-gray-800 text-sm sm:text-base">{children}</ul>,
+                      li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                      strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>
+                    }}
+                  >
+                    {resultText || ''}
+                  </ReactMarkdown>
  </div>
  </div>
  </CardContent>

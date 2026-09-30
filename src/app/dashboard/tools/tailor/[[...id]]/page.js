@@ -194,15 +194,34 @@ export default function TailorPage({ params }) {
                 </div>
 
                 <div>
-                  <h3 className="font-serif text-lg text-(--ink) mb-4">Rewritten Bullets</h3>
-                  <div className="space-y-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-serif text-xl text-(--ink)">ATS-Optimized Bullet Rewrites</h3>
+                    <span className="text-xs font-medium text-(--muted)">Before & After Comparison</span>
+                  </div>
+                  <div className="space-y-3.5">
                     {displayResult.tailoredBullets?.map((tb, i) => (
-                      <div key={i} className="rounded-xl border border-(--hairline-soft) p-4 bg-(--surface-soft)/50 relative space-y-2">
-                        <div className="absolute top-3 right-3 text-(--primary)">
-                          <CheckCircle2 className="w-4 h-4" />
+                      <div key={i} className="rounded-2xl border border-(--hairline) p-4 sm:p-5 bg-(--surface-card) shadow-2xs space-y-3">
+                        {/* Original */}
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-(--muted)">
+                            <span className="w-2 h-2 rounded-full bg-amber-500/70"></span>
+                            <span>Original Bullet</span>
+                          </div>
+                          <p className="text-xs sm:text-sm text-(--muted) font-normal leading-relaxed pl-3.5 border-l-2 border-amber-500/30">
+                            {tb.original}
+                          </p>
                         </div>
-                        <p className="text-xs text-(--muted) line-through pr-6">{tb.original}</p>
-                        <p className="text-xs font-medium text-(--ink) pr-6">{tb.suggested}</p>
+
+                        {/* Tailored */}
+                        <div className="space-y-1 pt-1">
+                          <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                            <span>AI Optimized (Keyword-Rich)</span>
+                          </div>
+                          <p className="text-xs sm:text-sm font-medium text-(--ink) leading-relaxed pl-3.5 border-l-2 border-emerald-500 bg-emerald-500/5 py-1.5 pr-2 rounded-r-lg">
+                            {tb.suggested}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>

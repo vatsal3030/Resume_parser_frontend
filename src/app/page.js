@@ -1,16 +1,17 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { 
   Sparkles, FileText, Target, Briefcase, Map, Code2, 
   Shield, Zap, Star, CheckCircle, ArrowRight, Bot, Check,
-  Trophy, Layers, Lock
+  Trophy, Layers, Lock, ChevronRight, Play, Globe, Cpu,
+  Users, TrendingUp, Award, BarChart3
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
+/* ─── Data Constants ─── */
 const FEATURES_DATA = [
   {
     id: "analyze",
@@ -19,7 +20,8 @@ const FEATURES_DATA = [
     icon: FileText,
     headline: "Multi-Domain ATS Scoring & Flaw Detection",
     desc: "Analyzes technical, MBA, engineering, design, finance, and medical resumes with deep keyword extraction, weakness auditing, and instant role-fit recommendations.",
-    highlights: ["Simulated ATS Score & Job Fit", "Multi-Domain Detection (Non-CS Ready)", "Actionable Bullet Polish Recommendations"]
+    highlights: ["Simulated ATS Score & Job Fit", "Multi-Domain Detection (Non-CS Ready)", "Actionable Bullet Polish Recommendations"],
+    gradient: "from-blue-500/20 to-violet-500/20"
   },
   {
     id: "studio",
@@ -28,7 +30,8 @@ const FEATURES_DATA = [
     icon: Layers,
     headline: "Modern & Minimalist Resume Builder",
     desc: "Create, reorder, and live-edit ATS-friendly resumes across Classic, Modern, Minimal, and Editorial designs with instant high-resolution PDF/DOCX downloads.",
-    highlights: ["Live Real-Time Preview", "Custom Section Ordering & Formatting", "1-Click PDF & DOCX Export"]
+    highlights: ["Live Real-Time Preview", "Custom Section Ordering & Formatting", "1-Click PDF & DOCX Export"],
+    gradient: "from-emerald-500/20 to-teal-500/20"
   },
   {
     id: "interview",
@@ -37,7 +40,8 @@ const FEATURES_DATA = [
     icon: Briefcase,
     headline: "Gamified 5-Stage Simulation with Model Solutions",
     desc: "Practice with Aptitude, Core MCQs, Live Coding, Project Deep-Dive, and Behavioral stages. Includes live voice practice, countdown timers, progressive hints, and master model solution keys.",
-    highlights: ["Speech-to-Text Voice Practice", "Instant MCQ & Code Editor Feedback", "Complete Model Solutions & Study Cheat Sheet"]
+    highlights: ["Speech-to-Text Voice Practice", "Instant MCQ & Code Editor Feedback", "Complete Model Solutions & Study Cheat Sheet"],
+    gradient: "from-orange-500/20 to-rose-500/20"
   },
   {
     id: "tailor",
@@ -46,7 +50,8 @@ const FEATURES_DATA = [
     icon: Target,
     headline: "Match Any Job Description in 10 Seconds",
     desc: "Paste any job posting. The AI compares your experience, identifies critical keyword gaps, and rewrites bullet points to boost your ATS match score above 90%.",
-    highlights: ["Keyword Match Score Gap Analysis", "Contextual Bullet Point Rewrites", "Zero-Hallucination Integrity"]
+    highlights: ["Keyword Match Score Gap Analysis", "Contextual Bullet Point Rewrites", "Zero-Hallucination Integrity"],
+    gradient: "from-cyan-500/20 to-blue-500/20"
   },
   {
     id: "roadmap",
@@ -55,7 +60,8 @@ const FEATURES_DATA = [
     icon: Map,
     headline: "Targeted Skill-Gap Learning Milestones",
     desc: "Generate personalized, step-by-step technical roadmaps with curated project recommendations and resources to transition into higher-paying roles.",
-    highlights: ["Current vs Target Skill Gap", "Step-by-Step Practical Milestones", "Curated Top-Tier Resources"]
+    highlights: ["Current vs Target Skill Gap", "Step-by-Step Practical Milestones", "Curated Top-Tier Resources"],
+    gradient: "from-violet-500/20 to-purple-500/20"
   },
   {
     id: "github",
@@ -64,17 +70,18 @@ const FEATURES_DATA = [
     icon: Code2,
     headline: "Auto-Generate Portfolio & Profile README",
     desc: "Connect your GitHub username. Elevara analyzes your real public repositories, generates a developer archetype roast, and outputs a portfolio and Markdown README.",
-    highlights: ["Live Public Repo Extraction", "Interactive Developer Archetype & Roast", "Copy-Ready Shields.io Profile README"]
+    highlights: ["Live Public Repo Extraction", "Interactive Developer Archetype & Roast", "Copy-Ready Shields.io Profile README"],
+    gradient: "from-pink-500/20 to-rose-500/20"
   }
 ];
 
 const MODELS_DATA = [
-  { name: "Gemini 3.7 Flash", provider: "Google DeepMind", type: "Ultra Fast & Reasoning", speed: "< 0.4s", badge: "Newest Model" },
-  { name: "Claude Sonnet 5", provider: "Anthropic", type: "Elite Nuance & Code", speed: "High Intelligence", badge: "Pro Bar" },
-  { name: "DeepSeek V4 Flash", provider: "DeepSeek", type: "Top Coding & Speed", speed: "Instant", badge: "Fast Coder" },
-  { name: "DeepSeek R1", provider: "DeepSeek", type: "Chain-of-Thought Logic", speed: "Deep Reasoning", badge: "Reasoning CoT" },
-  { name: "Gemma 4 31B", provider: "Google Open", type: "Free Tier Powerhouse", speed: "Zero Cost", badge: "Free Tier" },
-  { name: "Nemotron 3 Ultra", provider: "NVIDIA", type: "550B Architecture", speed: "Free Tier", badge: "Free Tier" },
+  { name: "Gemini 3.7 Flash", provider: "Google DeepMind", type: "Ultra Fast & Reasoning", speed: "< 0.4s", badge: "Newest Model", color: "from-blue-500 to-cyan-500" },
+  { name: "Claude Sonnet 5", provider: "Anthropic", type: "Elite Nuance & Code", speed: "High Intelligence", badge: "Pro Tier", color: "from-orange-500 to-amber-500" },
+  { name: "DeepSeek V4 Flash", provider: "DeepSeek", type: "Top Coding & Speed", speed: "Instant", badge: "Fast Coder", color: "from-emerald-500 to-green-500" },
+  { name: "DeepSeek R1", provider: "DeepSeek", type: "Chain-of-Thought Logic", speed: "Deep Reasoning", badge: "Reasoning CoT", color: "from-violet-500 to-purple-500" },
+  { name: "Gemma 4 31B", provider: "Google Open", type: "Free Tier Powerhouse", speed: "Zero Cost", badge: "Free Tier", color: "from-teal-500 to-cyan-500" },
+  { name: "Nemotron 3 Ultra", provider: "NVIDIA", type: "550B Architecture", speed: "Free Tier", badge: "Free Tier", color: "from-lime-500 to-emerald-500" },
 ];
 
 const COMPARISON_ROWS = [
@@ -110,9 +117,76 @@ const TESTIMONIALS = [
   },
 ];
 
+/* ─── Animated Counter Hook ─── */
+function useCountUp(end, duration = 2000, startOnView = true) {
+  const [count, setCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!startOnView) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting && !hasStarted) setHasStarted(true); },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [hasStarted, startOnView]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+    let start = 0;
+    const increment = end / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) { setCount(end); clearInterval(timer); }
+      else setCount(Math.floor(start));
+    }, 16);
+    return () => clearInterval(timer);
+  }, [hasStarted, end, duration]);
+
+  return { count, ref };
+}
+
+/* ─── Scroll Reveal Hook ─── */
+function useScrollReveal() {
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true); },
+      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, isVisible };
+}
+
+/* ─── Reveal Wrapper ─── */
+function Reveal({ children, className = "", delay = 0 }) {
+  const { ref, isVisible } = useScrollReveal();
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(32px)',
+        transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function LandingPage() {
   const [session, setSession] = useState(null);
   const [activeFeatureTab, setActiveFeatureTab] = useState(0);
+  const [navScrolled, setNavScrolled] = useState(false);
 
   // Interactive ATS Bullet Simulator State
   const [simBullet, setSimBullet] = useState("Engineered distributed event-streaming pipeline using Apache Kafka and Go, reducing API p99 latency by 44% across 4.2M daily transactions.");
@@ -123,10 +197,29 @@ export default function LandingPage() {
   // Interactive ROI Calculator State
   const [targetSalary, setTargetSalary] = useState(18);
 
+  // Animated counters
+  const resumeCounter = useCountUp(50000, 2000);
+  const callbackCounter = useCountUp(94, 1800);
+  const processingCounter = useCountUp(30, 1500);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setSession(session));
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setNavScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Auto-cycle features
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveFeatureTab(prev => (prev + 1) % FEATURES_DATA.length);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSimulateScore = () => {
@@ -156,30 +249,46 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-(--canvas) text-(--ink) selection:bg-(--primary) selection:text-white transition-colors">
+    <div className="min-h-screen bg-(--canvas) text-(--ink) selection:bg-(--primary) selection:text-white transition-colors overflow-x-hidden">
 
-      {/* STICKY NAV */}
-      <nav className="sticky top-0 z-50 bg-(--canvas)/85 backdrop-blur-xl border-b border-(--hairline) px-6 py-3 flex items-center justify-between transition-colors">
+      {/* ═══════ STICKY GLASSMORPHISM NAV ═══════ */}
+      <nav 
+        className={`fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between transition-all duration-500 ${
+          navScrolled 
+            ? 'bg-(--canvas)/80 backdrop-blur-2xl shadow-[0_1px_0_var(--hairline),0_8px_30px_-8px_rgba(0,0,0,0.08)]' 
+            : 'bg-transparent'
+        }`}
+      >
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-2xl md:text-3xl font-serif font-light hover:opacity-80 transition-opacity flex items-center gap-2">
-            <div className="w-8 h-8 bg-(--primary) rounded-xl flex items-center justify-center text-white font-serif font-medium text-base shadow-xs">
+          <Link href="/" className="hover:opacity-80 transition-opacity flex items-center gap-2.5 group">
+            <div className="w-9 h-9 bg-gradient-to-br from-(--primary) to-(--primary-active) rounded-xl flex items-center justify-center text-white font-serif font-medium text-base shadow-md group-hover:shadow-lg transition-shadow">
               E
             </div>
-            <span className="text-(--ink) font-serif">Elevara</span>
+            <span className="text-xl font-serif font-medium text-(--ink) tracking-tight">Elevara</span>
           </Link>
-          <span className="hidden md:inline-block px-2.5 py-0.5 bg-(--primary)/10 text-(--primary) rounded-full text-[10px] font-medium border border-(--primary)/20">
+          <span className="hidden md:inline-block px-3 py-1 bg-(--primary)/8 text-(--primary) rounded-full text-[11px] font-semibold tracking-wide border border-(--primary)/15">
             AI Career OS
           </span>
         </div>
 
         {/* Desktop Nav Links */}
-        <div className="hidden lg:flex items-center gap-6 font-medium text-xs text-(--muted)">
-          <a href="#features" className="hover:text-(--ink) transition-colors">Features</a>
-          <a href="#simulator" className="hover:text-(--ink) transition-colors">ATS Simulator</a>
-          <a href="#models" className="hover:text-(--ink) transition-colors">AI Models</a>
-          <a href="#comparison" className="hover:text-(--ink) transition-colors">Why Elevara</a>
-          <a href="#pricing" className="hover:text-(--ink) transition-colors">Pricing</a>
-          <Link href="/dashboard/help" className="hover:text-(--ink) transition-colors">Docs & Help</Link>
+        <div className="hidden lg:flex items-center gap-8 font-medium text-sm text-(--muted)">
+          <a href="#features" className="hover:text-(--ink) transition-colors relative group">
+            Features
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-(--primary) rounded-full group-hover:w-full transition-all duration-300"></span>
+          </a>
+          <a href="#simulator" className="hover:text-(--ink) transition-colors relative group">
+            Demo
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-(--primary) rounded-full group-hover:w-full transition-all duration-300"></span>
+          </a>
+          <a href="#models" className="hover:text-(--ink) transition-colors relative group">
+            AI Models
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-(--primary) rounded-full group-hover:w-full transition-all duration-300"></span>
+          </a>
+          <a href="#pricing" className="hover:text-(--ink) transition-colors relative group">
+            Pricing
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-(--primary) rounded-full group-hover:w-full transition-all duration-300"></span>
+          </a>
         </div>
 
         {/* Actions */}
@@ -187,20 +296,20 @@ export default function LandingPage() {
           <ThemeToggle />
           {session ? (
             <Link href="/dashboard">
-              <Button className="text-xs font-medium py-2 px-4 rounded-xl transition-all">
-                Dashboard →
+              <Button className="text-sm font-semibold py-2.5 px-5 rounded-xl transition-all shadow-md hover:shadow-lg">
+                Dashboard <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
           ) : (
             <>
-              <Link href="/login">
-                <Button variant="secondary" className="text-xs font-medium py-2 px-3.5 rounded-xl transition-all">
+              <Link href="/login" className="hidden sm:inline-block">
+                <Button variant="secondary" className="text-sm font-medium py-2.5 px-4 rounded-xl transition-all">
                   Sign In
                 </Button>
               </Link>
               <Link href="/register">
-                <Button className="rounded-xl text-xs font-medium py-2 px-4 transition-all">
-                  Get 50 Free Credits →
+                <Button className="rounded-xl text-sm font-semibold py-2.5 px-5 transition-all shadow-md hover:shadow-lg">
+                  Start Free <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </Link>
             </>
@@ -208,541 +317,648 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section className="px-6 pt-12 md:pt-20 pb-16 max-w-6xl mx-auto text-center relative">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 bg-(--surface-card) border border-(--hairline) rounded-full font-medium text-xs text-(--muted) shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-          <span>Adaptive Multi-Model Intelligence · Zero Subscriptions</span>
+      {/* ═══════ HERO SECTION ═══════ */}
+      <section className="relative pt-28 md:pt-36 pb-20 md:pb-28 px-6 overflow-hidden">
+        {/* Animated gradient orbs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-(--primary)/15 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '6s' }} />
+          <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-violet-500/8 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '8s', animationDelay: '2s' }} />
+          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-emerald-500/6 to-transparent blur-3xl animate-pulse" style={{ animationDuration: '7s', animationDelay: '4s' }} />
+          {/* Subtle grid */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, var(--ink) 1px, transparent 0)', backgroundSize: '40px 40px' }} />
         </div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-8xl font-serif font-light leading-[0.92] mb-6 text-(--ink)">
-          Land Your Dream Job <br className="hidden sm:inline" />
-          <span className="text-(--primary) px-2 inline-block mt-2 sm:mt-0 font-serif italic">
-            3X Faster
-          </span>{" "}
-          with AI.
-        </h1>
+        <div className="max-w-5xl mx-auto text-center relative z-10">
+          {/* Status pill */}
+          <Reveal>
+            <div className="inline-flex items-center gap-2.5 px-5 py-2 mb-8 bg-(--glass-card) backdrop-blur-xl border border-(--glass-border) rounded-full font-medium text-sm text-(--muted) shadow-sm">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span>Adaptive Multi-Model Intelligence · Zero Subscriptions</span>
+            </div>
+          </Reveal>
 
-        <p className="text-base sm:text-lg max-w-3xl mx-auto text-(--muted) leading-relaxed mb-8">
-          The complete AI-powered career operating system. Analyze resumes with ATS precision, build stunning studio resumes, practice 5-round voice mock interviews with model solution keys, and tailor for any job description.
-        </p>
+          {/* Main heading */}
+          <Reveal delay={0.1}>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-serif font-light leading-[0.95] mb-8 text-(--ink) tracking-tight">
+              Land Your Dream Job{" "}
+              <br className="hidden sm:inline" />
+              <span className="relative inline-block mt-2 sm:mt-0">
+                <span className="bg-gradient-to-r from-(--primary) via-(--primary-hover) to-(--accent-amber) bg-clip-text text-transparent font-serif italic">
+                  3× Faster
+                </span>
+                <svg className="absolute -bottom-2 left-0 w-full" height="8" viewBox="0 0 200 8" fill="none">
+                  <path d="M2 6C50 2 150 2 198 6" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round" opacity="0.4"/>
+                </svg>
+              </span>{" "}
+              with AI.
+            </h1>
+          </Reveal>
 
-        {/* CTA BUTTONS */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10">
-          <Link href={session ? "/dashboard" : "/register"} className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto text-sm px-8 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all font-medium">
-              Start Free (50 Credits Included) →
-            </Button>
-          </Link>
-          <a href="#simulator" className="w-full sm:w-auto">
-            <Button variant="secondary" className="w-full sm:w-auto text-sm px-6 py-3.5 rounded-xl shadow-xs font-medium transition-all">
-              Try Live ATS Simulator ↓
-            </Button>
-          </a>
-        </div>
+          {/* Subtitle */}
+          <Reveal delay={0.2}>
+            <p className="text-lg sm:text-xl max-w-3xl mx-auto text-(--muted) leading-relaxed mb-10 font-light">
+              The complete AI-powered career operating system. Analyze resumes with ATS precision, 
+              build stunning studio resumes, practice 5-round voice mock interviews, and tailor for any job.
+            </p>
+          </Reveal>
 
-        {/* TRUST BADGES ROW */}
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-medium text-(--muted)">
-          <div className="flex items-center gap-2 bg-(--surface-card) px-3.5 py-1.5 border border-(--hairline) rounded-full shadow-xs">
-            <Shield className="w-3.5 h-3.5 text-emerald-500" /> SOC2-Ready & Private
-          </div>
-          <div className="flex items-center gap-2 bg-(--surface-card) px-3.5 py-1.5 border border-(--hairline) rounded-full shadow-xs">
-            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" /> 4.9/5 from 50,000+ Users
-          </div>
-          <div className="flex items-center gap-2 bg-(--surface-card) px-3.5 py-1.5 border border-(--hairline) rounded-full shadow-xs">
-            <Zap className="w-3.5 h-3.5 text-(--primary)" /> Sub-Second AI Generation
-          </div>
+          {/* CTA BUTTONS */}
+          <Reveal delay={0.3}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
+              <Link href={session ? "/dashboard" : "/register"} className="w-full sm:w-auto">
+                <Button className="w-full sm:w-auto text-base px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all font-semibold group">
+                  Start Free — 50 Credits Included
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <a href="#simulator" className="w-full sm:w-auto">
+                <Button variant="secondary" className="w-full sm:w-auto text-base px-6 py-4 rounded-2xl shadow-sm font-medium transition-all group">
+                  <Play className="w-4 h-4 mr-2" />
+                  Try Live Demo
+                </Button>
+              </a>
+            </div>
+          </Reveal>
+
+          {/* TRUST BADGES */}
+          <Reveal delay={0.4}>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm font-medium text-(--muted)">
+              <div className="flex items-center gap-2 px-4 py-2 bg-(--glass-card) backdrop-blur-sm border border-(--glass-border) rounded-full">
+                <Shield className="w-4 h-4 text-emerald-500" /> SOC2-Ready & Private
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-(--glass-card) backdrop-blur-sm border border-(--glass-border) rounded-full">
+                <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> 4.9/5 from 50,000+ Users
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-(--glass-card) backdrop-blur-sm border border-(--glass-border) rounded-full">
+                <Zap className="w-4 h-4 text-(--primary)" /> Sub-Second AI Responses
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* METRICS & PROOF MARQUEE */}
-      <section className="bg-(--surface-card) border-y border-(--hairline) py-8">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-(--hairline-soft)">
-          <div className="p-3">
-            <p className="text-3xl md:text-4xl font-serif font-medium text-(--primary)">50,000+</p>
-            <p className="text-xs font-medium mt-1 text-(--muted)">Resumes Analyzed</p>
-          </div>
-          <div className="p-3">
-            <p className="text-3xl md:text-4xl font-serif font-medium text-emerald-500">94.2%</p>
-            <p className="text-xs font-medium mt-1 text-(--muted)">Interview Callback Rate</p>
-          </div>
-          <div className="p-3">
-            <p className="text-3xl md:text-4xl font-serif font-medium text-(--ink)">5 Stages</p>
-            <p className="text-xs font-medium mt-1 text-(--muted)">Voice AI Simulation</p>
-          </div>
-          <div className="p-3">
-            <p className="text-3xl md:text-4xl font-serif font-medium text-(--primary)">&lt; 30s</p>
-            <p className="text-xs font-medium mt-1 text-(--muted)">End-to-End Processing</p>
-          </div>
-        </div>
-      </section>
-
-      {/* INTERACTIVE ATS BULLET SIMULATOR SECTION */}
-      <section id="simulator" className="px-6 py-16 md:py-24 max-w-5xl mx-auto">
-        <div className="text-center mb-10">
-          <span className="px-3 py-1 bg-(--primary)/10 text-(--primary) font-medium text-xs rounded-full border border-(--primary)/20">
-            Interactive Playground
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif font-light mt-3 text-(--ink)">
-            Test Your Resume Bullet Point in Real-Time
-          </h2>
-          <p className="text-xs text-(--muted) mt-2">
-            See how top ATS engines and recruiter algorithms evaluate your impact.
-          </p>
-        </div>
-
-        <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm p-6 md:p-8">
-          <CardContent className="p-0 space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <label className="text-xs font-medium text-(--muted)">
-                Sample or Custom Resume Bullet Point:
-              </label>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => handleApplyPresetBullet('weak')}
-                  className="px-2.5 py-1 text-[11px] font-medium bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg hover:bg-red-500/20 transition-colors"
-                >
-                  Load Weak Example
-                </button>
-                <button 
-                  onClick={() => handleApplyPresetBullet('strong')}
-                  className="px-2.5 py-1 text-[11px] font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-lg hover:bg-emerald-500/20 transition-colors"
-                >
-                  Load 98/100 Example
-                </button>
-              </div>
+      {/* ═══════ ANIMATED SOCIAL PROOF METRICS ═══════ */}
+      <Reveal>
+        <section className="relative px-6 py-16 border-y border-(--hairline)">
+          <div className="absolute inset-0 bg-gradient-to-r from-(--primary)/3 via-transparent to-(--primary)/3" />
+          <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
+            <div ref={resumeCounter.ref} className="group">
+              <p className="text-4xl md:text-5xl font-serif font-medium bg-gradient-to-br from-(--primary) to-(--accent-amber) bg-clip-text text-transparent">
+                {resumeCounter.count.toLocaleString()}+
+              </p>
+              <p className="text-sm font-medium mt-2 text-(--muted) group-hover:text-(--ink) transition-colors">Resumes Analyzed</p>
             </div>
-
-            <textarea
-              className="w-full min-h-[90px] p-3.5 bg-(--surface-soft) border border-(--hairline) rounded-xl font-normal text-xs text-(--ink) placeholder:text-(--muted-soft) focus:border-(--primary) outline-none resize-y transition-colors shadow-xs"
-              value={simBullet}
-              onChange={(e) => setSimBullet(e.target.value)}
-              placeholder="Paste or type a bullet point from your resume..."
-            />
-
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 border-t border-(--hairline-soft)">
-              <Button
-                onClick={handleSimulateScore}
-                disabled={isSimulating}
-                className="w-full sm:w-auto text-xs"
-              >
-                {isSimulating ? "Evaluating Metrics..." : "Simulate ATS & Impact Score"}
-              </Button>
-
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-                <span className="text-xs font-medium text-(--muted)">Calculated Score:</span>
-                <div className={`px-3.5 py-1 rounded-xl border text-sm font-serif font-medium ${
-                  simScore >= 90 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : simScore >= 70 ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-red-500/10 border-red-500/30 text-red-500'
-                }`}>
-                  {simScore}/100
-                </div>
-              </div>
+            <div ref={callbackCounter.ref} className="group">
+              <p className="text-4xl md:text-5xl font-serif font-medium text-emerald-500">
+                {callbackCounter.count}%
+              </p>
+              <p className="text-sm font-medium mt-2 text-(--muted) group-hover:text-(--ink) transition-colors">Interview Callback Rate</p>
             </div>
-
-            {/* Simulated AI Feedback Box */}
-            <div className="bg-(--surface-soft) border border-(--hairline-soft) rounded-xl p-4 flex items-start gap-3 animate-in fade-in">
-              <Bot className="w-4 h-4 text-(--primary) shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[11px] font-medium text-(--muted)">Elevara AI Recruiter Feedback:</p>
-                <p className="text-xs text-(--ink) mt-1 leading-relaxed">{simFeedback}</p>
-              </div>
+            <div className="group">
+              <p className="text-4xl md:text-5xl font-serif font-medium text-(--ink)">5 Stages</p>
+              <p className="text-sm font-medium mt-2 text-(--muted) group-hover:text-(--ink) transition-colors">Voice AI Mock Interview</p>
             </div>
-          </CardContent>
-        </Card>
-      </section>
+            <div ref={processingCounter.ref} className="group">
+              <p className="text-4xl md:text-5xl font-serif font-medium bg-gradient-to-br from-(--primary) to-violet-500 bg-clip-text text-transparent">
+                &lt; {processingCounter.count}s
+              </p>
+              <p className="text-sm font-medium mt-2 text-(--muted) group-hover:text-(--ink) transition-colors">End-to-End Processing</p>
+            </div>
+          </div>
+        </section>
+      </Reveal>
 
-      {/* 6 TOOLS INTERACTIVE SHOWCASE HUB */}
-      <section id="features" className="px-6 py-16 md:py-24 bg-(--canvas) border-y border-(--hairline)">
-        <div className="max-w-6xl mx-auto">
+      {/* ═══════ ATS BULLET SIMULATOR ═══════ */}
+      <section id="simulator" className="px-6 py-20 md:py-28 max-w-5xl mx-auto">
+        <Reveal>
           <div className="text-center mb-12">
-            <span className="px-3 py-1 bg-(--primary)/10 text-(--primary) border border-(--primary)/20 font-medium text-xs rounded-full">
-              Unified Career Architecture
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-(--primary)/8 text-(--primary) font-semibold text-sm rounded-full border border-(--primary)/15">
+              <Sparkles className="w-4 h-4" /> Interactive Playground
             </span>
-            <h2 className="text-3xl md:text-5xl font-serif font-light mt-3 text-(--ink)">
-              6 Powerful AI Engines. One Platform.
+            <h2 className="text-3xl md:text-5xl font-serif font-light mt-4 text-(--ink) tracking-tight">
+              Test Your Resume Bullet Point
             </h2>
-            <p className="text-xs text-(--muted) max-w-xl mx-auto mt-2">
-              Everything from resume parsing and custom studio layouts to 5-stage voice mock interviews and GitHub portfolios.
+            <p className="text-base text-(--muted) mt-3 max-w-xl mx-auto">
+              See how top ATS engines and recruiter algorithms evaluate your impact in real-time.
             </p>
           </div>
+        </Reveal>
+
+        <Reveal delay={0.15}>
+          <div className="bg-(--surface-card) border border-(--hairline) rounded-3xl shadow-lg p-6 md:p-10 relative overflow-hidden">
+            {/* Decorative glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-(--primary)/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="space-y-6 relative z-10">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <label className="text-sm font-semibold text-(--ink)">
+                  Sample or Custom Resume Bullet Point
+                </label>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleApplyPresetBullet('weak')}
+                    className="px-3 py-1.5 text-sm font-medium bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all"
+                  >
+                    Load Weak Example
+                  </button>
+                  <button 
+                    onClick={() => handleApplyPresetBullet('strong')}
+                    className="px-3 py-1.5 text-sm font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl hover:bg-emerald-500/20 transition-all"
+                  >
+                    Load 98/100 Example
+                  </button>
+                </div>
+              </div>
+
+              <textarea
+                className="w-full min-h-[100px] p-4 bg-(--surface-soft) border border-(--hairline) rounded-2xl text-base text-(--ink) placeholder:text-(--muted-soft) focus:border-(--primary) focus:ring-2 focus:ring-(--primary)/10 outline-none resize-y transition-all"
+                value={simBullet}
+                onChange={(e) => setSimBullet(e.target.value)}
+                placeholder="Paste or type a bullet point from your resume..."
+              />
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-3 border-t border-(--hairline-soft)">
+                <Button
+                  onClick={handleSimulateScore}
+                  disabled={isSimulating}
+                  className="w-full sm:w-auto text-sm py-3 px-6 rounded-xl"
+                >
+                  {isSimulating ? "Evaluating Metrics..." : "Simulate ATS & Impact Score"}
+                </Button>
+
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                  <span className="text-sm font-medium text-(--muted)">Score:</span>
+                  <div className={`px-5 py-2 rounded-2xl border text-lg font-serif font-semibold transition-all ${
+                    simScore >= 90 ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-500' : simScore >= 70 ? 'bg-amber-500/10 border-amber-500/25 text-amber-500' : 'bg-red-500/10 border-red-500/25 text-red-500'
+                  }`}>
+                    {simScore}/100
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Feedback Box */}
+              <div className="bg-gradient-to-r from-(--primary)/5 to-transparent border border-(--primary)/15 rounded-2xl p-5 flex items-start gap-4">
+                <div className="w-8 h-8 rounded-xl bg-(--primary)/10 flex items-center justify-center shrink-0">
+                  <Bot className="w-4 h-4 text-(--primary)" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-(--primary) mb-1">Elevara AI Recruiter Feedback</p>
+                  <p className="text-base text-(--ink) leading-relaxed">{simFeedback}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
+      {/* ═══════ 6 TOOLS BENTO SHOWCASE ═══════ */}
+      <section id="features" className="px-6 py-20 md:py-28 border-y border-(--hairline)">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <div className="text-center mb-14">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-(--primary)/8 text-(--primary) border border-(--primary)/15 font-semibold text-sm rounded-full">
+                <Cpu className="w-4 h-4" /> Unified Career Architecture
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif font-light mt-4 text-(--ink) tracking-tight">
+                6 Powerful AI Engines. One Platform.
+              </h2>
+              <p className="text-base text-(--muted) max-w-xl mx-auto mt-3">
+                Everything from resume parsing and custom studio layouts to 5-stage voice mock interviews and GitHub portfolios.
+              </p>
+            </div>
+          </Reveal>
 
           {/* TAB BUTTONS */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
-            {FEATURES_DATA.map((feat, idx) => {
-              const Icon = feat.icon;
-              return (
-                <button
-                  key={feat.id}
-                  onClick={() => setActiveFeatureTab(idx)}
-                  className={`px-3.5 py-2 font-medium text-xs rounded-xl border flex items-center gap-2 transition-all ${
-                    activeFeatureTab === idx 
-                      ? 'bg-(--primary) text-white border-(--primary) shadow-sm scale-102' 
-                      : 'bg-(--surface-card) border-(--hairline) text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft)'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{feat.name}</span>
-                </button>
-              );
-            })}
-          </div>
+          <Reveal delay={0.1}>
+            <div className="flex flex-wrap justify-center gap-2 mb-10">
+              {FEATURES_DATA.map((feat, idx) => {
+                const Icon = feat.icon;
+                return (
+                  <button
+                    key={feat.id}
+                    onClick={() => setActiveFeatureTab(idx)}
+                    className={`px-4 py-2.5 font-medium text-sm rounded-xl border flex items-center gap-2 transition-all duration-300 ${
+                      activeFeatureTab === idx 
+                        ? 'bg-(--primary) text-white border-(--primary) shadow-md scale-[1.03]' 
+                        : 'bg-(--surface-card) border-(--hairline) text-(--muted) hover:text-(--ink) hover:bg-(--surface-soft) hover:border-(--hairline-soft)'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{feat.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </Reveal>
 
           {/* ACTIVE TAB DISPLAY CARD */}
-          {(() => {
-            const current = FEATURES_DATA[activeFeatureTab];
-            const Icon = current.icon;
-            return (
-              <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm p-6 md:p-10 animate-in fade-in">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                  <div className="lg:col-span-7 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 bg-(--surface-soft) text-(--ink) border border-(--hairline-soft) rounded-full text-[10px] font-medium">
-                        {current.badge}
-                      </span>
-                      <span className="px-2.5 py-0.5 bg-(--primary)/10 text-(--primary) border border-(--primary)/20 rounded-full text-[10px] font-medium">
-                        {current.name}
-                      </span>
-                    </div>
-
-                    <h3 className="text-2xl md:text-3xl font-serif font-medium text-(--ink)">
-                      {current.headline}
-                    </h3>
-
-                    <p className="text-xs text-(--muted) leading-relaxed">
-                      {current.desc}
-                    </p>
-
-                    <div className="space-y-2 pt-2">
-                      {current.highlights.map((h, i) => (
-                        <div key={i} className="flex items-center gap-2 text-xs font-medium text-(--ink)">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                          <span>{h}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="pt-4">
-                      <Link href={session ? "/dashboard" : "/register"}>
-                        <Button className="text-xs">
-                          Explore {current.name} in App →
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-5 bg-(--surface-soft) border border-(--hairline-soft) rounded-xl p-5 shadow-xs relative">
-                    <div className="flex justify-between items-center border-b border-(--hairline-soft) pb-3 mb-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-(--primary)/10 text-(--primary) border border-(--primary)/20 flex items-center justify-center">
-                          <Icon className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="font-medium text-xs text-(--ink)">{current.name} Live Output</span>
+          <Reveal delay={0.2}>
+            {(() => {
+              const current = FEATURES_DATA[activeFeatureTab];
+              const Icon = current.icon;
+              return (
+                <div className="bg-(--surface-card) border border-(--hairline) rounded-3xl shadow-lg p-8 md:p-12 relative overflow-hidden transition-all duration-500">
+                  {/* Background gradient accent */}
+                  <div className={`absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl ${current.gradient} rounded-full blur-3xl opacity-60 pointer-events-none transition-all duration-700`} />
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+                    <div className="lg:col-span-7 space-y-5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="px-3 py-1 bg-(--surface-soft) text-(--ink) border border-(--hairline-soft) rounded-full text-sm font-medium">
+                          {current.badge}
+                        </span>
+                        <span className="px-3 py-1 bg-(--primary)/10 text-(--primary) border border-(--primary)/20 rounded-full text-sm font-semibold">
+                          {current.name}
+                        </span>
                       </div>
-                      <span className="text-[10px] font-medium bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        AI READY
-                      </span>
+
+                      <h3 className="text-2xl md:text-4xl font-serif font-medium text-(--ink) leading-tight tracking-tight">
+                        {current.headline}
+                      </h3>
+
+                      <p className="text-base text-(--muted) leading-relaxed">
+                        {current.desc}
+                      </p>
+
+                      <div className="space-y-3 pt-2">
+                        {current.highlights.map((h, i) => (
+                          <div key={i} className="flex items-center gap-3 text-base font-medium text-(--ink)">
+                            <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0" />
+                            <span>{h}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-4">
+                        <Link href={session ? "/dashboard" : "/register"}>
+                          <Button className="text-sm py-3 px-6 rounded-xl group">
+                            Explore {current.name}
+                            <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
 
-                    <div className="space-y-2.5 font-mono text-[11px] text-(--ink) bg-(--surface-card) p-3.5 rounded-lg border border-(--hairline-soft) leading-relaxed">
-                      <p className="text-(--primary) font-medium">{"// Extracted Benchmark Matrix"}</p>
-                      <p>atsScore: <span className="font-medium text-emerald-500">96/100</span></p>
-                      <p>detectedDomain: <span className="font-medium text-(--ink)">&quot;Full Stack Engineering&quot;</span></p>
-                      <p>actionableFeedback: <span className="text-(--muted)">&quot;Optimal keyword density. Star metrics verified.&quot;</span></p>
+                    <div className="lg:col-span-5 bg-(--surface-soft) border border-(--hairline-soft) rounded-2xl p-6 shadow-sm relative">
+                      <div className="flex justify-between items-center border-b border-(--hairline-soft) pb-4 mb-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-(--primary)/10 text-(--primary) border border-(--primary)/20 flex items-center justify-center">
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <span className="font-semibold text-sm text-(--ink)">{current.name}</span>
+                        </div>
+                        <span className="text-sm font-medium bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                          LIVE
+                        </span>
+                      </div>
+
+                      <div className="space-y-2.5 font-mono text-sm text-(--ink) bg-(--surface-card) p-4 rounded-xl border border-(--hairline-soft) leading-relaxed">
+                        <p className="text-(--primary) font-medium">{"// Extracted Benchmark Matrix"}</p>
+                        <p>atsScore: <span className="font-medium text-emerald-500">96/100</span></p>
+                        <p>detectedDomain: <span className="font-medium text-(--ink)">&quot;Full Stack Engineering&quot;</span></p>
+                        <p>actionableFeedback: <span className="text-(--muted)">&quot;Optimal keyword density.&quot;</span></p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </Card>
-            );
-          })()}
+              );
+            })()}
+          </Reveal>
         </div>
       </section>
 
-      {/* MULTI-MODEL AI SHOWCASE SECTION */}
-      <section id="models" className="px-6 py-16 md:py-24 max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="px-3 py-1 bg-(--primary)/10 text-(--primary) border border-(--primary)/20 font-medium text-xs rounded-full">
-            Model Intelligence Roster
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif font-light mt-3 text-(--ink)">
-            Choose Your AI Intelligence Engine
-          </h2>
-          <p className="text-xs text-(--muted) max-w-xl mx-auto mt-2">
-            Never locked into one model. Route between Google Gemini 3.7, Claude Sonnet 5, DeepSeek V4, and Free Tier models with 1 click.
-          </p>
-        </div>
+      {/* ═══════ MULTI-MODEL AI SHOWCASE ═══════ */}
+      <section id="models" className="px-6 py-20 md:py-28 max-w-6xl mx-auto">
+        <Reveal>
+          <div className="text-center mb-14">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-(--primary)/8 text-(--primary) border border-(--primary)/15 font-semibold text-sm rounded-full">
+              <Globe className="w-4 h-4" /> Model Intelligence Roster
+            </span>
+            <h2 className="text-3xl md:text-5xl font-serif font-light mt-4 text-(--ink) tracking-tight">
+              Choose Your AI Engine
+            </h2>
+            <p className="text-base text-(--muted) max-w-xl mx-auto mt-3">
+              Never locked into one model. Route between Google Gemini, Claude, DeepSeek, and Free Tier models.
+            </p>
+          </div>
+        </Reveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {MODELS_DATA.map((m, idx) => (
-            <Card key={idx} className="bg-(--surface-card) border border-(--hairline) rounded-2xl p-6 shadow-xs hover:border-(--primary)/40 transition-all">
-              <div className="flex justify-between items-start mb-3">
-                <span className="px-2 py-0.5 rounded-full bg-(--surface-soft) border border-(--hairline-soft) text-[10px] font-medium text-(--primary)">
-                  {m.badge}
-                </span>
-                <span className="text-[10px] text-(--muted)">{m.provider}</span>
+            <Reveal key={idx} delay={idx * 0.08}>
+              <div className="bg-(--surface-card) border border-(--hairline) rounded-2xl p-6 shadow-sm hover:shadow-lg hover:border-(--primary)/30 hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden h-full">
+                {/* Gradient glow on hover */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${m.color} opacity-0 group-hover:opacity-[0.04] transition-opacity duration-500 rounded-2xl`} />
+                
+                <div className="relative z-10">
+                  <div className="flex justify-between items-start mb-4">
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold bg-gradient-to-r ${m.color} text-white`}>
+                      {m.badge}
+                    </span>
+                    <span className="text-sm text-(--muted)">{m.provider}</span>
+                  </div>
+                  <h3 className="text-xl font-serif font-medium text-(--ink) mb-1">{m.name}</h3>
+                  <p className="text-sm text-(--muted) mb-5">{m.type}</p>
+                  <div className="flex justify-between items-center text-sm font-medium border-t border-(--hairline-soft) pt-4">
+                    <span className="text-(--muted)">Response Speed</span>
+                    <span className="bg-(--surface-soft) px-3 py-1 rounded-lg border border-(--hairline-soft) text-(--ink)">{m.speed}</span>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-base font-serif font-medium text-(--ink) mb-1">{m.name}</h3>
-              <p className="text-xs text-(--muted) mb-4">{m.type}</p>
-              <div className="flex justify-between items-center text-xs font-medium border-t border-(--hairline-soft) pt-3">
-                <span className="text-(--muted)">Response Latency:</span>
-                <span className="bg-(--surface-soft) px-2 py-0.5 rounded-md border border-(--hairline-soft) text-(--ink)">{m.speed}</span>
-              </div>
-            </Card>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      {/* COMPARISON MATRIX SECTION */}
-      <section id="comparison" className="px-6 py-16 md:py-24 bg-(--canvas) border-y border-(--hairline)">
+      {/* ═══════ COMPARISON MATRIX ═══════ */}
+      <section id="comparison" className="px-6 py-20 md:py-28 border-y border-(--hairline)">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="px-3 py-1 bg-(--primary)/10 text-(--primary) border border-(--primary)/20 font-medium text-xs rounded-full">
-              Market Comparison
-            </span>
-            <h2 className="text-3xl md:text-5xl font-serif font-light mt-3 text-(--ink)">
-              Why Job Seekers Switch to Elevara
-            </h2>
-          </div>
+          <Reveal>
+            <div className="text-center mb-14">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-(--primary)/8 text-(--primary) border border-(--primary)/15 font-semibold text-sm rounded-full">
+                <BarChart3 className="w-4 h-4" /> Market Comparison
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif font-light mt-4 text-(--ink) tracking-tight">
+                Why Job Seekers Switch to Elevara
+              </h2>
+            </div>
+          </Reveal>
 
-          <div className="overflow-x-auto rounded-2xl border border-(--hairline) shadow-xs">
-            <table className="w-full text-left border-collapse bg-(--surface-card)">
-              <thead>
-                <tr className="border-b border-(--hairline) bg-(--surface-soft)">
-                  <th className="p-4 font-medium text-xs text-(--ink)">Feature Benchmark</th>
-                  <th className="p-4 font-medium text-xs text-(--primary) border-l border-(--hairline-soft)">Elevara Career OS</th>
-                  <th className="p-4 font-medium text-xs text-(--muted) border-l border-(--hairline-soft)">Generic Resume Builders</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-(--hairline-soft) text-xs">
-                {COMPARISON_ROWS.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-(--surface-soft)/50 transition-colors">
-                    <td className="p-4 font-medium text-(--ink)">{row.feature}</td>
-                    <td className="p-4 font-medium text-emerald-500 bg-emerald-500/5 border-l border-(--hairline-soft) flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> {row.elevara}
-                    </td>
-                    <td className="p-4 text-(--muted) border-l border-(--hairline-soft)">{row.others}</td>
+          <Reveal delay={0.15}>
+            <div className="overflow-x-auto rounded-3xl border border-(--hairline) shadow-lg">
+              <table className="w-full text-left border-collapse bg-(--surface-card)">
+                <thead>
+                  <tr className="border-b border-(--hairline) bg-(--surface-soft)">
+                    <th className="p-5 font-semibold text-sm text-(--ink)">Feature Benchmark</th>
+                    <th className="p-5 font-semibold text-sm text-(--primary) border-l border-(--hairline-soft)">Elevara Career OS</th>
+                    <th className="p-5 font-semibold text-sm text-(--muted) border-l border-(--hairline-soft)">Generic Resume Builders</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-(--hairline-soft) text-sm">
+                  {COMPARISON_ROWS.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-(--surface-soft)/50 transition-colors">
+                      <td className="p-5 font-medium text-(--ink)">{row.feature}</td>
+                      <td className="p-5 font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 border-l border-(--hairline-soft)">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-emerald-500 shrink-0" /> {row.elevara}
+                        </div>
+                      </td>
+                      <td className="p-5 text-(--muted) border-l border-(--hairline-soft)">{row.others}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Reveal>
         </div>
       </section>
 
-      {/* ROI & SALARY ESTIMATOR SECTION */}
-      <section className="px-6 py-16 md:py-24 max-w-4xl mx-auto">
-        <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl shadow-sm p-8 text-center">
-          <div className="inline-block bg-(--primary)/10 text-(--primary) border border-(--primary)/20 px-3 py-1 font-medium text-xs rounded-full mb-3">
-            Career Upside Calculator
-          </div>
-          <h2 className="text-2xl md:text-4xl font-serif font-medium text-(--ink) mb-2">
-            Calculate Your Interview Advantage
-          </h2>
-          <p className="text-xs text-(--muted) mb-6">
-            Drag your expected target role compensation to view estimated career ROI.
-          </p>
-
-          <div className="bg-(--surface-soft) border border-(--hairline-soft) rounded-xl p-6 shadow-xs max-w-xl mx-auto text-left space-y-6">
-            <div>
-              <div className="flex justify-between items-center mb-2 font-medium text-xs text-(--ink)">
-                <span>Target Compensation:</span>
-                <span className="text-sm text-(--primary) bg-(--surface-card) px-2.5 py-0.5 rounded-lg border border-(--hairline-soft)">₹{targetSalary} LPA</span>
-              </div>
-              <input 
-                type="range" 
-                min="6" 
-                max="60" 
-                value={targetSalary} 
-                onChange={(e) => setTargetSalary(Number(e.target.value))}
-                className="w-full accent-(--primary) cursor-pointer"
-              />
+      {/* ═══════ ROI CALCULATOR ═══════ */}
+      <section className="px-6 py-20 md:py-28 max-w-4xl mx-auto">
+        <Reveal>
+          <div className="bg-(--surface-card) border border-(--hairline) rounded-3xl shadow-lg p-8 md:p-12 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-(--primary) via-(--accent-amber) to-(--primary)" />
+            
+            <div className="inline-flex items-center gap-2 bg-(--primary)/8 text-(--primary) border border-(--primary)/15 px-4 py-1.5 font-semibold text-sm rounded-full mb-5">
+              <TrendingUp className="w-4 h-4" /> Career Upside Calculator
             </div>
+            <h2 className="text-2xl md:text-4xl font-serif font-medium text-(--ink) mb-3 tracking-tight">
+              Calculate Your Interview Advantage
+            </h2>
+            <p className="text-base text-(--muted) mb-8 max-w-lg mx-auto">
+              Drag your expected target role compensation to view estimated career ROI.
+            </p>
 
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-(--hairline-soft) text-center">
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                <p className="text-[10px] font-medium text-emerald-500">Est. Callback Increase</p>
-                <p className="text-xl font-serif font-medium text-emerald-500 mt-1">+340%</p>
+            <div className="bg-(--surface-soft) border border-(--hairline-soft) rounded-2xl p-6 md:p-8 shadow-sm max-w-xl mx-auto text-left space-y-6">
+              <div>
+                <div className="flex justify-between items-center mb-3 font-medium text-sm text-(--ink)">
+                  <span>Target Compensation:</span>
+                  <span className="text-lg text-(--primary) bg-(--surface-card) px-4 py-1 rounded-xl border border-(--hairline-soft) font-serif font-semibold">₹{targetSalary} LPA</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="6" 
+                  max="60" 
+                  value={targetSalary} 
+                  onChange={(e) => setTargetSalary(Number(e.target.value))}
+                  className="w-full accent-(--primary) cursor-pointer h-2"
+                />
               </div>
-              <div className="p-3 bg-(--primary)/10 border border-(--primary)/20 rounded-xl">
-                <p className="text-[10px] font-medium text-(--primary)">Upside on ₹99 pack</p>
-                <p className="text-xl font-serif font-medium text-(--primary) mt-1">&gt; 1,800x ROI</p>
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-(--hairline-soft) text-center">
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                  <p className="text-sm font-medium text-emerald-500">Est. Callback Increase</p>
+                  <p className="text-3xl font-serif font-semibold text-emerald-500 mt-2">+340%</p>
+                </div>
+                <div className="p-4 bg-(--primary)/10 border border-(--primary)/20 rounded-2xl">
+                  <p className="text-sm font-medium text-(--primary)">ROI on ₹99 pack</p>
+                  <p className="text-3xl font-serif font-semibold text-(--primary) mt-2">&gt; 1,800×</p>
+                </div>
               </div>
             </div>
           </div>
-        </Card>
+        </Reveal>
       </section>
 
-      {/* TESTIMONIALS & SOCIAL PROOF */}
-      <section className="px-6 py-16 md:py-24 bg-(--canvas) border-y border-(--hairline)">
+      {/* ═══════ TESTIMONIALS ═══════ */}
+      <section className="px-6 py-20 md:py-28 border-y border-(--hairline)">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="px-3 py-1 bg-(--primary)/10 text-(--primary) border border-(--primary)/20 font-medium text-xs rounded-full">
-              Candidate Wall of Fame
-            </span>
-            <h2 className="text-3xl md:text-5xl font-serif font-light mt-3 text-(--ink)">
-              Proven Results Across Top Companies
-            </h2>
-          </div>
+          <Reveal>
+            <div className="text-center mb-14">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-(--primary)/8 text-(--primary) border border-(--primary)/15 font-semibold text-sm rounded-full">
+                <Award className="w-4 h-4" /> Candidate Wall of Fame
+              </span>
+              <h2 className="text-3xl md:text-5xl font-serif font-light mt-4 text-(--ink) tracking-tight">
+                Proven Results Across Top Companies
+              </h2>
+            </div>
+          </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t, idx) => (
-              <Card key={idx} className="bg-(--surface-card) border border-(--hairline) rounded-2xl p-6 shadow-xs flex flex-col justify-between hover:border-(--primary)/40 transition-all">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex text-amber-500">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                      ))}
+              <Reveal key={idx} delay={idx * 0.1}>
+                <div className="bg-(--surface-card) border border-(--hairline) rounded-2xl p-7 shadow-sm flex flex-col justify-between hover:shadow-lg hover:border-(--primary)/25 hover:-translate-y-1 transition-all duration-300 h-full">
+                  <div>
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex text-amber-500 gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-current" />
+                        ))}
+                      </div>
+                      <span className="text-sm font-medium bg-(--surface-soft) text-(--muted) px-3 py-1 rounded-lg border border-(--hairline-soft)">
+                        {t.domain}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-medium bg-(--surface-soft) text-(--muted) px-2 py-0.5 rounded-md border border-(--hairline-soft)">
-                      {t.domain}
+                    <p className="text-base text-(--body) italic leading-relaxed mb-8">
+                      &quot;{t.quote}&quot;
+                    </p>
+                  </div>
+
+                  <div className="border-t border-(--hairline-soft) pt-5 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-sm text-(--ink)">{t.author}</p>
+                      <p className="text-sm text-(--muted)">{t.role}</p>
+                    </div>
+                    <span className="px-3 py-1.5 bg-(--surface-soft) text-(--ink) border border-(--hairline-soft) rounded-xl font-semibold text-sm">
+                      {t.company}
                     </span>
                   </div>
-                  <p className="text-xs text-(--body) italic leading-relaxed mb-6">
-                    &quot;{t.quote}&quot;
-                  </p>
                 </div>
-
-                <div className="border-t border-(--hairline-soft) pt-4 flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-xs text-(--ink)">{t.author}</p>
-                    <p className="text-[11px] text-(--muted)">{t.role}</p>
-                  </div>
-                  <span className="px-2.5 py-1 bg-(--surface-soft) text-(--ink) border border-(--hairline-soft) rounded-lg font-medium text-xs">
-                    {t.company}
-                  </span>
-                </div>
-              </Card>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* PRICING PLANS */}
-      <section id="pricing" className="px-6 py-16 md:py-24 max-w-5xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-medium text-xs rounded-full">
-            Transparent Pricing
-          </span>
-          <h2 className="text-3xl md:text-5xl font-serif font-light mt-3 text-(--ink)">
-            Pay For What You Use. No Subscriptions.
-          </h2>
-          <p className="text-xs text-(--muted) mt-2">
-            Credits never expire. Top up only when you need active job search tools.
-          </p>
-        </div>
+      {/* ═══════ PRICING PLANS ═══════ */}
+      <section id="pricing" className="px-6 py-20 md:py-28 max-w-5xl mx-auto">
+        <Reveal>
+          <div className="text-center mb-14">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-500/8 text-emerald-600 dark:text-emerald-400 border border-emerald-500/15 font-semibold text-sm rounded-full">
+              <CheckCircle className="w-4 h-4" /> Transparent Pricing
+            </span>
+            <h2 className="text-3xl md:text-5xl font-serif font-light mt-4 text-(--ink) tracking-tight">
+              Pay For What You Use. No Subscriptions.
+            </h2>
+            <p className="text-base text-(--muted) mt-3">
+              Credits never expire. Top up only when you need active job search tools.
+            </p>
+          </div>
+        </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {/* FREE PLAN */}
-          <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl p-6 shadow-xs flex flex-col justify-between">
-            <div>
-              <span className="text-[10px] font-medium bg-(--surface-soft) text-(--muted) px-2.5 py-0.5 rounded-full border border-(--hairline-soft)">
-                Starter Tier
-              </span>
-              <h3 className="text-xl font-serif font-medium text-(--ink) mt-3">Free Signup</h3>
-              <div className="text-3xl font-serif text-(--ink) my-4">₹0</div>
-              <p className="text-xs text-(--muted) mb-6">Explore the full platform immediately upon registration.</p>
-              <ul className="space-y-2 text-xs text-(--body) border-t border-(--hairline-soft) pt-4">
-                <li className="flex items-center gap-2">✓ 50 Free AI Generation Credits</li>
-                <li className="flex items-center gap-2">✓ Access to All 6 AI Career Engines</li>
-                <li className="flex items-center gap-2">✓ Full Resume Studio & PDF Export</li>
-                <li className="flex items-center gap-2">✓ Free Tier AI Models Included</li>
-              </ul>
+          <Reveal delay={0}>
+            <div className="bg-(--surface-card) border border-(--hairline) rounded-3xl p-7 shadow-sm flex flex-col justify-between hover:shadow-lg transition-all duration-300 h-full">
+              <div>
+                <span className="text-sm font-medium bg-(--surface-soft) text-(--muted) px-3 py-1 rounded-full border border-(--hairline-soft)">
+                  Starter Tier
+                </span>
+                <h3 className="text-2xl font-serif font-medium text-(--ink) mt-4">Free Signup</h3>
+                <div className="text-4xl font-serif font-medium text-(--ink) my-5">₹0</div>
+                <p className="text-sm text-(--muted) mb-6">Explore the full platform upon registration.</p>
+                <ul className="space-y-3 text-sm text-(--body) border-t border-(--hairline-soft) pt-5">
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> 50 Free AI Credits</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> All 6 AI Career Engines</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Full Resume Studio & Export</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Free Tier AI Models</li>
+                </ul>
+              </div>
+              <Link href="/register" className="mt-8">
+                <Button variant="secondary" className="w-full text-sm py-3 rounded-xl">
+                  Sign Up Free <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
             </div>
-            <Link href="/register" className="mt-8">
-              <Button variant="secondary" className="w-full text-xs">
-                Sign Up Free →
-              </Button>
-            </Link>
-          </Card>
+          </Reveal>
 
           {/* BASIC PACK */}
-          <Card className="bg-(--surface-card) border border-(--hairline) rounded-2xl p-6 shadow-xs flex flex-col justify-between">
-            <div>
-              <span className="text-[10px] font-medium bg-(--primary)/10 text-(--primary) px-2.5 py-0.5 rounded-full border border-(--primary)/20">
-                Top Up
-              </span>
-              <h3 className="text-xl font-serif font-medium text-(--ink) mt-3">Basic Pack</h3>
-              <div className="text-3xl font-serif text-(--ink) my-4">₹99</div>
-              <p className="text-xs text-(--muted) mb-6">Perfect for polishing your resume and practicing 2-3 interviews.</p>
-              <ul className="space-y-2 text-xs text-(--body) border-t border-(--hairline-soft) pt-4">
-                <li className="flex items-center gap-2">✓ 100 AI Generation Credits</li>
-                <li className="flex items-center gap-2">✓ Gemini 3.7 & Claude Access</li>
-                <li className="flex items-center gap-2">✓ Voice Mock Interview Simulation</li>
-                <li className="flex items-center gap-2">✓ Lifetime Credit Validity</li>
-              </ul>
+          <Reveal delay={0.1}>
+            <div className="bg-(--surface-card) border border-(--hairline) rounded-3xl p-7 shadow-sm flex flex-col justify-between hover:shadow-lg transition-all duration-300 h-full">
+              <div>
+                <span className="text-sm font-semibold bg-(--primary)/10 text-(--primary) px-3 py-1 rounded-full border border-(--primary)/20">
+                  Top Up
+                </span>
+                <h3 className="text-2xl font-serif font-medium text-(--ink) mt-4">Basic Pack</h3>
+                <div className="text-4xl font-serif font-medium text-(--ink) my-5">₹99</div>
+                <p className="text-sm text-(--muted) mb-6">Perfect for polishing resumes and practicing 2-3 interviews.</p>
+                <ul className="space-y-3 text-sm text-(--body) border-t border-(--hairline-soft) pt-5">
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> 100 AI Credits</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Gemini 3.7 & Claude Access</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Voice Mock Interviews</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Lifetime Credit Validity</li>
+                </ul>
+              </div>
+              <Link href="/register" className="mt-8">
+                <Button className="w-full text-sm py-3 rounded-xl">
+                  Get 100 Credits <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
             </div>
-            <Link href="/register" className="mt-8">
-              <Button className="w-full text-xs">
-                Get 100 Credits →
-              </Button>
-            </Link>
-          </Card>
+          </Reveal>
 
           {/* PRO PACK */}
-          <Card className="bg-(--surface-card) border-2 border-(--primary) rounded-2xl p-6 shadow-md flex flex-col justify-between relative">
-            <div className="absolute -top-3 right-4 bg-(--primary) text-white text-[10px] font-medium px-3 py-0.5 rounded-full shadow-xs">
-              Most Popular
+          <Reveal delay={0.2}>
+            <div className="bg-(--surface-card) border-2 border-(--primary) rounded-3xl p-7 shadow-lg flex flex-col justify-between relative h-full">
+              <div className="absolute -top-3.5 right-5 bg-gradient-to-r from-(--primary) to-(--primary-active) text-white text-sm font-semibold px-4 py-1 rounded-full shadow-md">
+                Most Popular
+              </div>
+              <div>
+                <span className="text-sm font-semibold bg-(--primary)/10 text-(--primary) px-3 py-1 rounded-full border border-(--primary)/20">
+                  Pro Powerhouse
+                </span>
+                <h3 className="text-2xl font-serif font-medium text-(--ink) mt-4">Career Pro</h3>
+                <div className="text-4xl font-serif font-medium text-(--primary) my-5">₹399</div>
+                <p className="text-sm text-(--muted) mb-6">Comprehensive preparation for full job hunt seasons.</p>
+                <ul className="space-y-3 text-sm text-(--body) border-t border-(--hairline-soft) pt-5">
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> 500 AI Credits</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Priority Execution</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Unlimited Voice Interviews</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Full Model Solutions</li>
+                  <li className="flex items-center gap-2.5"><CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" /> Priority Support</li>
+                </ul>
+              </div>
+              <Link href="/register" className="mt-8">
+                <Button className="w-full text-sm py-3 rounded-xl shadow-md">
+                  Get 500 Pro Credits <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
             </div>
-            <div>
-              <span className="text-[10px] font-medium bg-(--primary)/10 text-(--primary) px-2.5 py-0.5 rounded-full border border-(--primary)/20">
-                Pro Powerhouse
-              </span>
-              <h3 className="text-xl font-serif font-medium text-(--ink) mt-3">Career Pro</h3>
-              <div className="text-3xl font-serif text-(--primary) my-4">₹399</div>
-              <p className="text-xs text-(--muted) mb-6">Comprehensive preparation for full job hunt seasons.</p>
-              <ul className="space-y-2 text-xs text-(--body) border-t border-(--hairline-soft) pt-4">
-                <li className="flex items-center gap-2">✓ 500 AI Generation Credits</li>
-                <li className="flex items-center gap-2">✓ Priority BullMQ Worker Execution</li>
-                <li className="flex items-center gap-2">✓ Unlimited Voice Mock Interviews</li>
-                <li className="flex items-center gap-2">✓ Full Model Solutions & Study Guides</li>
-                <li className="flex items-center gap-2">✓ Priority Support</li>
-              </ul>
-            </div>
-            <Link href="/register" className="mt-8">
-              <Button className="w-full text-xs">
-                Get 500 Pro Credits →
-              </Button>
-            </Link>
-          </Card>
+          </Reveal>
         </div>
       </section>
 
-      {/* FINAL CALL TO ACTION */}
-      <section className="px-6 py-16 md:py-24 max-w-4xl mx-auto text-center">
-        <div className="bg-(--surface-card) border border-(--hairline) rounded-3xl p-10 md:p-14 shadow-sm">
-          <Trophy className="w-10 h-10 mx-auto mb-4 text-(--primary)" />
-          <h2 className="text-3xl md:text-5xl font-serif font-light text-(--ink) mb-3">
-            Ready to Fast-Track Your Career?
-          </h2>
-          <p className="text-xs md:text-sm text-(--muted) max-w-xl mx-auto mb-8 leading-relaxed">
-            Join thousands of ambitious job seekers landing top offers at Google, Amazon, Microsoft, Goldman Sachs, and Stripe.
-          </p>
-          <Link href="/register">
-            <Button className="text-xs md:text-sm px-8 py-3.5 rounded-xl shadow-sm hover:shadow-md transition-all">
-              Claim Your 50 Free Credits Now →
-            </Button>
-          </Link>
-        </div>
-      </section>
+      {/* ═══════ FINAL CTA ═══════ */}
+      <Reveal>
+        <section className="px-6 py-20 md:py-28 max-w-4xl mx-auto text-center">
+          <div className="relative bg-(--surface-card) border border-(--hairline) rounded-[2rem] p-12 md:p-16 shadow-xl overflow-hidden">
+            {/* Glowing orbs */}
+            <div className="absolute -top-20 -left-20 w-60 h-60 bg-(--primary)/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="relative z-10">
+              <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-(--primary)/20 to-(--primary)/5 rounded-2xl flex items-center justify-center border border-(--primary)/15">
+                <Trophy className="w-8 h-8 text-(--primary)" />
+              </div>
+              <h2 className="text-3xl md:text-5xl font-serif font-light text-(--ink) mb-4 tracking-tight">
+                Ready to Fast-Track Your Career?
+              </h2>
+              <p className="text-base md:text-lg text-(--muted) max-w-xl mx-auto mb-10 leading-relaxed">
+                Join thousands of ambitious job seekers landing top offers at Google, Amazon, Microsoft, and Stripe.
+              </p>
+              <Link href="/register">
+                <Button className="text-base md:text-lg px-10 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all font-semibold group">
+                  Claim Your 50 Free Credits Now
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </Reveal>
 
-      {/* FOOTER */}
-      <footer className="bg-(--surface-dark) text-white border-t border-(--hairline) px-6 py-12">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-(--primary) text-white rounded-lg flex items-center justify-center font-serif text-xs">
+      {/* ═══════ FOOTER ═══════ */}
+      <footer className="bg-(--surface-dark) text-white border-t border-(--hairline) px-6 py-14">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-gradient-to-br from-(--primary) to-(--primary-active) text-white rounded-xl flex items-center justify-center font-serif text-sm shadow-md">
                 E
               </div>
-              <span className="text-base font-serif">Elevara</span>
+              <span className="text-lg font-serif font-medium">Elevara</span>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">
+            <p className="text-sm text-gray-400 leading-relaxed">
               The professional AI Career Operating System. Built for serious job seekers across all global disciplines.
             </p>
           </div>
 
           <div>
-            <p className="text-xs font-medium text-(--primary) mb-3">AI Engines</p>
-            <ul className="space-y-2 text-xs text-gray-400">
+            <p className="text-sm font-semibold text-(--primary) mb-4">AI Engines</p>
+            <ul className="space-y-2.5 text-sm text-gray-400">
               <li><Link href="/dashboard/analyze" className="hover:text-white transition-colors">ATS Resume Parser</Link></li>
               <li><Link href="/dashboard/studio" className="hover:text-white transition-colors">Resume Studio</Link></li>
               <li><Link href="/dashboard/tools/mock-interview" className="hover:text-white transition-colors">5-Stage Mock Interview</Link></li>
@@ -753,8 +969,8 @@ export default function LandingPage() {
           </div>
 
           <div>
-            <p className="text-xs font-medium text-(--primary) mb-3">Resources & Docs</p>
-            <ul className="space-y-2 text-xs text-gray-400">
+            <p className="text-sm font-semibold text-(--primary) mb-4">Resources & Docs</p>
+            <ul className="space-y-2.5 text-sm text-gray-400">
               <li><Link href="/dashboard/help" className="hover:text-white transition-colors">Help & Documentation</Link></li>
               <li><Link href="/dashboard/help" className="hover:text-white transition-colors">Mock Interview Voice Guide</Link></li>
               <li><Link href="/dashboard/help" className="hover:text-white transition-colors">Model Selection Guide</Link></li>
@@ -763,9 +979,9 @@ export default function LandingPage() {
           </div>
 
           <div>
-            <p className="text-xs font-medium text-(--primary) mb-3">Security & Trust</p>
-            <ul className="space-y-2 text-xs text-gray-400">
-              <li className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5 text-emerald-400" /> 256-Bit SSL Encryption</li>
+            <p className="text-sm font-semibold text-(--primary) mb-4">Security & Trust</p>
+            <ul className="space-y-2.5 text-sm text-gray-400">
+              <li className="flex items-center gap-2"><Lock className="w-4 h-4 text-emerald-400" /> 256-Bit SSL Encryption</li>
               <li>Zero Data Selling / Scraping</li>
               <li>Isolated User Cloud Stores</li>
               <li>GDPR & CCPA Compliant</li>
@@ -773,9 +989,9 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+        <div className="max-w-6xl mx-auto border-t border-gray-800 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
           <p>© {new Date().getFullYear()} Elevara Technologies Inc. All rights reserved.</p>
-          <div className="flex gap-4 text-gray-400">
+          <div className="flex gap-6 text-gray-400">
             <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
             <Link href="/register" className="hover:text-white transition-colors">Register</Link>
             <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>

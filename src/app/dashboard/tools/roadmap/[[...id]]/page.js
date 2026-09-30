@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Map, Target, AlertTriangle } from 'lucide-react';
+import { Sparkles, Map, Target, AlertTriangle, BookOpen, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/toast';
 import { ModelSelector } from '@/components/ui/ModelSelector';
@@ -202,32 +202,38 @@ export default function RoadmapGenerator() {
  {/* RIGHT COL: ROADMAP */}
  <div className="lg:col-span-2 space-y-6">
  <h3 className="text-2xl font-semibold mb-4">Step-by-Step Plan</h3>
- {displayResult.roadmap?.map((step, idx) => (
- <Card key={idx} className="border border-(--hairline) bg-(--surface-card) hover:bg-(--surface-soft) rounded-2xl transition-all shadow-xs">
- <CardContent className="p-6 flex flex-col md:flex-row gap-6">
- <div className="shrink-0">
- <div className="w-12 h-12 rounded-xl bg-(--primary)/10 text-(--primary) border border-(--primary)/20 flex items-center justify-center font-serif text-lg">
- {step.step}
- </div>
- </div>
- <div>
- <h4 className="text-2xl font-semibold mb-2 leading-tight">{step.title}</h4>
- <p className="font-medium text-(--body) mb-4">{step.description}</p>
- 
- {step.resources && step.resources.length > 0 && (
- <div className="bg-(--surface-soft) rounded-xl border border-(--hairline-soft) p-3.5">
- <p className="font-bold text-xs text-gray-500 mb-1">Recommended Resources</p>
- <ul className="list-disc pl-4 space-y-1 text-sm font-medium">
- {step.resources.map((res, i) => (
- <li key={i}>{res}</li>
- ))}
- </ul>
- </div>
- )}
- </div>
- </CardContent>
- </Card>
- ))}
+{displayResult.roadmap?.map((step, idx) => (
+  <Card key={idx} className="border border-(--hairline) bg-(--surface-card) hover:bg-(--surface-soft) rounded-2xl transition-all shadow-xs">
+    <CardContent className="p-6 flex flex-col md:flex-row gap-6">
+      <div className="shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-(--primary)/10 text-(--primary) border border-(--primary)/20 flex items-center justify-center font-serif text-lg font-bold">
+          {step.step}
+        </div>
+      </div>
+      <div className="space-y-3 flex-1">
+        <h4 className="text-xl sm:text-2xl font-semibold leading-tight text-(--ink)">{step.title}</h4>
+        <p className="text-sm sm:text-base text-(--body) leading-relaxed font-normal">
+          {step.description}
+        </p>
+        {step.resources && step.resources.length > 0 && (
+          <div className="bg-(--surface-soft)/60 rounded-xl border border-(--hairline) p-3.5 space-y-2 mt-3">
+            <p className="font-semibold text-xs text-(--muted) uppercase tracking-wider flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-(--primary)" /> Recommended Learning Resources
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {step.resources.map((res, i) => (
+                <span key={i} className="text-xs font-medium bg-(--surface-card) border border-(--hairline) px-3 py-1 rounded-lg text-(--ink) shadow-2xs flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-(--primary)"></span>
+                  <span>{res}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </CardContent>
+  </Card>
+))}
  </div>
  </div>
 

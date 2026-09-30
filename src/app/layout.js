@@ -19,7 +19,7 @@ const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
   display: "swap",
-  weight: ["300", "400", "500", "600"],
+  weight: "400",
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://career.vixora.co.in";

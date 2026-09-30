@@ -111,6 +111,7 @@ export default function MockInterviewGenerator() {
  const [isSpeaking, setIsSpeaking] = useState(false);
  const [isListening, setIsListening] = useState(false);
  const recognitionRef = useRef(null);
+	const baseTextRef = useRef('');
 
  // Gamification States
  const [xp, setXp] = useState(0);
@@ -174,66 +175,115 @@ export default function MockInterviewGenerator() {
  }, [toast]);
 
  // Speech-to-Text (Voice Dictation)
- const toggleListening = (questionId) => {
- if (typeof window === 'undefined') return;
- 
- const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
- if (!SpeechRecognition) {
- toast.warning('Browser Unsupported', 'Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari.');
- return;
- }
+ const toggleListening = async (questionId) => {
+		if (typeof window === 'undefined') return;
+		
+		// If already listening, stop cleanly
+		if (isListening) {
+			if (recognitionRef.current) {
+				try {
+					recognitionRef.current.stop();
+				} catch (e) {
+					recognitionRef.current.abort();
+				}
+				recognitionRef.current = null;
+			}
+			setIsListening(false);
+			toast.success('Dictation Saved', 'Voice recording finished and saved to your answer.');
+			return;
+		}
 
- if (isListening) {
- if (recognitionRef.current) {
- recognitionRef.current.stop();
- }
- setIsListening(false);
- return;
- }
+		const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+		if (!SpeechRecognition) {
+			toast.warning('Browser Unsupported', 'Speech recognition is not supported in this browser. Please use Google Chrome, Microsoft Edge, or Safari.');
+			return;
+		}
 
- try {
- const recognition = new SpeechRecognition();
- recognition.continuous = true;
- recognition.interimResults = true;
- recognition.lang = 'en-US';
+		// Explicitly request microphone access if supported
+		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+				stream.getTracks().forEach(t => t.stop());
+			} catch (micErr) {
+				console.warn('Microphone permission warning:', micErr);
+				if (micErr.name === 'NotAllowedError' || micErr.name === 'PermissionDeniedError') {
+					toast.error('Microphone Blocked', 'Please grant microphone access in your browser address bar.');
+					return;
+				}
+			}
+		}
 
- recognition.onstart = () => {
- setIsListening(true);
- interviewAudio.playClick();
- toast.info('Listening...', 'Speak clearly into your microphone.');
- };
+		try {
+			const recognition = new SpeechRecognition();
+			recognition.continuous = true;
+			recognition.interimResults = true;
+			recognition.lang = 'en-US';
 
- recognition.onresult = (event) => {
- let currentTranscript = '';
- for (let i = 0; i < event.results.length; i++) {
- currentTranscript += event.results[i][0].transcript + ' ';
- }
- setAnswers(prev => ({
- ...prev,
- [questionId]: (prev[questionId] ? prev[questionId].trim() + ' ' : '') + currentTranscript.trim()
- }));
- };
+			// Save baseline text at the start of this dictation session
+			baseTextRef.current = answers[questionId] || '';
 
- recognition.onerror = (event) => {
- console.error('Speech recognition error:', event.error);
- setIsListening(false);
- toast.error('Voice Input Error', `Microphone error: ${event.error}`);
- };
+			recognition.onstart = () => {
+				setIsListening(true);
+				interviewAudio.playClick();
+				toast.info('Listening...', 'Speak clearly into your microphone.');
+			};
 
- recognition.onend = () => {
- setIsListening(false);
- };
+			recognition.onresult = (event) => {
+				let interim = '';
+				let final = '';
 
- recognitionRef.current = recognition;
- recognition.start();
- unlockBadge('Voice Pioneer', '🎙️', 'Practiced using live voice response');
- } catch (err) {
- console.error(err);
- setIsListening(false);
- }
- };
+				for (let i = 0; i < event.results.length; i++) {
+					const transcript = event.results[i][0].transcript;
+					if (event.results[i].isFinal) {
+						final += transcript + ' ';
+					} else {
+						interim += transcript;
+					}
+				}
 
- // Text-to-Speech (AI Interviewer Voice)
+				const base = baseTextRef.current.trim();
+				const speech = (final + interim).trim();
+				const fullText = base ? `${base} ${speech}` : speech;
+
+				setAnswers(prev => ({
+					...prev,
+					[questionId]: fullText
+				}));
+			};
+
+			recognition.onerror = (event) => {
+				console.error('Speech recognition error:', event.error);
+				if (event.error === 'no-speech') {
+					return;
+				}
+				if (event.error === 'not-allowed') {
+					toast.error('Microphone Blocked', 'Microphone access was denied. Please allow microphone access.');
+				} else if (event.error === 'network') {
+					toast.error('Speech Network Issue', 'Browser speech service was unable to connect. Check internet connection.');
+				} else {
+					toast.error('Voice Input Error', `Voice recognition error: ${event.error}`);
+				}
+				setIsListening(false);
+				recognitionRef.current = null;
+			};
+
+			recognition.onend = () => {
+				setIsListening(false);
+				recognitionRef.current = null;
+			};
+
+			recognitionRef.current = recognition;
+			recognition.start();
+			unlockBadge('Voice Pioneer', '🎙️', 'Practiced using live voice response');
+		} catch (err) {
+			console.error('Speech recognition start failed:', err);
+			setIsListening(false);
+			recognitionRef.current = null;
+			toast.error('Mic Error', 'Could not initialize microphone. Please check permissions.');
+		}
+	};
+
+	// Text-to-Speech (AI Interviewer Voice)
  const speakText = (text) => {
  if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
@@ -973,7 +1023,27 @@ export default function MockInterviewGenerator() {
                         )}
                       </div>
 
-                      {/* A. MCQ OPTIONS */}
+                      {/* Live Voice Dictation Status Banner */}
+						{isListening && (
+							<div className="flex items-center justify-between p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-700 dark:text-rose-300 text-xs font-medium animate-pulse mb-3">
+								<div className="flex items-center gap-2">
+									<span className="relative flex h-2.5 w-2.5">
+										<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+										<span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+									</span>
+									<span>Live microphone recording active... Dictate your answer now.</span>
+								</div>
+								<button
+									onClick={() => toggleListening(currentQ.id)}
+									type="button"
+									className="px-2.5 py-1 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
+								>
+									Done Speaking
+								</button>
+							</div>
+						)}
+
+						{/* A. MCQ OPTIONS */}
                       {currentRound.type === 'mcq' && currentQ.options && currentQ.options.length > 0 ? (
                         <div className="space-y-2.5 mt-3">
                           {currentQ.options.map((opt, idx) => {
